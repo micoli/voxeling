@@ -29,7 +29,7 @@ var tsOptions = {
 const tsProject = ts.createProject(tsOptions);
 
 gulp.task('lint-ts', () => {
-	return gulp.src('src/server.ts/**/*.ts')
+	return gulp.src('src/**/*.ts')
 		.pipe(tslint({
 			formatter : 'prose'
 		}))
@@ -37,7 +37,7 @@ gulp.task('lint-ts', () => {
 });
 
 gulp.task('compile-ts','typescript compile', function() {
-	var tsResult = gulp.src([ 'src/server.ts/**/*.ts' ])
+	var tsResult = gulp.src([ 'src/**/*.ts' ])
 		.pipe(tsProject());
 
 	return merge([
@@ -53,8 +53,10 @@ gulp.task('compile-test', function() {
 });
 
 gulp.task('develop','server developement tool', [ 'configs','compile-ts' ], function() {
+	gulp.watch('src/**/*.ts', [ /*'lint-ts',*/'compile-ts', 'configs' ]);
+	gulp.watch(['build/src/client/**/*.js','build/src/shared/**/*.js'], [ 'build-client' ,'build-client-worker' ]);
 	var stream = nodemon({
-		script : 'build/src/index.js',
+		script : 'build/src/server/index.js',
 		ext : 'ts json',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src' ],
@@ -98,8 +100,8 @@ gulp.task('clean','', function() {
 });
 
 gulp.task('configs', 'copy configs', (cb) => {
-	return gulp.src("src/server.ts/configurations/*.json")
-		.pipe(gulp.dest('./build/src/configurations'));
+	return gulp.src("src/server/configurations/*.json")
+		.pipe(gulp.dest('./build/src/server/configurations'));
 });
 
 gulp.task('server-production',['build'], (cb) => {
@@ -155,7 +157,7 @@ function handleErrors() {
 
 function buildScript(file, watch) {
 	var bundler =  browserify({
-		entries : [ 'src/' + file ],
+		entries : [ 'build/src/' + file ],
 		cache : '/tmp/cache.browserify',
 		packageCache : {},
 	})
@@ -191,11 +193,11 @@ gulp.task('build-client-worker', function() {
 });
 
 gulp.task('watch-clients', [ 'build-client','build-client-worker' ], function() {
-	gulp.watch(['src/client/**/*.js','src/shared/**/*.js'], [ 'build-client' ,'build-client-worker' ]);
+	gulp.watch(['build/src/client/**/*.js','build/src/shared/**/*.js'], [ 'build-client' ,'build-client-worker' ]);
 })
 
 gulp.task('watch-ts', [ /*'lint-ts',*/'compile-ts', 'configs' ], function() {
-	gulp.watch('src/server.ts/**/*.ts', [ /*'lint-ts',*/'compile-ts', 'configs' ]);
+	gulp.watch('src/**/*.ts', [ /*'lint-ts',*/'compile-ts', 'configs' ]);
 });
 
 gulp.task('default', [ 'develop' ]);
