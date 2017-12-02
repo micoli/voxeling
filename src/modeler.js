@@ -10,7 +10,6 @@ var Camera = require('./lib/camera');
 var Lines = require('./lib/lines');
 var Shapes = require('./lib/shapes');
 var Model = require('./lib/model');
-
 var pool = require('./lib/object-pool');
 
 //var mesh = require('./lib/player-mesh');
@@ -74,7 +73,7 @@ for (var i = 0; i < to; i++) {
 
 var modelPosition = new Movable(webgl.gl);
 var model = new Model(
-	webgl.gl, 
+	webgl.gl,
     mesh,
 	//Shapes.square([0, 0, 0]),
 	modelPosition
@@ -139,14 +138,14 @@ $controls.find('.rotation')
 $controls.find('.scale')
     .on('change', 'input', function(e) {
         var scale = $('#scale').val();
-        
+
     });
 
 $controls.find('#fetch').on('click', function(e) {
     var url = $('#url').val();
 
     $.getJSON(url, function(json) {
-        
+
     });
-    
+
 });
