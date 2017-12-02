@@ -2,6 +2,8 @@ config.js
 chunks
 node_modules
 .tern-project
+public/client/client.js
+public/client/client-worker.js
 
 .project
 .settings/

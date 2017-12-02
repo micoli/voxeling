@@ -4,7 +4,6 @@ var gutil = require('gulp-util');
 var browserify = require('browserify');
 var tsify = require('tsify');
 var browserifyInc = require('browserify-incremental')
-var notify = require("gulp-notify");
 var path = require('path');
 var ts = require('gulp-typescript');
 var nodemon = require('gulp-nodemon');
@@ -15,6 +14,7 @@ const mocha = require('gulp-mocha');
 const shell = require('gulp-shell');
 const env = require('gulp-env');
 var connect = require('gulp-connect');
+//var notify = require("gulp-notify");
 
 var outDir='build';
 var tsOptions = {
@@ -148,6 +148,7 @@ gulp.task('test', 'launch tests', [ 'compile-test','configs' ], (cb) => {
 
 function handleErrors() {
 	var args = Array.prototype.slice.call(arguments);
+	console.log(args);return;
 	notify.onError({
 		title : "Compile Error",
 		message : "<%= error.message %>"
@@ -161,9 +162,9 @@ function buildScript(file, watch) {
 		cache : '/tmp/cache.browserify',
 		packageCache : {},
 	})
-	.plugin(tsify, tsOptions/*{
-		noImplicitAny: true
-	}*/);
+	//.plugin(tsify, tsOptions/*{
+	//	noImplicitAny: true
+	//}*/);
 
 	browserifyInc(bundler, {
 		cacheFile: '/tmp/cache.browserify.json'
@@ -175,7 +176,8 @@ function buildScript(file, watch) {
 			.on('error', handleErrors)
 			.pipe(source(file))
 			.pipe(gulp.dest('public/'))
-			.pipe(notify("Client build "));
+			//.pipe(notify("Client build "))
+			;
 	}
 	bundler.on('update', function() {
 		rebundle();

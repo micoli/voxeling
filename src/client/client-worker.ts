@@ -1,4 +1,4 @@
-var config = require('../../config');
+var config = require('../../../config');
 
 var WebSocketEmitter = require('../shared/web-socket-emitter');
 var Coordinates = require('../shared/coordinates');

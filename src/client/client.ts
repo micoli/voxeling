@@ -4,9 +4,9 @@ var glm = require('gl-matrix'),
 	mat4 = glm.mat4,
 	quat = glm.quat;
 
+var config = require('../../../config');
 var randomName = require('sillyname');
 var raycast = require('voxel-raycast');
-var config = require('../../config');
 var WebGL = require('./lib/webgl');
 var Camera = require('./lib/camera');
 var InputHandler = require('./lib/client-input');

@@ -8,6 +8,7 @@ import {IDatabase} from "./database";
 import * as Path from 'Path';
 import * as socket from './socket';
 import * as Wreck from 'wreck';
+import {GameServer} from '../gameServer/game-server';
 
 export function init(configs: IServerConfigurations, database: IDatabase): Promise<Hapi.Server> {
 
@@ -15,7 +16,7 @@ export function init(configs: IServerConfigurations, database: IDatabase): Promi
 
 		const port = process.env.PORT || configs.port;
 		const server = new Hapi.Server();
-
+		const gameserver = new GameServer();
 		server.connection({
 			port: port,
 			routes: {
