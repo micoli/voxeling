@@ -1,4 +1,4 @@
-var config = require('../../../config');
+var config = require('../../config');
 
 var WebSocketEmitter = require('../shared/web-socket-emitter');
 var Coordinates = require('../shared/coordinates');
@@ -6,8 +6,8 @@ var decoder = require('./lib/rle-decoder');
 var pool = require('./lib/object-pool');
 var Textures = require('./lib/textures');
 var mesher = require('./lib/meshers/horizontal-merge');
-var ClientGenerator = require('../shared/generators/client.js');
-var Frustum = require('./lib/frustum');
+var ClientGenerator = require('../shared/generators/client');
+import { Frustum} from './lib/frustum';
 var timer = require('./lib/timer');
 var chunkArrayLength = config.chunkSize * config.chunkSize * config.chunkSize;
 var chunkCache = {};

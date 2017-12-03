@@ -1,13 +1,13 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import {IPlugin} from "./plugins/interfaces";
-import {IServerConfigurations} from "./configurations";
+import * as Path from 'Path';
+import * as Wreck from 'wreck';
 import * as Tasks from "./games";
 import * as Users from "./users";
-import {IDatabase} from "./database";
-import * as Path from 'Path';
 import * as socket from './socket';
-import * as Wreck from 'wreck';
+import {IDatabase} from "./database";
+import {IPlugin} from "./plugins/interfaces";
+import {IServerConfigurations} from "./configurations";
 import {GameServer} from '../gameServer/game-server';
 
 export function init(configs: IServerConfigurations, database: IDatabase): Promise<Hapi.Server> {

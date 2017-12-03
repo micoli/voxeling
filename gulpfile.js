@@ -1,22 +1,33 @@
-var source = require('vinyl-source-stream');
-var gulp = require('gulp-help')(require('gulp'));
-var gutil = require('gulp-util');
-var browserify = require('browserify');
-var tsify = require('tsify');
-var browserifyInc = require('browserify-incremental')
-var path = require('path');
-var ts = require('gulp-typescript');
-var nodemon = require('gulp-nodemon');
-var merge = require('merge2');
-const rimraf = require('gulp-rimraf');
-const tslint = require('gulp-tslint');
-const mocha = require('gulp-mocha');
-const shell = require('gulp-shell');
-const env = require('gulp-env');
-var connect = require('gulp-connect');
-//var notify = require("gulp-notify");
+const source = require('vinyl-source-stream');
+const tsify = require('tsify');
+const tsifyTransform = require("tsify-transform");
+const browserify = require('browserify');
+const browserifyIncremental = require('browserify-incremental')
+const path = require('path');
+const merge = require('merge2');
+const plumber = require("plumber");
+const _gulp = require('gulp');
+const gulp = require('gulp-help')(_gulp);
+const watchify = require('watchify');
+const sourceStream = require('vinyl-source-stream');
+const plugins = require('gulp-load-plugins')();
 
-var outDir='build';
+console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.green(Object.keys(plugins)));
+
+//const gutil = require('gulp-util');
+//const ts = require('gulp-typescript');
+//const nodemon = require('gulp-nodemon');
+//const rimraf = require('gulp-rimraf');
+//const tslint = require('gulp-tslint');
+//const mocha = require('gulp-mocha');
+//const shell = require('gulp-shell');
+//const env = require('gulp-env');
+//const connect = require('gulp-connect');
+//const rename = require('gulp-rename');
+//const notify = require("gulp-notify");
+
+
+var outDir = 'build';
 var tsOptions = {
 	declaration : true,
 	lib : [ "es2015" ],
@@ -25,18 +36,20 @@ var tsOptions = {
 	moduleResolution : "node",
 	sourceMap : true,
 	typeRoots : [ "node_modules/@types" ],
+	noImplicitAny : true
 };
-const tsProject = ts.createProject(tsOptions);
+const tsProject = plugins.typescript.createProject(tsOptions);
 
 gulp.task('lint-ts', () => {
-	return gulp.src('src/**/*.ts')
-		.pipe(tslint({
+	return gulp
+		.src('src/**/*.ts')
+		.pipe(plugins.tslint({
 			formatter : 'prose'
 		}))
-		.pipe(tslint.report());
+		.pipe(plugins.tslint.report());
 });
 
-gulp.task('compile-ts','typescript compile', function() {
+gulp.task('compile-ts', 'typescript compile', function() {
 	var tsResult = gulp.src([ 'src/**/*.ts' ])
 		.pipe(tsProject());
 
@@ -52,90 +65,90 @@ gulp.task('compile-test', function() {
 		.pipe(gulp.dest('build/test/'))
 });
 
-gulp.task('develop','server developement tool', [ 'configs','compile-ts' ], function() {
-	gulp.watch('src/**/*.ts', [ /*'lint-ts',*/'compile-ts', 'configs' ]);
-	gulp.watch(['build/src/client/**/*.js','build/src/shared/**/*.js'], [ 'build-client' ,'build-client-worker' ]);
-	var stream = nodemon({
+gulp.task('develop', 'server developement tool', [ 'configurations', 'compile-ts' ], function() {
+	gulp.watch([ 'src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'compile-ts', 'configurations' ]);
+	gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
+	var stream = plugins.nodemon({
 		script : 'build/src/server/index.js',
 		ext : 'ts json',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src' ],
-		env: {
-			'NODE_ENV': 'dev'
+		env : {
+			'NODE_ENV' : 'dev'
 		},
 		tasks : function(changedFiles) {
 			var tasks = []
 			if (!changedFiles) return tasks;
-			if (!Array.isArray(changedFiles)){
+			if (!Array.isArray(changedFiles)) {
 				return tasks;
 			}
 			changedFiles.forEach(function(file) {
 				if (path.extname(file) === '.ts' && !~tasks.indexOf('compile-ts')) tasks.push('compile-ts')
-				if (path.extname(file) === '.json' && !~tasks.indexOf('configs')) tasks.push('configs')
-				//if (path.extname(file) === '.ts' && !~tasks.indexOf('lint-ts')) tasks.push('lint-ts')
-				//if (path.extname(file) === '.css' && !~tasks.indexOf('cssmin')) tasks.push('cssmin')
+				if (path.extname(file) === '.json' && !~tasks.indexOf('configurations')) tasks.push('configurations')
+			//if (path.extname(file) === '.ts' && !~tasks.indexOf('lint-ts')) tasks.push('lint-ts')
+			//if (path.extname(file) === '.css' && !~tasks.indexOf('cssmin')) tasks.push('cssmin')
 			})
-			console.log('tasks to do',tasks);
+			console.log('tasks to do', tasks);
 			return tasks
 		}
 	})
-	.once('start', () => {
-		console.log('start')
-	})
-	.on('restart', function() {
-		console.log('Restarted!')
-	})
-	.on('crash', function() {
-		console.error('Application has crashed!\n')
-		stream.emit('restart', 2) // restart the server in 10 seconds
-	});
+		.once('start', () => {
+			console.log('start')
+		})
+		.on('restart', function() {
+			console.log('Restarted!')
+		})
+		.on('crash', function() {
+			console.error('Application has crashed!\n')
+			stream.emit('restart', 2) // restart the server in 10 seconds
+		});
 
 });
 
-gulp.task('clean','', function() {
+gulp.task('clean', '', function() {
 	return gulp.src(outDir, {
 		read : false
 	})
-		.pipe(rimraf());
+		.pipe(plugins.rimraf());
 });
 
-gulp.task('configs', 'copy configs', (cb) => {
+gulp.task('configurations', 'copy configurations', (cb) => {
 	return gulp.src("src/server/configurations/*.json")
 		.pipe(gulp.dest('./build/src/server/configurations'));
 });
 
-gulp.task('server-production',['build'], (cb) => {
-	nodemon({
+gulp.task('server-production', [ 'build' ], (cb) => {
+	plugins.nodemon({
 		script : 'build/src/index.js',
 	})
-	.once('start', () => {
-		console.log('start')
-	})
-	.on('restart', function() {
-		console.log('Restarted!')
-	})
-	.on('crash', function() {
-		console.error('Application has crashed!\n')
-		stream.emit('restart', 2)
-	});
+		.once('start', () => {
+			console.log('start')
+		})
+		.on('restart', function() {
+			console.log('Restarted!')
+		})
+		.on('crash', function() {
+			console.error('Application has crashed!\n')
+			stream.emit('restart', 2)
+		});
 });
 
-gulp.task('build', 'typescript compile and copy configs', [ 'compile-ts', 'configs' ], () => {
+gulp.task('build', 'typescript compile and copy configurations', [ 'compile-ts', 'configurations' ], () => {
 	console.log('Typescript Project transpiled ...');
 });
 
-gulp.task('procfile', ['server-production' ], () => {
+gulp.task('procfile', [ 'server-production' ], () => {
 	console.log('Starting for heroku procfile...');
 });
 
-gulp.task('test', 'launch tests', [ 'compile-test','configs' ], (cb) => {
-	const envs = env.set({
+gulp.task('test', 'launch tests', [ 'compile-test', 'configurations' ], (cb) => {
+	const envs = plugins.env.set({
 		NODE_ENV : 'test'
 	});
 
 	gulp.src([ 'build/test/**/*.js' ])
 		.pipe(envs)
-		.pipe(mocha())
+		.pipe(plugins.mocha())
 		.once('error', (error) => {
 			console.log(error);
 			process.exit(1);
@@ -146,60 +159,238 @@ gulp.task('test', 'launch tests', [ 'compile-test','configs' ], (cb) => {
 });
 
 
-function handleErrors() {
+function handleErrors(a) {
+	//console.log(a.message);
+	/*
 	var args = Array.prototype.slice.call(arguments);
-	console.log(args);return;
-	notify.onError({
+	plugins.notify.onError({
 		title : "Compile Error",
 		message : "<%= error.message %>"
 	}).apply(this, args);
+	*/
 	this.emit('end');
 }
 
-function buildScript(file, watch) {
-	var bundler =  browserify({
-		entries : [ 'build/src/' + file ],
-		cache : '/tmp/cache.browserify',
-		packageCache : {},
-	})
-	//.plugin(tsify, tsOptions/*{
-	//	noImplicitAny: true
-	//}*/);
+function bundleClient(file){
+	browserify()
+		.add('src/client/'+file+'.ts')
+		.plugin(tsify, { noImplicitAny: true })
+		.bundle()
+		.on('error', function (error) {
+			console.error(plugins.util.colors.red(error.toString()));
+		})
+		.pipe(sourceStream(file))
+		.pipe(plugins.rename(function(path) {
+			path.dirname = "client";
+			path.basename = file;
+			path.extname = ".js"
+			///console.log(path)
+			console.error(plugins.util.colors.yellow('Generate')+' '+plugins.util.colors.yellow(path.dirname+'/'+path.basename + path.extname));
+		}))
+		.pipe(gulp.dest('public/'));
 
-	browserifyInc(bundler, {
-		cacheFile: '/tmp/cache.browserify.json'
-	})
-
-	function rebundle() {
-		return bundler
-			.bundle()
-			.on('error', handleErrors)
-			.pipe(source(file))
-			.pipe(gulp.dest('public/'))
-			//.pipe(notify("Client build "))
-			;
-	}
-	bundler.on('update', function() {
-		rebundle();
-		console.log('Rebundle...');
-	});
-	return rebundle();
 }
 
 gulp.task('build-client', function() {
-	return buildScript('client/client.js', false);
+	return bundleClient('client');
 });
 
 gulp.task('build-client-worker', function() {
-	return buildScript('client/client-worker.js', false);
+	return bundleClient('client-worker');
 });
 
-gulp.task('watch-clients', [ 'build-client','build-client-worker' ], function() {
-	gulp.watch(['build/src/client/**/*.js','build/src/shared/**/*.js'], [ 'build-client' ,'build-client-worker' ]);
+gulp.task('build-clients', [ 'build-client', 'build-client-worker' ]);
+
+gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function() {
+	gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 })
 
-gulp.task('watch-ts', [ /*'lint-ts',*/'compile-ts', 'configs' ], function() {
-	gulp.watch('src/**/*.ts', [ /*'lint-ts',*/'compile-ts', 'configs' ]);
+gulp.task('watch-ts', [ /*'lint-ts',*/ 'compile-ts', 'configurations' ], function() {
+	gulp.watch([ 'src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'compile-ts', 'configurations' ]);
 });
 
 gulp.task('default', [ 'develop' ]);
+
+
+
+
+
+
+
+
+
+/*function buildScript() {
+//console.log(plugins.util.colors.yellow('Build script') + ' ' + plugins.util.colors.green(path + file + '.ts'));
+
+plugins.webpackTypescriptPipeline.registerBuildGulpTasks(_gulp,{
+	entryPoints: {
+		'client' : process.cwd()+'/src/client/client.ts',
+		'client-worker' : process.cwd()+'/src/client/client-worker.ts'
+	},
+	outputDir: process.cwd()+'/public/client'
+});
+}
+buildScript();
+*//*return gulp
+.src(file)
+.pipe(plugins.bro({
+	transform : [
+		tsifyTransform
+	]
+}))
+.pipe(plugins.rename(function(path) {
+	path.dirname = "client";
+	console.log(path.dirname + '/' + path.basename + path.extname);
+	console.log("Path " + plugins.util.colors.red("eeeee"));
+}))
+.pipe(gulp.dest('public/'))
+
+//.plugin(tsify, tsOptions);
+*/
+
+/*function buildScript3(file) {
+var _bundler = browserify({
+	cache : '/tmp/cache.browserify.'+file,
+})
+.add('src/client/' + file + '.ts')
+.plugin(tsify, tsOptions);
+
+browserifyInc(_bundler, {
+	cacheFile: '/tmp/cache.browserify.json'
+});
+
+_bundler.bundle()
+	.on('error', function(error) {
+		console.error(error.toString());
+	})
+	.pipe(source(file + '.js'))
+	.pipe(plugins.rename(function(path) {
+		path.dirname = "client";
+		console.log(plugins.util.colors.red(path.dirname + '/' + path.basename + path.extname));
+	}))
+	.pipe(gulp.dest('public/'))
+}
+*/
+/*function buildScript2() {
+console.log('buildscript');
+//var files=[ 'build/src/client/client.js','build/src/client/client-worker.js'];
+var files = [ 'src/client/client.ts', 'src/client/client-worker.ts' ];
+//.plugin(tsify, tsOptions/*{
+//	noImplicitAny: true
+//});
+
+var tasks = files.map(function(entry) {
+	var bundler = browserify({
+		entries : [ entry ],
+		cache : '/tmp/cache.browserify.' + entry,
+		packageCache : {},
+		debug : true
+	});
+
+	bundler.plugin(tsify, tsOptions);
+	/*bundler.on('update', function() {
+		rebundle();
+		console.log('Rebundle...');
+	//});*/
+/*browserifyIncremental(bundler, {
+cacheFile : '/tmp/cache.browserify.' + entry + '.json'
+//})* /
+
+return bundler
+.bundle()
+//.pipe(plumber({errorHandler: handleErrors}))
+.on('error', handleErrors)
+.pipe(source(entry))
+.pipe(plugins.rename(function(path) {
+	path.dirname = "client";
+	console.log(path);
+//path.basename += "-goodbye";
+//path.extname = ".md"
+}))
+.pipe(gulp.dest('public/'))
+.pipe(plugins.notify("Client build "));
+});
+return tasks;
+}*/
+/*
+function buildScript() {
+console.log('buildscript');
+//var files=[ 'build/src/client/client.js','build/src/client/client-worker.js'];
+var files = [ 'src/client/client.ts', 'src/client/client-worker.ts' ];
+
+var tasks = files.map(function(entry) {
+	var bundler = browserify({
+		entries : [ entry ],
+		cache : '/tmp/cache.browserify.' + entry,
+		packageCache : {},
+		debug : true
+	})
+	.plugin(tsify, tsOptions)
+	/*.on('update', function() {
+		rebundle();
+		console.log('Rebundle...');
+	})* /;
+	///*browserifyIncremental(bundler, {
+	//	cacheFile : '/tmp/cache.browserify.' + entry + '.json'
+	//}) * /
+
+	return bundler
+		.bundle()
+		//.pipe(plumber({errorHandler: handleErrors}))
+		.on('error', handleErrors)
+		.pipe(source(entry))
+		.pipe(plugins.rename(function(path) {
+			path.dirname = "client";
+			console.log(path);
+		//path.basename += "-goodbye";
+		//path.extname = ".md"
+		}))
+		.pipe(gulp.dest('public/'))
+		.pipe(plugins.notify("Client build "));
+});
+return tasks;
+}s
+*/
+/*
+var jsConfig = {
+	entrypoint: './src/client/'+file+'.ts',
+	bundleName: 'client.js',
+	bundleDir: './public/client'
+};
+
+var b = browserify({
+	cache: {},
+	packageCache: {},
+	debug: true,
+	entries: jsConfig.entrypoint
+});
+console.log('browserifyIncremental');
+browserifyIncremental(b, {
+	//poll: true,
+	cacheFile :'./browserify-cache.'+file+'json'// '/tmp/cache.browserify.' + file + '.json'
+});
+
+b
+.plugin(tsify)
+.on('update', function(){
+	console.log('update bundle');
+	bundle()	;
+})
+.on('log', function(data) {
+	console.log(data);
+});
+
+function bundle() {
+	console.log('Bundle '+file)
+	return b.bundle()
+		.on('error', handleErrors)
+		.pipe(sourceStream(jsConfig.bundleName))
+		.pipe(plugins.rename(function(path) {
+			console.log(path);
+		//path.basename += "-goodbye";
+		//path.extname = ".md"
+		}))
+		.pipe(gulp.dest(jsConfig.bundleDir));
+}
+return bundle();
+*/

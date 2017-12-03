@@ -1,15 +1,17 @@
+var config = require('../../config');
 var glm = require('gl-matrix'),
 	vec3 = glm.vec3,
 	vec4 = glm.vec4,
 	mat4 = glm.mat4,
 	quat = glm.quat;
 
-var config = require('../../../config');
 var randomName = require('sillyname');
+import {VoxelingClient} from './lib/voxeling-client';
+import {InputHandler} from './lib/client-input';
 var raycast = require('voxel-raycast');
 var WebGL = require('./lib/webgl');
 var Camera = require('./lib/camera');
-var InputHandler = require('./lib/client-input');
+//var InputHandler = require('./lib/client-input');
 var Lines = require('./lib/lines');
 var Shapes = require('./lib/shapes');
 var Textures = require('./lib/textures');
@@ -18,11 +20,11 @@ var Sky = require('./lib/sky');
 
 var Physics = require('./lib/physics');
 var Stats = require('./lib/stats');
-var VoxelingClient = require('./lib/client');
 var Coordinates = require('../shared/coordinates');
 var Voxels = require('./lib/voxels');
 var Game = require('./lib/game');
 var timer = require('./lib/timer');
+
 
 //var Meshing = require('../lib/meshers/non-blocked')
 var mesher = require('./lib/meshers/horizontal-merge');
@@ -32,9 +34,10 @@ var pool = require('./lib/object-pool');
 
 // other
 var trees = require('voxel-trees');
-
 var client = new VoxelingClient(config);
 
+
+console.log(1289);
 
 // UI DIALOG SETUP
 var fillMaterials = function(textures) {
@@ -51,7 +54,11 @@ var fillMaterials = function(textures) {
 		} else {
 			src = material.src;
 		}
-		html += '<div data-texturevalue="' + material.value + '"><img src="' + src + '" crossorigin="anonymous" />' + '<span>' + material.name + '</span></div>';
+		html += '<div data-texturevalue="'
+			+ material.value
+			+ '"><img src="' + src + '" crossorigin="anonymous" />'
+			+ '<span>' + material.name + '</span>'
+			+ '</div>';
 	}
 	container.innerHTML = html;
 };
@@ -139,6 +146,7 @@ client.on('ready', function() {
 		//lines.fill( Shapes.wire.cube([0,0,0], [1,1,1]) )
 		//lines.fill( Shapes.wire.mesh([-32,0,-32], 96, 96) )
 
+
 		var st = new Stats();
 		st.domElement.style.position = 'absolute';
 		st.domElement.style.bottom = '0px';
@@ -189,13 +197,14 @@ client.on('ready', function() {
 		webgl.start();
 
 		client.on('players', function(others) {
+			var id;
 			var ticksPerHalfSecond = 30;
 			var calculateAdjustments = function(output, current, wanted) {
 				for (var i = 0; i < output.length; i++) {
 					output[i] = (wanted[i] - current[i]) / ticksPerHalfSecond;
 				}
 			};
-			for (var id in others) {
+			for (id in others) {
 				var updatedPlayerInfo = others[id];
 				var player;
 				if (!('positions' in updatedPlayerInfo)) {
@@ -226,13 +235,12 @@ client.on('ready', function() {
 						updatedPlayerInfo.positions[5]
 					);
 				}
-
 				player.model.setTexture( textures.byName[updatedPlayerInfo.avatar] );
 			}
 			// Compare players to others, remove old players
 			var playerIds = Object.keys(players);
 			for (var i = 0; i < playerIds.length; i++) {
-				var id = playerIds[i];
+				id = playerIds[i];
 				if (!(id in others)) {
 					delete players[id];
 				}
@@ -317,7 +325,7 @@ client.on('ready', function() {
 			// Get name from input and store in localStorage
 			var element = document.getElementById('username');
 			var value = element.value.trim();
-			if (value.length == 0) {
+			if (value.length === 0) {
 				value = randomName();
 			}
 			localStorage.setItem('name', value);
@@ -418,10 +426,10 @@ client.on('ready', function() {
 				high[0] = Math.max(selectStart[0], currentNormalVoxel[0]);
 				high[1] = Math.max(selectStart[1], currentNormalVoxel[1]);
 				high[2] = Math.max(selectStart[2], currentNormalVoxel[2]);
-				if (currentMaterial == 305) {
-					function getRandomInt(min, max) {
+				if (currentMaterial === 305) {
+					var getRandomInt = function (min, max) {
 						return Math.floor(Math.random() * (max - min)) + min;
-					}
+					};
 					coordinates.lowToHighEach(
 						low,
 						high,
