@@ -2,9 +2,9 @@ import {VoxelStats} from '../voxel-stats';
 import {ChunkStore} from '../chunk-store';
 var mysql = require('mysql');
 var zlib = require('zlib');
-var lru = require('../lru');
+import {LRU} from '../lru';
 var log = require('../../../shared/log')('MysqlChunkStore', false);
-var cache = new lru(200);
+var cache = new LRU(200);
 
 var worldId = 1;
 

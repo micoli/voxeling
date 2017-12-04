@@ -3,10 +3,10 @@ var WebSocketEmitter = require('../../shared/web-socket-emitter');
 var uuid = require('hat');
 
 // voxel dependencies
-var Coordinates = require('../../shared/coordinates');
+import {Coordinates} from '../../shared/coordinates';
+import {LRU} from './lru';
 var encoder = require('./rle-encoder');
-var lru = require('./lru');
-var debug = false;
+var debug = true;
 
 function getRandomInt(min:number, max:number) {
 	return Math.floor(Math.random() * (max - min)) + min;
@@ -57,9 +57,9 @@ export class Server {
 		var self = this;
 		var clients = this.clients = {};
 		this.emitter = new EventEmitter();
-		this.coords = Coordinates(self.config.chunkSize);
+		this.coords = new Coordinates(self.config.chunkSize);
 
-		this.encodedChunkCache = new lru(10);
+		this.encodedChunkCache = new LRU(10);
 
 		// chunkId -> {clientIdA: true, clientIdB: true}
 		this.chunksForClients = {};

@@ -1,9 +1,9 @@
 import {VoxelStats} from '../voxel-stats';
 import {ChunkStore} from '../chunk-store';
-var fs = require('fs');
+import {LRU} from '../lru';
+
 var concur = require('../min-concurrent');
-var lru = require('../lru');
-var cache = new lru(200);
+var cache = new LRU(200);
 var debug = false;
 
 if (debug) {

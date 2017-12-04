@@ -1,239 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = {
-	chunkSize : 32,
-	drawDistance : 2,
-	removeDistance : 3,
-	initialPosition : [ 16.5, 25.5, 16.5 ],
-	worldRadius : 10,
-	chunkFolder : 'chunks/your-world/',
-	mysql : {
-		connectionLimit : 10,
-		user : 'root',
-		password : 'toor',
-		database : 'voxeling',
-		host : 'localhost'
-	},
-	server : 'ws://127.0.0.1:10005',
-	websocketBindAddress : '127.0.0.1',
-	websocketBindPort : 10005,
-	maxPlayers : 10,
-	textures : [{
-		value : 1,
-		name : 'grass+dirt',
-		sides : [
-			14,
-			302, 302, 302, 302,
-			3
-		]
-	},{
-		value : 14,
-		name : 'grass',
-		src : '/testbdcraft/default_grass.png'
-	},{
-		value : 17,
-		name : 'grass2',
-		src : '/testbdcraft/default_grass_footsteps.png'
-	},{
-		value : 3,
-		name : 'dirt',
-		src : '/testbdcraft/default_dirt.png'
-	},{
-		value : 302,
-		name : 'grass_dirt',
-		src : '/testbdcraft/default_grass_side.png',
-		hidden : true
-	},{
-		value : 2,
-		name : 'brick',
-		src : '/testbdcraft/default_brick.png'
-	},{
-		value : 9,
-		name : 'brick2',
-		src : '/testbdcraft/default_brick.png',
-		hidden : true
-	},{
-		value : 10,
-		name : 'brick3',
-		src : '/testbdcraft/default_brick.png',
-		hidden : true
-	},{
-		value : 4,
-		name : 'coal',
-		src : '/testbdcraft/default_mineral_coal.png'
-	},{
-		value : 13,
-		name : 'iron',
-		src : '/testbdcraft/default_mineral_iron.png'
-	},{
-		value : 19,
-		name : 'clay',
-		src : '/testbdcraft/default_clay.png'
-	},{
-		value : 18,
-		name : 'sandstone',
-		src : '/testbdcraft/default_sandstone.png'
-	},{
-		value : 11,
-		name : 'cobble',
-		src : '/testbdcraft/default_cobble.png'
-	},{
-		value : 12,
-		name : 'cobble2',
-		src : '/testbdcraft/default_cobble.png',
-		hidden : true
-	},{
-		value : 15,
-		name : 'moss cobble',
-		src : '/testbdcraft/default_mossycobble.png'
-	},{
-		value : 7,
-		name : 'lava',
-		src : '/testbdcraft/default_lava.png'
-	},{
-		value : 6,
-		name : 'water',
-		src : '/testbdcraft/default_water.png'
-	},{
-		value : 16,
-		name : 'ice',
-		src : '/textures/ice.png',
-		hidden : true
-	},{
-		value : 20,
-		name : 'snow',
-		src : '/textures/sparkly_snow.png',
-		hidden : true
-	},{
-		value : 8,
-		name : 'chest',
-		sides : [
-			300,
-			301, 301, 301, 301,
-			301
-		]
-	},{
-		value : 300,
-		name : 'chest top',
-		src : '/testbdcraft/default_chest_top.png',
-		hidden : true
-	},{
-		value : 301,
-		name : 'chest side',
-		src : '/testbdcraft/default_chest_side.png',
-		hidden : true
-	},{
-		value : 22,
-		name : 'wood',
-		src : '/testbdcraft/default_wood.png'
-	},{
-		value : 24,
-		name : 'tree',
-		sides : [
-			303,
-			304, 304, 304, 304,
-			303
-		]
-	},{
-		value : 303,
-		name : 'tree_top',
-		src : '/testbdcraft/default_tree_top.png',
-		hidden : true
-	},{
-		value : 304,
-		name : 'tree_side',
-		src : '/testbdcraft/default_tree.png',
-		hidden : true
-	},{
-		value : 100,
-		name : 'leaves',
-		src : '/testbdcraft/default_leaves.png'
-	},{
-		value : 305,
-		name : 'full-tree',
-		src : '/testbdcraft/default_tree.png',
-	},{
-		value : 27,
-		name : 'black wool',
-		src : '/testbdcraft/wool_black.png'
-	},{
-		value : 34,
-		name : 'grey wool',
-		src : '/testbdcraft/wool_grey.png'
-	},{
-		value : 32,
-		name : 'dk grey wool',
-		src : '/testbdcraft/wool_dark_grey.png'
-	},{
-		value : 29,
-		name : 'brown wool',
-		src : '/testbdcraft/wool_brown.png'
-	},{
-		value : 28,
-		name : 'blue wool',
-		src : '/testbdcraft/wool_blue.png'
-	},{
-		value : 30,
-		name : 'cyan wool',
-		src : '/testbdcraft/wool_cyan.png'
-	},{
-		value : 33,
-		name : 'green wool',
-		src : '/testbdcraft/wool_green.png'
-	},{
-		value : 31,
-		name : 'dk green wool',
-		src : '/testbdcraft/wool_dark_green.png'
-	},{
-		value : 35,
-		name : 'magenta wool',
-		src : '/testbdcraft/wool_magenta.png'
-	},{
-		value : 39,
-		name : 'violet wool',
-		src : '/testbdcraft/wool_violet.png'
-	},{
-		value : 37,
-		name : 'pink wool',
-		src : '/testbdcraft/wool_pink.png'
-	},{
-		value : 38,
-		name : 'red wool',
-		src : '/testbdcraft/wool_red.png'
-	},{
-		value : 21,
-		name : 'yellow wool',
-		src : '/testbdcraft/wool_yellow.png'
-	},{
-		value : 36,
-		name : 'orange wool',
-		src : '/testbdcraft/wool_orange.png'
-	},{
-		value : 5,
-		name : 'white wool',
-		src : '/testbdcraft/wool_white.png'
-	},{
-		value : 101,
-		name : 'glass',
-		src : '/textures/glass.png'
-	},{
-		value : 50,
-		name : 'player',
-		src : '/textures/player.png',
-		hidden : true
-	},{
-		value : 51,
-		name : 'substack',
-		src : '/textures/substack.png',
-		hidden : true
-	},{
-		value : 52,
-		name : 'viking',
-		src : '/textures/viking.png',
-		hidden : true
-	}]
-}
-
-},{}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -536,7 +301,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -581,10 +346,10 @@ function ws(uri, protocols, opts) {
 
 if (WebSocket) ws.prototype = WebSocket.prototype;
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var config = require('../../config');
+var config = require('../config');
 var WebSocketEmitter = require('../shared/web-socket-emitter');
 const coordinates_1 = require("../shared/coordinates");
 const textures_1 = require("./lib/textures");
@@ -1465,7 +1230,7 @@ class Worker {
 }
 */
 
-},{"../../config":1,"../shared/coordinates":14,"../shared/generators/client":17,"../shared/log":18,"../shared/web-socket-emitter":19,"./lib/frustum":5,"./lib/meshers/horizontal-merge":9,"./lib/object-pool":10,"./lib/rle-decoder":11,"./lib/textures":12,"./lib/timer":13}],5:[function(require,module,exports){
+},{"../config":13,"../shared/coordinates":14,"../shared/generators/client":17,"../shared/log":18,"../shared/web-socket-emitter":19,"./lib/frustum":4,"./lib/meshers/horizontal-merge":8,"./lib/object-pool":9,"./lib/rle-decoder":10,"./lib/textures":11,"./lib/timer":12}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('./gl-matrix'), vec3 = glm.vec3;
@@ -1608,7 +1373,7 @@ class Frustum {
 }
 exports.Frustum = Frustum;
 
-},{"./gl-matrix":6,"./lines":8,"./object-pool":10,"./timer":13}],6:[function(require,module,exports){
+},{"./gl-matrix":5,"./lines":7,"./object-pool":9,"./timer":12}],5:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -5175,7 +4940,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
     })(shim.exports);
 })(this);
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // maybe replace pool with a version that handles types of objects too
@@ -5218,7 +4983,7 @@ class Growable {
 }
 exports.Growable = Growable;
 
-},{"./object-pool":10}],8:[function(require,module,exports){
+},{"./object-pool":9}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /*
@@ -5328,7 +5093,7 @@ class Lines {
 }
 exports.Lines = Lines;
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // TODO: clean this up. fewer globals
 var Growable = require('../growable');
 // TODO: use object pool for vector arrays
@@ -5831,7 +5596,7 @@ module.exports = {
     }
 };
 
-},{"../growable":7,"../object-pool":10,"../timer":13}],10:[function(require,module,exports){
+},{"../growable":6,"../object-pool":9,"../timer":12}],9:[function(require,module,exports){
 var pool = {};
 // Don't really need to keep track of those I've allocated, do I?
 var bytes = 0;
@@ -5904,7 +5669,7 @@ module.exports = {
     }
 };
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // Decoder
 var decode = function (input, destination) {
     var out;
@@ -5932,7 +5697,7 @@ var decode = function (input, destination) {
 };
 module.exports = decode;
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Textures {
@@ -5996,7 +5761,7 @@ class Textures {
 }
 exports.Textures = Textures;
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var items = {};
 module.exports = {
     log: function (name, time) {
@@ -6027,6 +5792,289 @@ module.exports = {
             console.log(i, 'milliseconds', item);
         }
     }
+};
+
+},{}],13:[function(require,module,exports){
+module.exports = {
+    chunkSize: 32,
+    drawDistance: 2,
+    removeDistance: 3,
+    initialPosition: [16.5, 25.5, 16.5],
+    worldRadius: 10,
+    chunkFolder: 'chunks/test/',
+    mysql: {
+        connectionLimit: 10,
+        user: 'systemddl',
+        password: 'jeaupgqt1830',
+        database: 'voxeling',
+        host: '10.90.216.40'
+    },
+    server: 'ws://10.90.216.231:10005',
+    websocketBindAddress: '10.90.216.231',
+    websocketBindPort: 10005,
+    maxPlayers: 10,
+    textures: [
+        {
+            value: 1,
+            name: 'grass+dirt',
+            sides: [
+                14,
+                302, 302, 302, 302,
+                3
+            ]
+        },
+        {
+            value: 14,
+            name: 'grass',
+            src: '/testbdcraft/default_grass.png'
+        },
+        {
+            value: 17,
+            name: 'grass2',
+            src: '/testbdcraft/default_grass_footsteps.png'
+        },
+        {
+            value: 3,
+            name: 'dirt',
+            src: '/testbdcraft/default_dirt.png'
+        },
+        {
+            value: 302,
+            name: 'grass_dirt',
+            src: '/testbdcraft/default_grass_side.png',
+            hidden: true
+        },
+        {
+            value: 2,
+            name: 'brick',
+            src: '/testbdcraft/default_brick.png'
+        },
+        {
+            value: 9,
+            name: 'brick2',
+            src: '/testbdcraft/default_brick.png',
+            hidden: true
+        },
+        {
+            value: 10,
+            name: 'brick3',
+            src: '/testbdcraft/default_brick.png',
+            hidden: true
+        },
+        {
+            value: 4,
+            name: 'coal',
+            src: '/testbdcraft/default_mineral_coal.png'
+        },
+        {
+            value: 13,
+            name: 'iron',
+            src: '/testbdcraft/default_mineral_iron.png'
+        },
+        {
+            value: 19,
+            name: 'clay',
+            src: '/testbdcraft/default_clay.png'
+        },
+        {
+            value: 18,
+            name: 'sandstone',
+            src: '/testbdcraft/default_sandstone.png'
+        },
+        {
+            value: 11,
+            name: 'cobble',
+            src: '/testbdcraft/default_cobble.png'
+        },
+        {
+            value: 12,
+            name: 'cobble2',
+            src: '/testbdcraft/default_cobble.png',
+            hidden: true
+        },
+        {
+            value: 15,
+            name: 'moss cobble',
+            src: '/testbdcraft/default_mossycobble.png'
+        },
+        {
+            value: 7,
+            name: 'lava',
+            src: '/testbdcraft/default_lava.png'
+        },
+        {
+            value: 6,
+            name: 'water',
+            src: '/testbdcraft/default_water.png'
+        },
+        {
+            value: 16,
+            name: 'ice',
+            src: '/textures/ice.png',
+            hidden: true
+        },
+        {
+            value: 20,
+            name: 'snow',
+            src: '/textures/sparkly_snow.png',
+            hidden: true
+        },
+        {
+            value: 8,
+            name: 'chest',
+            sides: [
+                300,
+                301, 301, 301, 301,
+                301
+            ]
+        },
+        {
+            value: 300,
+            name: 'chest top',
+            src: '/testbdcraft/default_chest_top.png',
+            hidden: true
+        },
+        {
+            value: 301,
+            name: 'chest side',
+            src: '/testbdcraft/default_chest_side.png',
+            hidden: true
+        },
+        {
+            value: 22,
+            name: 'wood',
+            src: '/testbdcraft/default_wood.png'
+        },
+        {
+            value: 24,
+            name: 'tree',
+            sides: [
+                303,
+                304, 304, 304, 304,
+                303
+            ]
+        },
+        {
+            value: 303,
+            name: 'tree_top',
+            src: '/testbdcraft/default_tree_top.png',
+            hidden: true
+        },
+        {
+            value: 304,
+            name: 'tree_side',
+            src: '/testbdcraft/default_tree.png',
+            hidden: true
+        },
+        {
+            value: 100,
+            name: 'leaves',
+            src: '/testbdcraft/default_leaves.png'
+        },
+        {
+            value: 305,
+            name: 'full-tree',
+            src: '/testbdcraft/default_tree.png',
+        },
+        {
+            value: 27,
+            name: 'black wool',
+            src: '/testbdcraft/wool_black.png'
+        },
+        {
+            value: 34,
+            name: 'grey wool',
+            src: '/testbdcraft/wool_grey.png'
+        },
+        {
+            value: 32,
+            name: 'dk grey wool',
+            src: '/testbdcraft/wool_dark_grey.png'
+        },
+        {
+            value: 29,
+            name: 'brown wool',
+            src: '/testbdcraft/wool_brown.png'
+        },
+        {
+            value: 28,
+            name: 'blue wool',
+            src: '/testbdcraft/wool_blue.png'
+        },
+        {
+            value: 30,
+            name: 'cyan wool',
+            src: '/testbdcraft/wool_cyan.png'
+        },
+        {
+            value: 33,
+            name: 'green wool',
+            src: '/testbdcraft/wool_green.png'
+        },
+        {
+            value: 31,
+            name: 'dk green wool',
+            src: '/testbdcraft/wool_dark_green.png'
+        },
+        {
+            value: 35,
+            name: 'magenta wool',
+            src: '/testbdcraft/wool_magenta.png'
+        },
+        {
+            value: 39,
+            name: 'violet wool',
+            src: '/testbdcraft/wool_violet.png'
+        },
+        {
+            value: 37,
+            name: 'pink wool',
+            src: '/testbdcraft/wool_pink.png'
+        },
+        {
+            value: 38,
+            name: 'red wool',
+            src: '/testbdcraft/wool_red.png'
+        },
+        {
+            value: 21,
+            name: 'yellow wool',
+            src: '/testbdcraft/wool_yellow.png'
+        },
+        {
+            value: 36,
+            name: 'orange wool',
+            src: '/testbdcraft/wool_orange.png'
+        },
+        {
+            value: 5,
+            name: 'white wool',
+            src: '/testbdcraft/wool_white.png'
+        },
+        {
+            value: 101,
+            name: 'glass',
+            src: '/textures/glass.png'
+        },
+        {
+            value: 50,
+            name: 'player',
+            src: '/textures/player.png',
+            hidden: true
+        },
+        {
+            value: 51,
+            name: 'substack',
+            src: '/textures/substack.png',
+            hidden: true
+        },
+        {
+            value: 52,
+            name: 'viking',
+            src: '/textures/viking.png',
+            hidden: true
+        }
+    ]
 };
 
 },{}],14:[function(require,module,exports){
@@ -75374,4 +75422,4 @@ module.exports = {
     server: Server
 };
 
-},{"./log":18,"events":2,"ws":3}]},{},[4]);
+},{"./log":18,"events":1,"ws":2}]},{},[3]);

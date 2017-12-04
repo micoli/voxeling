@@ -326,6 +326,7 @@ export class Voxels {
 
 			// set which of the 32 handles we want this bound to
 			gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
+			console.log(this.textures.byValue[textureValue]);
 
 			// bind the texture to this handle
 			gl.uniform1i(this.shader.uniforms.texture, 0);

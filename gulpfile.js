@@ -50,12 +50,13 @@ gulp.task('lint-ts', () => {
 });
 
 gulp.task('build-server', 'typescript compile', function() {
-	var tsResult = gulp.src([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ])
+	//var tsResult = gulp.src('src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ])
+	var tsResult = gulp.src('src/**/*.ts')
 		.pipe(tsProject());
 
 	return merge([
 		tsResult.dts.pipe(gulp.dest(outDir+'definitions')),
-		tsResult.js.pipe(gulp.dest(outDir+'/src'))
+		tsResult.js.pipe(gulp.dest(outDir+'src'))
 	]);
 });
 
@@ -65,9 +66,9 @@ gulp.task('compile-test', function() {
 		.pipe(gulp.dest(outDir+'test/'))
 });
 
-gulp.task('develop', 'server developement tool', [ 'configurations', 'build-clients','build-server' ], function() {
-	//gulp.watch([ 'src/gameServer/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);
-	gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
+gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'configurations','build-server' ], function() {
+	gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
+	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
 		script : outDir+'src/server/index.js',
 		ext : 'ts json',
@@ -174,7 +175,10 @@ function handleErrors(a) {
 function bundleClient(file){
 	browserify()
 		.add('src/client/'+file+'.ts')
-		.plugin(tsify, { noImplicitAny: true })
+		.plugin(tsify, {
+			noImplicitAny: false,
+			suppressImplicitAnyIndexErrors: true
+		})
 		.bundle()
 		.on('error', function (error) {
 			console.log(plugins.util.colors.red(error.toString()));

@@ -4,7 +4,7 @@ import {FileChunkStore} from './lib/chunk-stores/file';
 import {MysqlChunkStore} from './lib/chunk-stores/mysql';
 var chunkGenerator = require('../shared/generators/server-terraced');
 import {VoxelStats} from './lib/voxel-stats';
-var config = require('../../../config');
+var config = require('../config');
 var debug = false;
 
 export class GameServer {

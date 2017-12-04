@@ -1,4 +1,4 @@
-var config = require('../../config');
+var config = require('../config');
 var glm = require('gl-matrix'),
 	vec3 = glm.vec3,
 	vec4 = glm.vec4,
@@ -45,6 +45,7 @@ var fillMaterials = function(textures: any) {
 	var html = '';
 	for (var i = 0; i < textures.textureArray.length; i++) {
 		var material = textures.textureArray[i];
+		console.log(material);
 		var src;
 		if ('hidden' in material && material.hidden) {
 			continue;
@@ -99,6 +100,7 @@ client.on('ready', function() {
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
 	webgl = new WebGL(canvas);
+	console.log(config.textures);
 	textures = new Textures(config.textures);
 
 	// Wait until textures have fully loaded

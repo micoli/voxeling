@@ -1,239 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = {
-	chunkSize : 32,
-	drawDistance : 2,
-	removeDistance : 3,
-	initialPosition : [ 16.5, 25.5, 16.5 ],
-	worldRadius : 10,
-	chunkFolder : 'chunks/your-world/',
-	mysql : {
-		connectionLimit : 10,
-		user : 'root',
-		password : 'toor',
-		database : 'voxeling',
-		host : 'localhost'
-	},
-	server : 'ws://127.0.0.1:10005',
-	websocketBindAddress : '127.0.0.1',
-	websocketBindPort : 10005,
-	maxPlayers : 10,
-	textures : [{
-		value : 1,
-		name : 'grass+dirt',
-		sides : [
-			14,
-			302, 302, 302, 302,
-			3
-		]
-	},{
-		value : 14,
-		name : 'grass',
-		src : '/testbdcraft/default_grass.png'
-	},{
-		value : 17,
-		name : 'grass2',
-		src : '/testbdcraft/default_grass_footsteps.png'
-	},{
-		value : 3,
-		name : 'dirt',
-		src : '/testbdcraft/default_dirt.png'
-	},{
-		value : 302,
-		name : 'grass_dirt',
-		src : '/testbdcraft/default_grass_side.png',
-		hidden : true
-	},{
-		value : 2,
-		name : 'brick',
-		src : '/testbdcraft/default_brick.png'
-	},{
-		value : 9,
-		name : 'brick2',
-		src : '/testbdcraft/default_brick.png',
-		hidden : true
-	},{
-		value : 10,
-		name : 'brick3',
-		src : '/testbdcraft/default_brick.png',
-		hidden : true
-	},{
-		value : 4,
-		name : 'coal',
-		src : '/testbdcraft/default_mineral_coal.png'
-	},{
-		value : 13,
-		name : 'iron',
-		src : '/testbdcraft/default_mineral_iron.png'
-	},{
-		value : 19,
-		name : 'clay',
-		src : '/testbdcraft/default_clay.png'
-	},{
-		value : 18,
-		name : 'sandstone',
-		src : '/testbdcraft/default_sandstone.png'
-	},{
-		value : 11,
-		name : 'cobble',
-		src : '/testbdcraft/default_cobble.png'
-	},{
-		value : 12,
-		name : 'cobble2',
-		src : '/testbdcraft/default_cobble.png',
-		hidden : true
-	},{
-		value : 15,
-		name : 'moss cobble',
-		src : '/testbdcraft/default_mossycobble.png'
-	},{
-		value : 7,
-		name : 'lava',
-		src : '/testbdcraft/default_lava.png'
-	},{
-		value : 6,
-		name : 'water',
-		src : '/testbdcraft/default_water.png'
-	},{
-		value : 16,
-		name : 'ice',
-		src : '/textures/ice.png',
-		hidden : true
-	},{
-		value : 20,
-		name : 'snow',
-		src : '/textures/sparkly_snow.png',
-		hidden : true
-	},{
-		value : 8,
-		name : 'chest',
-		sides : [
-			300,
-			301, 301, 301, 301,
-			301
-		]
-	},{
-		value : 300,
-		name : 'chest top',
-		src : '/testbdcraft/default_chest_top.png',
-		hidden : true
-	},{
-		value : 301,
-		name : 'chest side',
-		src : '/testbdcraft/default_chest_side.png',
-		hidden : true
-	},{
-		value : 22,
-		name : 'wood',
-		src : '/testbdcraft/default_wood.png'
-	},{
-		value : 24,
-		name : 'tree',
-		sides : [
-			303,
-			304, 304, 304, 304,
-			303
-		]
-	},{
-		value : 303,
-		name : 'tree_top',
-		src : '/testbdcraft/default_tree_top.png',
-		hidden : true
-	},{
-		value : 304,
-		name : 'tree_side',
-		src : '/testbdcraft/default_tree.png',
-		hidden : true
-	},{
-		value : 100,
-		name : 'leaves',
-		src : '/testbdcraft/default_leaves.png'
-	},{
-		value : 305,
-		name : 'full-tree',
-		src : '/testbdcraft/default_tree.png',
-	},{
-		value : 27,
-		name : 'black wool',
-		src : '/testbdcraft/wool_black.png'
-	},{
-		value : 34,
-		name : 'grey wool',
-		src : '/testbdcraft/wool_grey.png'
-	},{
-		value : 32,
-		name : 'dk grey wool',
-		src : '/testbdcraft/wool_dark_grey.png'
-	},{
-		value : 29,
-		name : 'brown wool',
-		src : '/testbdcraft/wool_brown.png'
-	},{
-		value : 28,
-		name : 'blue wool',
-		src : '/testbdcraft/wool_blue.png'
-	},{
-		value : 30,
-		name : 'cyan wool',
-		src : '/testbdcraft/wool_cyan.png'
-	},{
-		value : 33,
-		name : 'green wool',
-		src : '/testbdcraft/wool_green.png'
-	},{
-		value : 31,
-		name : 'dk green wool',
-		src : '/testbdcraft/wool_dark_green.png'
-	},{
-		value : 35,
-		name : 'magenta wool',
-		src : '/testbdcraft/wool_magenta.png'
-	},{
-		value : 39,
-		name : 'violet wool',
-		src : '/testbdcraft/wool_violet.png'
-	},{
-		value : 37,
-		name : 'pink wool',
-		src : '/testbdcraft/wool_pink.png'
-	},{
-		value : 38,
-		name : 'red wool',
-		src : '/testbdcraft/wool_red.png'
-	},{
-		value : 21,
-		name : 'yellow wool',
-		src : '/testbdcraft/wool_yellow.png'
-	},{
-		value : 36,
-		name : 'orange wool',
-		src : '/testbdcraft/wool_orange.png'
-	},{
-		value : 5,
-		name : 'white wool',
-		src : '/testbdcraft/wool_white.png'
-	},{
-		value : 101,
-		name : 'glass',
-		src : '/textures/glass.png'
-	},{
-		value : 50,
-		name : 'player',
-		src : '/textures/player.png',
-		hidden : true
-	},{
-		value : 51,
-		name : 'substack',
-		src : '/textures/substack.png',
-		hidden : true
-	},{
-		value : 52,
-		name : 'viking',
-		src : '/textures/viking.png',
-		hidden : true
-	}]
-}
-
-},{}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -536,7 +301,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -574,7 +339,7 @@ exports.quat = require("./gl-matrix/quat.js");
 exports.vec2 = require("./gl-matrix/vec2.js");
 exports.vec3 = require("./gl-matrix/vec3.js");
 exports.vec4 = require("./gl-matrix/vec4.js");
-},{"./gl-matrix/common.js":4,"./gl-matrix/mat2.js":5,"./gl-matrix/mat2d.js":6,"./gl-matrix/mat3.js":7,"./gl-matrix/mat4.js":8,"./gl-matrix/quat.js":9,"./gl-matrix/vec2.js":10,"./gl-matrix/vec3.js":11,"./gl-matrix/vec4.js":12}],4:[function(require,module,exports){
+},{"./gl-matrix/common.js":3,"./gl-matrix/mat2.js":4,"./gl-matrix/mat2d.js":5,"./gl-matrix/mat3.js":6,"./gl-matrix/mat4.js":7,"./gl-matrix/quat.js":8,"./gl-matrix/vec2.js":9,"./gl-matrix/vec3.js":10,"./gl-matrix/vec4.js":11}],3:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -628,7 +393,7 @@ glMatrix.toRadian = function(a){
 
 module.exports = glMatrix;
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -932,7 +697,7 @@ mat2.LDU = function (L, D, U, a) {
 
 module.exports = mat2;
 
-},{"./common.js":4}],6:[function(require,module,exports){
+},{"./common.js":3}],5:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1251,7 +1016,7 @@ mat2d.frob = function (a) {
 
 module.exports = mat2d;
 
-},{"./common.js":4}],7:[function(require,module,exports){
+},{"./common.js":3}],6:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1818,7 +1583,7 @@ mat3.frob = function (a) {
 
 module.exports = mat3;
 
-},{"./common.js":4}],8:[function(require,module,exports){
+},{"./common.js":3}],7:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -3103,7 +2868,7 @@ mat4.frob = function (a) {
 
 module.exports = mat4;
 
-},{"./common.js":4}],9:[function(require,module,exports){
+},{"./common.js":3}],8:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -3658,7 +3423,7 @@ quat.str = function (a) {
 
 module.exports = quat;
 
-},{"./common.js":4,"./mat3.js":7,"./vec3.js":11,"./vec4.js":12}],10:[function(require,module,exports){
+},{"./common.js":3,"./mat3.js":6,"./vec3.js":10,"./vec4.js":11}],9:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -4183,7 +3948,7 @@ vec2.str = function (a) {
 
 module.exports = vec2;
 
-},{"./common.js":4}],11:[function(require,module,exports){
+},{"./common.js":3}],10:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -4894,7 +4659,7 @@ vec3.str = function (a) {
 
 module.exports = vec3;
 
-},{"./common.js":4}],12:[function(require,module,exports){
+},{"./common.js":3}],11:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -5433,7 +5198,7 @@ vec4.str = function (a) {
 
 module.exports = vec4;
 
-},{"./common.js":4}],13:[function(require,module,exports){
+},{"./common.js":3}],12:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -5458,7 +5223,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var defaultPlayerName = 'Player Name';
 
 var adjectives = ["Black","White","Gray","Brown","Red","Pink","Crimson","Carnelian","Orange","Yellow","Ivory","Cream","Green","Viridian","Aquamarine","Cyan","Blue","Cerulean","Azure","Indigo","Navy","Violet","Purple","Lavender","Magenta","Rainbow","Iridescent","Spectrum","Prism","Bold","Vivid","Pale","Clear","Glass","Translucent","Misty","Dark","Light","Gold","Silver","Copper","Bronze","Steel","Iron","Brass","Mercury","Zinc","Chrome","Platinum","Titanium","Nickel","Lead","Pewter","Rust","Metal","Stone","Quartz","Granite","Marble","Alabaster","Agate","Jasper","Pebble","Pyrite","Crystal","Geode","Obsidian","Mica","Flint","Sand","Gravel","Boulder","Basalt","Ruby","Beryl","Scarlet","Citrine","Sulpher","Topaz","Amber","Emerald","Malachite","Jade","Abalone","Lapis","Sapphire","Diamond","Peridot","Gem","Jewel","Bevel","Coral","Jet","Ebony","Wood","Tree","Cherry","Maple","Cedar","Branch","Bramble","Rowan","Ash","Fir","Pine","Cactus","Alder","Grove","Forest","Jungle","Palm","Bush","Mulberry","Juniper","Vine","Ivy","Rose","Lily","Tulip","Daffodil","Honeysuckle","Fuschia","Hazel","Walnut","Almond","Lime","Lemon","Apple","Blossom","Bloom","Crocus","Rose","Buttercup","Dandelion","Iris","Carnation","Fern","Root","Branch","Leaf","Seed","Flower","Petal","Pollen","Orchid","Mangrove","Cypress","Sequoia","Sage","Heather","Snapdragon","Daisy","Mountain","Hill","Alpine","Chestnut","Valley","Glacier","Forest","Grove","Glen","Tree","Thorn","Stump","Desert","Canyon","Dune","Oasis","Mirage","Well","Spring","Meadow","Field","Prairie","Grass","Tundra","Island","Shore","Sand","Shell","Surf","Wave","Foam","Tide","Lake","River","Brook","Stream","Pool","Pond","Sun","Sprinkle","Shade","Shadow","Rain","Cloud","Storm","Hail","Snow","Sleet","Thunder","Lightning","Wind","Hurricane","Typhoon","Dawn","Sunrise","Morning","Noon","Twilight","Evening","Sunset","Midnight","Night","Sky","Star","Stellar","Comet","Nebula","Quasar","Solar","Lunar","Planet","Meteor","Sprout","Pear","Plum","Kiwi","Berry","Apricot","Peach","Mango","Pineapple","Coconut","Olive","Ginger","Root","Plain","Fancy","Stripe","Spot","Speckle","Spangle","Ring","Band","Blaze","Paint","Pinto","Shade","Tabby","Brindle","Patch","Calico","Checker","Dot","Pattern","Glitter","Glimmer","Shimmer","Dull","Dust","Dirt","Glaze","Scratch","Quick","Swift","Fast","Slow","Clever","Fire","Flicker","Flash","Spark","Ember","Coal","Flame","Chocolate","Vanilla","Sugar","Spice","Cake","Pie","Cookie","Candy","Caramel","Spiral","Round","Jelly","Square","Narrow","Long","Short","Small","Tiny","Big","Giant","Great","Atom","Peppermint","Mint","Butter","Fringe","Rag","Quilt","Truth","Lie","Holy","Curse","Noble","Sly","Brave","Shy","Lava","Foul","Leather","Fantasy","Keen","Luminous","Feather","Sticky","Gossamer","Cotton","Rattle","Silk","Satin","Cord","Denim","Flannel","Plaid","Wool","Linen","Silent","Flax","Weak","Valiant","Fierce","Gentle","Rhinestone","Splash","North","South","East","West","Summer","Winter","Autumn","Spring","Season","Equinox","Solstice","Paper","Motley","Torch","Ballistic","Rampant","Shag","Freckle","Wild","Free","Chain","Sheer","Crazy","Mad","Candle","Ribbon","Lace","Notch","Wax","Shine","Shallow","Deep","Bubble","Harvest","Fluff","Venom","Boom","Slash","Rune","Cold","Quill","Love","Hate","Garnet","Zircon","Power","Bone","Void","Horn","Glory","Cyber","Nova","Hot","Helix","Cosmic","Quark","Quiver","Holly","Clover","Polar","Regal","Ripple","Ebony","Wheat","Phantom","Dew","Chisel","Crack","Chatter","Laser","Foil","Tin","Clever","Treasure","Maze","Twisty","Curly","Fortune","Fate","Destiny","Cute","Slime","Ink","Disco","Plume","Time","Psychadelic","Relic","Fossil","Water","Savage","Ancient","Rapid","Road","Trail","Stitch","Button","Bow","Nimble","Zest","Sour","Bitter","Phase","Fan","Frill","Plump","Pickle","Mud","Puddle","Pond","River","Spring","Stream","Battle","Arrow","Plume","Roan","Pitch","Tar","Cat","Dog","Horse","Lizard","Bird","Fish","Saber","Scythe","Sharp","Soft","Razor","Neon","Dandy","Weed","Swamp","Marsh","Bog","Peat","Moor","Muck","Mire","Grave","Fair","Just","Brick","Puzzle","Skitter","Prong","Fork","Dent","Dour","Warp","Luck","Coffee","Split","Chip","Hollow","Heavy","Legend","Hickory","Mesquite","Nettle","Rogue","Charm","Prickle","Bead","Sponge","Whip","Bald","Frost","Fog","Oil","Veil","Cliff","Volcano","Rift","Maze","Proud","Dew","Mirror","Shard","Salt","Pepper","Honey","Thread","Bristle","Ripple","Glow","Zenith"];
@@ -5485,7 +5250,7 @@ module.exports = generateStupidName;
 module.exports.randomNoun = randomNoun;
 module.exports.randomAdjective = randomAdjective;
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict"
 
 function traceRay_impl(
@@ -5707,7 +5472,7 @@ function traceRay(voxels, origin, direction, max_d, hit_pos, hit_norm, EPSILON) 
 }
 
 module.exports = traceRay
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function (opts) {
     if (!opts) opts = {};
     if (opts.bark === undefined) opts.bark = 1;
@@ -5916,10 +5681,10 @@ function applyRules(axiom, rules) {
     return axiom.replace(regexRules(rules), matchRule);
 }
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var config = require('../../config');
+var config = require('../config');
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var chunkSize = config.chunkSize;
 console.log('ChunkSize', chunkSize);
@@ -5955,6 +5720,7 @@ var fillMaterials = function (textures) {
     var html = '';
     for (var i = 0; i < textures.textureArray.length; i++) {
         var material = textures.textureArray[i];
+        console.log(material);
         var src;
         if ('hidden' in material && material.hidden) {
             continue;
@@ -6006,6 +5772,7 @@ client.on('ready', function () {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
     webgl = new webgl_1.WebGL(canvas);
+    console.log(config.textures);
     textures = new textures_1.Textures(config.textures);
     // Wait until textures have fully loaded
     textures.load(webgl.gl, function () {
@@ -6405,7 +6172,7 @@ setInterval(function () {
     timer.print();
 }, 10000);
 
-},{"../../config":1,"../shared/coordinates":43,"./lib/camera":18,"./lib/client-input":19,"./lib/game":20,"./lib/lines":23,"./lib/meshers/horizontal-merge":24,"./lib/object-pool":29,"./lib/physics":30,"./lib/player":31,"./lib/shapes":34,"./lib/sky":36,"./lib/stats":37,"./lib/textures":38,"./lib/timer":39,"./lib/voxeling-client":40,"./lib/voxels":41,"./lib/webgl":42,"gl-matrix":3,"sillyname":14,"voxel-raycast":15,"voxel-trees":16}],18:[function(require,module,exports){
+},{"../config":42,"../shared/coordinates":43,"./lib/camera":17,"./lib/client-input":18,"./lib/game":19,"./lib/lines":22,"./lib/meshers/horizontal-merge":23,"./lib/object-pool":28,"./lib/physics":29,"./lib/player":30,"./lib/shapes":33,"./lib/sky":35,"./lib/stats":36,"./lib/textures":37,"./lib/timer":38,"./lib/voxeling-client":39,"./lib/voxels":40,"./lib/webgl":41,"gl-matrix":2,"sillyname":13,"voxel-raycast":14,"voxel-trees":15}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix');
@@ -6481,7 +6248,7 @@ class Camera extends movable_1.Movable {
 }
 exports.Camera = Camera;
 
-},{"./movable":28,"./scratch":33,"gl-matrix":3,"inherits":13}],19:[function(require,module,exports){
+},{"./movable":27,"./scratch":32,"gl-matrix":2,"inherits":12}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var EventEmitter = require('events').EventEmitter;
@@ -6954,7 +6721,7 @@ exports.InputHandler = InputHandler;
     }
  */
 
-},{"events":2}],20:[function(require,module,exports){
+},{"events":1}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -7055,7 +6822,7 @@ class Game {
 }
 exports.Game = Game;
 
-},{"../../shared/log":45,"../lib/object-pool":29,"gl-matrix":3}],21:[function(require,module,exports){
+},{"../../shared/log":45,"../lib/object-pool":28,"gl-matrix":2}],20:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -10622,7 +10389,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
     })(shim.exports);
 })(this);
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // maybe replace pool with a version that handles types of objects too
@@ -10665,7 +10432,7 @@ class Growable {
 }
 exports.Growable = Growable;
 
-},{"./object-pool":29}],23:[function(require,module,exports){
+},{"./object-pool":28}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /*
@@ -10775,7 +10542,7 @@ class Lines {
 }
 exports.Lines = Lines;
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // TODO: clean this up. fewer globals
 var Growable = require('../growable');
 // TODO: use object pool for vector arrays
@@ -11278,7 +11045,7 @@ module.exports = {
     }
 };
 
-},{"../growable":22,"../object-pool":29,"../timer":39}],25:[function(require,module,exports){
+},{"../growable":21,"../object-pool":28,"../timer":38}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -11386,7 +11153,7 @@ class Model {
 }
 exports.Model = Model;
 
-},{"./scratch":33,"gl-matrix":3}],26:[function(require,module,exports){
+},{"./scratch":32,"gl-matrix":2}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -11486,7 +11253,7 @@ class Model2 {
 }
 exports.Model2 = Model2;
 
-},{"./scratch":33,"gl-matrix":3}],27:[function(require,module,exports){
+},{"./scratch":32,"gl-matrix":2}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('../gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -11579,7 +11346,7 @@ class Sun {
 }
 exports.Sun = Sun;
 
-},{"../gl-matrix":21,"../model2":26,"../scene-graph":32,"../scratch":33,"../shapes2":35}],28:[function(require,module,exports){
+},{"../gl-matrix":20,"../model2":25,"../scene-graph":31,"../scratch":32,"../shapes2":34}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix');
@@ -11787,7 +11554,7 @@ class Movable {
 }
 exports.Movable = Movable;
 
-},{"gl-matrix":3}],29:[function(require,module,exports){
+},{"gl-matrix":2}],28:[function(require,module,exports){
 var pool = {};
 // Don't really need to keep track of those I've allocated, do I?
 var bytes = 0;
@@ -11860,7 +11627,7 @@ module.exports = {
     }
 };
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -12071,7 +11838,7 @@ class Physics {
 }
 exports.Physics = Physics;
 
-},{"gl-matrix":3,"voxel-raycast":15}],31:[function(require,module,exports){
+},{"gl-matrix":2,"voxel-raycast":14}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -12229,7 +11996,7 @@ class Player extends movable_1.Movable {
 }
 exports.Player = Player;
 
-},{"./model":25,"./movable":28,"./shapes":34,"gl-matrix":3,"inherits":13}],32:[function(require,module,exports){
+},{"./model":24,"./movable":27,"./shapes":33,"gl-matrix":2,"inherits":12}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -12283,7 +12050,7 @@ class Node {
 }
 exports.Node = Node;
 
-},{"gl-matrix":3}],33:[function(require,module,exports){
+},{"gl-matrix":2}],32:[function(require,module,exports){
 var glm = require('gl-matrix');
 // place to house commonly used matrices and vectors
 module.exports = {
@@ -12300,7 +12067,7 @@ module.exports = {
     vec3_0: glm.vec3.create()
 };
 
-},{"gl-matrix":3}],34:[function(require,module,exports){
+},{"gl-matrix":2}],33:[function(require,module,exports){
 var glm = require('gl-matrix'), mat4 = glm.mat4, vec3 = glm.vec3;
 // NOTE: clean up indentation. uglify-js does lots of compressing.
 // Return points for WebGL use
@@ -12637,7 +12404,7 @@ module.exports = {
     }
 };
 
-},{"gl-matrix":3}],35:[function(require,module,exports){
+},{"gl-matrix":2}],34:[function(require,module,exports){
 var glm = require('gl-matrix'), mat4 = glm.mat4, vec3 = glm.vec3;
 // NOTE: clean up indentation. uglify-js does lots of compressing.
 // Return points for WebGL use
@@ -12888,7 +12655,7 @@ module.exports = {
     }
 };
 
-},{"gl-matrix":3}],36:[function(require,module,exports){
+},{"gl-matrix":2}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
@@ -13036,7 +12803,7 @@ class Weather {
 }
 exports.Weather = Weather;
 
-},{"./models/sun":27,"./scratch":33,"gl-matrix":3}],37:[function(require,module,exports){
+},{"./models/sun":26,"./scratch":32,"gl-matrix":2}],36:[function(require,module,exports){
 /**
  * @author mrdoob / http://mrdoob.com/
  */
@@ -13139,7 +12906,7 @@ var Stats = function () {
 };
 module.exports = Stats;
 
-},{}],38:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Textures {
@@ -13203,7 +12970,7 @@ class Textures {
 }
 exports.Textures = Textures;
 
-},{}],39:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var items = {};
 module.exports = {
     log: function (name, time) {
@@ -13236,7 +13003,7 @@ module.exports = {
     }
 };
 
-},{}],40:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var EventEmitter = require('events').EventEmitter;
@@ -13359,7 +13126,7 @@ class VoxelingClient {
 }
 exports.VoxelingClient = VoxelingClient;
 
-},{"../../shared/log":45,"./object-pool":29,"events":2}],41:[function(require,module,exports){
+},{"../../shared/log":45,"./object-pool":28,"events":1}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /*
@@ -13639,6 +13406,7 @@ class Voxels {
             gl.activeTexture(gl.TEXTURE0);
             // set which of the 32 handles we want this bound to
             gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
+            console.log(this.textures.byValue[textureValue]);
             // bind the texture to this handle
             gl.uniform1i(this.shader.uniforms.texture, 0);
             gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.position);
@@ -13694,7 +13462,7 @@ class Voxels {
 }
 exports.Voxels = Voxels;
 
-},{"./timer":39}],42:[function(require,module,exports){
+},{"./timer":38}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var createShader = function (gl, vertexShaderCode, fragmentShaderCode, attributes, uniforms) {
@@ -13879,6 +13647,289 @@ class WebGL {
     }
 }
 exports.WebGL = WebGL;
+
+},{}],42:[function(require,module,exports){
+module.exports = {
+    chunkSize: 32,
+    drawDistance: 2,
+    removeDistance: 3,
+    initialPosition: [16.5, 25.5, 16.5],
+    worldRadius: 10,
+    chunkFolder: 'chunks/test/',
+    mysql: {
+        connectionLimit: 10,
+        user: 'systemddl',
+        password: 'jeaupgqt1830',
+        database: 'voxeling',
+        host: '10.90.216.40'
+    },
+    server: 'ws://10.90.216.231:10005',
+    websocketBindAddress: '10.90.216.231',
+    websocketBindPort: 10005,
+    maxPlayers: 10,
+    textures: [
+        {
+            value: 1,
+            name: 'grass+dirt',
+            sides: [
+                14,
+                302, 302, 302, 302,
+                3
+            ]
+        },
+        {
+            value: 14,
+            name: 'grass',
+            src: '/testbdcraft/default_grass.png'
+        },
+        {
+            value: 17,
+            name: 'grass2',
+            src: '/testbdcraft/default_grass_footsteps.png'
+        },
+        {
+            value: 3,
+            name: 'dirt',
+            src: '/testbdcraft/default_dirt.png'
+        },
+        {
+            value: 302,
+            name: 'grass_dirt',
+            src: '/testbdcraft/default_grass_side.png',
+            hidden: true
+        },
+        {
+            value: 2,
+            name: 'brick',
+            src: '/testbdcraft/default_brick.png'
+        },
+        {
+            value: 9,
+            name: 'brick2',
+            src: '/testbdcraft/default_brick.png',
+            hidden: true
+        },
+        {
+            value: 10,
+            name: 'brick3',
+            src: '/testbdcraft/default_brick.png',
+            hidden: true
+        },
+        {
+            value: 4,
+            name: 'coal',
+            src: '/testbdcraft/default_mineral_coal.png'
+        },
+        {
+            value: 13,
+            name: 'iron',
+            src: '/testbdcraft/default_mineral_iron.png'
+        },
+        {
+            value: 19,
+            name: 'clay',
+            src: '/testbdcraft/default_clay.png'
+        },
+        {
+            value: 18,
+            name: 'sandstone',
+            src: '/testbdcraft/default_sandstone.png'
+        },
+        {
+            value: 11,
+            name: 'cobble',
+            src: '/testbdcraft/default_cobble.png'
+        },
+        {
+            value: 12,
+            name: 'cobble2',
+            src: '/testbdcraft/default_cobble.png',
+            hidden: true
+        },
+        {
+            value: 15,
+            name: 'moss cobble',
+            src: '/testbdcraft/default_mossycobble.png'
+        },
+        {
+            value: 7,
+            name: 'lava',
+            src: '/testbdcraft/default_lava.png'
+        },
+        {
+            value: 6,
+            name: 'water',
+            src: '/testbdcraft/default_water.png'
+        },
+        {
+            value: 16,
+            name: 'ice',
+            src: '/textures/ice.png',
+            hidden: true
+        },
+        {
+            value: 20,
+            name: 'snow',
+            src: '/textures/sparkly_snow.png',
+            hidden: true
+        },
+        {
+            value: 8,
+            name: 'chest',
+            sides: [
+                300,
+                301, 301, 301, 301,
+                301
+            ]
+        },
+        {
+            value: 300,
+            name: 'chest top',
+            src: '/testbdcraft/default_chest_top.png',
+            hidden: true
+        },
+        {
+            value: 301,
+            name: 'chest side',
+            src: '/testbdcraft/default_chest_side.png',
+            hidden: true
+        },
+        {
+            value: 22,
+            name: 'wood',
+            src: '/testbdcraft/default_wood.png'
+        },
+        {
+            value: 24,
+            name: 'tree',
+            sides: [
+                303,
+                304, 304, 304, 304,
+                303
+            ]
+        },
+        {
+            value: 303,
+            name: 'tree_top',
+            src: '/testbdcraft/default_tree_top.png',
+            hidden: true
+        },
+        {
+            value: 304,
+            name: 'tree_side',
+            src: '/testbdcraft/default_tree.png',
+            hidden: true
+        },
+        {
+            value: 100,
+            name: 'leaves',
+            src: '/testbdcraft/default_leaves.png'
+        },
+        {
+            value: 305,
+            name: 'full-tree',
+            src: '/testbdcraft/default_tree.png',
+        },
+        {
+            value: 27,
+            name: 'black wool',
+            src: '/testbdcraft/wool_black.png'
+        },
+        {
+            value: 34,
+            name: 'grey wool',
+            src: '/testbdcraft/wool_grey.png'
+        },
+        {
+            value: 32,
+            name: 'dk grey wool',
+            src: '/testbdcraft/wool_dark_grey.png'
+        },
+        {
+            value: 29,
+            name: 'brown wool',
+            src: '/testbdcraft/wool_brown.png'
+        },
+        {
+            value: 28,
+            name: 'blue wool',
+            src: '/testbdcraft/wool_blue.png'
+        },
+        {
+            value: 30,
+            name: 'cyan wool',
+            src: '/testbdcraft/wool_cyan.png'
+        },
+        {
+            value: 33,
+            name: 'green wool',
+            src: '/testbdcraft/wool_green.png'
+        },
+        {
+            value: 31,
+            name: 'dk green wool',
+            src: '/testbdcraft/wool_dark_green.png'
+        },
+        {
+            value: 35,
+            name: 'magenta wool',
+            src: '/testbdcraft/wool_magenta.png'
+        },
+        {
+            value: 39,
+            name: 'violet wool',
+            src: '/testbdcraft/wool_violet.png'
+        },
+        {
+            value: 37,
+            name: 'pink wool',
+            src: '/testbdcraft/wool_pink.png'
+        },
+        {
+            value: 38,
+            name: 'red wool',
+            src: '/testbdcraft/wool_red.png'
+        },
+        {
+            value: 21,
+            name: 'yellow wool',
+            src: '/testbdcraft/wool_yellow.png'
+        },
+        {
+            value: 36,
+            name: 'orange wool',
+            src: '/testbdcraft/wool_orange.png'
+        },
+        {
+            value: 5,
+            name: 'white wool',
+            src: '/testbdcraft/wool_white.png'
+        },
+        {
+            value: 101,
+            name: 'glass',
+            src: '/textures/glass.png'
+        },
+        {
+            value: 50,
+            name: 'player',
+            src: '/textures/player.png',
+            hidden: true
+        },
+        {
+            value: 51,
+            name: 'substack',
+            src: '/textures/substack.png',
+            hidden: true
+        },
+        {
+            value: 52,
+            name: 'viking',
+            src: '/textures/viking.png',
+            hidden: true
+        }
+    ]
+};
 
 },{}],43:[function(require,module,exports){
 "use strict";
@@ -82940,4 +82991,4 @@ module.exports = function (moduleName, enabled) {
     };
 };
 
-},{}]},{},[17]);
+},{}]},{},[16]);
