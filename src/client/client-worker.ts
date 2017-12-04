@@ -12,7 +12,7 @@ var timer = require('./lib/timer');
 var log = require('../shared/log')('client-worker');
 
 var chunkArrayLength = config.chunkSize * config.chunkSize * config.chunkSize;
-var chunkCache = {};
+var chunkCache:any = {};
 var debug = false;
 
 /*
@@ -54,7 +54,7 @@ interface IWorker {
 }
 
 
-var worker = {
+var worker:any = {
 	coordinates: null,
 	connected: false,
 	connection: null,
@@ -191,14 +191,14 @@ var worker = {
 		log('regionChange: playerPosition is', playerPosition);
 
 		// These help us remove voxels and meshes we no longer need
-		var nearbyVoxels = {};
+		var nearbyVoxels:any = {};
 		// We tell our web worker about these, so it knows what to fetch and return
 		var onlyTheseVoxels: any[] = [];
 		var missingVoxels: any[] = [];
 		var i: number;
 
 		// Helps us ignore chunks we don't care about, and also prioritize re-drawing nearby chunks
-		var chunkDistances = {};
+		var chunkDistances:any = {};
 		var len = drawDistance * 3;
 		var priority = new Array(len);
 		for (i = 0; i < len; i++) {
@@ -370,7 +370,7 @@ var worker = {
 			let chunk = chunkCache[chunkId];
 			var mesh = mesher.mesh(chunk.position, chunk.voxels);
 
-			var transfer = {};
+			var transfer:any = {};
 			var transferList = [];
 
 			for (var textureValue in mesh) {
@@ -485,12 +485,12 @@ var worker = {
 
 onmessage = function(e: any) {
 	var message = e.data;
-	var type = message.shift();
+	var _type = message.shift();
 
-	if (type in worker) {
-		worker[type].apply(worker, message);
+	if (_type in worker) {
+		worker[_type].apply(worker, message);
 	} else {
-		log('Worker does not have handler for ' + type, message);
+		log('Worker does not have handler for ' + _type, message);
 	}
 
 };
