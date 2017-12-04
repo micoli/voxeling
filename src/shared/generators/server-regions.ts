@@ -2,7 +2,7 @@ import {Generator} from '../generator';
 
 var fs = require('fs');
 var noise = require('perlin').noise;
-var debug = true;
+var debug = false;
 
 export class ServerRegionsGenerator extends Generator {
 	chunkFolder: string;

@@ -1,14 +1,14 @@
 import {Growable} from '../growable';
 
-var Coordinator;
+var Coordinator : any;
 
 var chunkSize = 2;
 
 var voxelArraySize = chunkSize * chunkSize * chunkSize;
 
-var debug = true;
+var debug = false;
 
-var out = {};
+var out:any = {};
 
 var textureByValue: any;
 

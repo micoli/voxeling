@@ -7,7 +7,7 @@ export class Generator {
 	chunkSize: any;
 	constructor(chunkSize: any) {
 		if (!chunkSize) {
-			throw new Exception('voxel-generator: chunkSize is required');
+			throw 'Voxel-generator: chunkSize is required';
 		}
 
 		this.chunkSize = chunkSize;

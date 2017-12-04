@@ -12,7 +12,7 @@ export class Coordinates {
 	constructor(chunkSize:number) {
 		this.chunkSize = chunkSize || 32;
 
-		if (this.chunkSize & this.chunkSize - 1 !== 0) {
+		if ( (this.chunkSize & this.chunkSize - 1) !== 0) {
 			throw new Error('chunkSize must be a power of 2');
 		}
 		this.voxelMask = this.chunkSize - 1;

@@ -41,7 +41,7 @@ console.log(1289);
 
 // UI DIALOG SETUP
 var fillMaterials = function(textures: any) {
-	var container = document.getElementById('textureContainer');
+	var container = (<HTMLInputElement>document.getElementById('textureContainer'));
 	var html = '';
 	for (var i = 0; i < textures.textureArray.length; i++) {
 		var material = textures.textureArray[i];
@@ -92,7 +92,7 @@ client.on('close', function() {
 });
 
 client.on('ready', function() {
-	var canvas = document.getElementById('herewego');
+	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
 	var inputHandler = new InputHandler(document.body, canvas);
 	var webgl: any;
 	var textures: any;
@@ -100,7 +100,7 @@ client.on('ready', function() {
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
 	webgl = new WebGL(canvas);
-	console.log(config.textures);
+	//console.log(config.textures);
 	textures = new Textures(config.textures);
 
 	// Wait until textures have fully loaded
@@ -108,7 +108,7 @@ client.on('ready', function() {
 		// ready=false stops physics from running early
 		var ready = false;
 		var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
-		var players = {};
+		var players:any = {};
 		var sky = new Weather(webgl.gl, webgl.shaders.projectionViewPosition, textures, player);
 		var voxels = client.voxels = new Voxels(
 			webgl.gl,
@@ -279,27 +279,26 @@ client.on('ready', function() {
 		});
 
 		inputHandler.on('to.start', function() {
-			var element;
 			var value;
 			document.getElementById('overlay').className = 'introduction';
 
 			// nickname
-			element = document.getElementById('username');
 			value = localStorage.getItem('name');
 			if (!value || value.length === 0 || value.trim().length === 0) {
 				value = randomName();
 				localStorage.setItem('name', value);
 			}
-			element.value = value;
+			(<HTMLInputElement>document.getElementById('username')).value = value;
 
 			// draw distance
-			element = document.getElementById('drawDistance');
 			value = parseInt(localStorage.getItem('drawDistance'));
 			if (!value) {
 				value = 2;
 				localStorage.setItem('drawDistance', '' + value);
 			}
-			element.value = value;
+			(<HTMLInputElement>document.getElementById('drawDistance')).value = '' + value;
+
+			//element.value = value;
 			config.drawDistance = value;
 			config.removeDistance = value + 1;
 		});
@@ -316,6 +315,7 @@ client.on('ready', function() {
 
 			client.regionChange();
 		});
+
 		inputHandler.on('avatar', function(avatar: any) {
 			client.avatar = avatar;
 			player.setTexture(textures.byName[avatar]);
@@ -326,7 +326,7 @@ client.on('ready', function() {
 			ready = true;
 
 			// Get name from input and store in localStorage
-			var element = document.getElementById('username');
+			var element = (<HTMLInputElement>document.getElementById('username'));
 			var value = element.value.trim();
 			if (value.length === 0) {
 				value = randomName();

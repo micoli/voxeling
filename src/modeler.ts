@@ -14,7 +14,7 @@ var pool = require('./lib/object-pool');
 
 //var mesh = require('./lib/player-mesh');
 
-var canvas = document.getElementById('herewego');
+var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
 var webgl;
 
 canvas.width = canvas.clientWidth;
@@ -56,7 +56,15 @@ var parts = [
 	Shapes.three.rectangle([-0.15, 1.1, -0.15], 0.3, 0.3, 0.3),
 ];
 
-var mesh = {
+interface IMesh  {
+	vertices: any [];
+	faces: any [];
+	texcoord: any;
+	rotation: any[];
+	scale: number;
+}
+
+var mesh:IMesh = {
 	vertices: [],
 	faces: [],
 	texcoord: null,

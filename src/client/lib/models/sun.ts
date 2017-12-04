@@ -1,4 +1,4 @@
-var glm = require('../gl-matrix'),
+var glm = require('gl-matrix'),
 	vec3 = glm.vec3,
 	vec4 = glm.vec4,
 	mat4 = glm.mat4,
@@ -21,7 +21,7 @@ export class Sun {
 		var uv;
 		var meshes = [];
 		var i;
-		var orbital;
+		var orbital: Model2;
 
 		this.sunRotation = 0;
 

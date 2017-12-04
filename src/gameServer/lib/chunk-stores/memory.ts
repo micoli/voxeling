@@ -3,7 +3,7 @@ import {ChunkStore} from '../chunk-store';
 
 // Stores chunks in an object, keyed by chunkID
 export class MemoryChunkStore extends ChunkStore {
-	chunkCache: {};
+	chunkCache: any = {};
 	constructor(generator: any) {
 		super(generator);
 		this.chunkCache = {};

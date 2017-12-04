@@ -43,21 +43,21 @@ export class VoxelingClient {
 	// Listen for certain events/data from the server
 	bindEvents() {
 		var self = this;
-		var messageHandlers = {
-			open: function() {
+		var messageHandlers: any = {
+			'open': function() {
 				self.connected = true;
 				log('Client.bindEvents: connection opened');
 				self.emitter.emit('open');
 			},
-			close: function() {
+			'close': function() {
 				self.connected = false;
 				log('Client.bindEvents: connection closed');
 				self.emitter.emit('close');
 			},
-			error: function(message: any) {
+			'error': function(message: any) {
 				log('Client.bindEvents.error: ' + message);
 			},
-			settings: function(settings: any, id: any) {
+			'settings': function(settings: any, id: any) {
 				// merge settings from server into those from the client side
 				// TODO: fix this for new engine setup
 				//self.settings = extend(self.settings, settings) // server settings squash client settings
@@ -72,28 +72,28 @@ export class VoxelingClient {
 				self.emitter.emit('ready');
 			},
 
-			chunkVoxels: function(chunk: any) {
+			'chunkVoxels': function(chunk: any) {
 				//console.log(chunk);
 				self.game.storeVoxels(chunk);
 			},
 			// Game no longer needs to hold this voxel data
-			nearbyChunks: function(chunks: any) {
+			'nearbyChunks': function(chunks: any) {
 				self.game.nearbyChunks(chunks);
 			},
 			// Chunk was re-meshed
-			chunkMesh: function(chunkID: any, mesh: any) {
+			'chunkMesh': function(chunkID: any, mesh: any) {
 				self.voxels.showMesh(chunkID, mesh);
 			},
-			meshesToShow: function(meshDistances: any) {
+			'meshesToShow': function(meshDistances: any) {
 				self.voxels.meshesToShow(meshDistances);
 			},
 
 			// Worker relays voxel changes from the server to us
-			chunkVoxelIndexValue: function(changes: any) {
+			'chunkVoxelIndexValue': function(changes: any) {
 				self.game.updateVoxelCache(changes);
 			},
 
-			chat: function(message: any) {
+			'chat': function(message: any) {
 				var messages = document.getElementById('messages');
 				var el = document.createElement('dt');
 				el.innerText = message.user;
@@ -105,7 +105,7 @@ export class VoxelingClient {
 			},
 
 			// Got batch of player position updates
-			players: function(players: any) {
+			'players': function(players: any) {
 				delete players[self.id];
 				self.emitter.emit('players', players);
 			}
@@ -113,8 +113,8 @@ export class VoxelingClient {
 
 		this.worker.onmessage = function(e: any) {
 			var message = e.data;
-			var type = message.shift();
-			messageHandlers[type].apply(self, message);
+			var _type = message.shift();
+			messageHandlers[_type].apply(self, message);
 		};
 	}
 
@@ -137,7 +137,7 @@ export class VoxelingClient {
 				return;
 			}
 			self.worker.postMessage(
-				['playerPosition', self.player.getPosition(), self.player.getYaw(), self.player.getPitch(), self.avatar ]
+				['playerPosition', self.player.getPosition(), self.player.getYaw(), self.player.getPitch(), self.avatar]
 			);
 		}, 1000 / 10);
 	}

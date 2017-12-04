@@ -35,7 +35,7 @@ export class Lines {
 	glBuffer: any;
 	gl: any;
 
-	constructor(gl: any, color: any) {
+	constructor(gl: any, color?: any) {
 		this.gl = gl;
 		this.glBuffer;
 		this.tuples = 0;

@@ -1,11 +1,11 @@
-var glm = require('./gl-matrix'),
+var glm = require('gl-matrix'),
 	vec3 = glm.vec3;
 var lines = require('./lines');
 var timer = require('./timer');
 var pool = require('./object-pool');
 
 export class Frustum {
-	satProjections: {};
+	satProjections:any = {};
 	points: any[];
 	coordinates: any[];
 	farWidth: number;

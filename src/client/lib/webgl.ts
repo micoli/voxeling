@@ -1,14 +1,19 @@
 
+interface IShader {
+	program: any;
+	attributes: any;
+	uniforms: any;
+}
+
 var createShader = function(gl: any, vertexShaderCode: any, fragmentShaderCode: any, attributes: any, uniforms: any) {
-	const tnull:any = null;
-	var out = {
-		program: tnull,
-		attributes: {},
-		uniforms: {}
-	};
 	var errmsg;
 	var name;
 	var i;
+	var out: IShader = {
+		program: null,
+		attributes: {},
+		uniforms: {}
+	};
 
 	// Set up shaders
 	var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);

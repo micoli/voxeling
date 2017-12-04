@@ -1,4 +1,4 @@
-var pool = {};
+var pool: any = {};
 
 // Don't really need to keep track of those I've allocated, do I?
 var bytes = 0;
@@ -22,7 +22,7 @@ var create = function(_type: any, size: any) {
 		case 'array':
 			return new Array(size);
 	}
-	throw new Exception('Unexpected type: ' + _type);
+	throw 'Unexpected type: ' + _type;
 };
 
 var getSize = function(_type: any, o: any) {
@@ -39,7 +39,7 @@ var getSize = function(_type: any, o: any) {
 module.exports = {
 	malloc: function(_type: any, size: any) {
 		var o;
-		var current;
+		var current:any = {};
 		mallocs++;
 		if (pool.hasOwnProperty(_type)) {
 			current = pool[_type];

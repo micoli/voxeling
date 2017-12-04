@@ -1,6 +1,6 @@
 export class Textures {
-	byValue: {};
-	byName: {};
+	byValue:any = {};
+	byName:any = {};
 	textureArray: any;
 	constructor(textureArray: any) {
 		this.textureArray = textureArray;

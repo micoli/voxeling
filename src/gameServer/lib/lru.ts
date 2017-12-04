@@ -7,10 +7,17 @@ Forked from https://github.com/chriso/lru
 * Re-worked some of the logic
 
 */
-var events = require('events');
+import {EventEmitter} from 'events';
 var util = require('util');
 
-export class LRU extends events.EventEmitter {
+export class LRU extends EventEmitter {
+	debug: boolean = false;
+	maxAge: any;
+	max: any;
+	length: number;
+	oldest: any;
+	newest: any;
+	cache: any = {};
 	constructor(opts: any) {
 		super();
 		if (!(this instanceof LRU)) {
@@ -27,7 +34,6 @@ export class LRU extends events.EventEmitter {
 		this.length = 0;
 		this.max = opts.max || 1000;
 		this.maxAge = opts.maxAge || 0;
-		this.debug = false;
 	}
 
 	remove(key: any) {
@@ -64,11 +70,11 @@ export class LRU extends events.EventEmitter {
 	}
 
 	peek(key: any) {
-		return this.cache.hasOwnProperty(key) ? this.cache[key].value : null
+		return this.cache.hasOwnProperty(key) ? this.cache[key].value : null;
 	}
 
 	set(key: any, value: any) {
-		var element;
+		var element: any = {};
 		if (this.cache.hasOwnProperty(key)) {
 			if (this.debug) {
 				console.log('Found ' + key + ' in LRU');

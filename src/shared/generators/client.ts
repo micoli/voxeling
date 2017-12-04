@@ -5,7 +5,7 @@ var debug = false;
 export class ClientGenerator extends Generator {
 	emitter: any;
 	chunksToGeneratePerPass: number;
-	chunksToRequest: {};
+	chunksToRequest:any = {};
 	constructor(cache: any, chunkSize: number) {
 		super(chunkSize);
 		this.chunksToRequest = {};

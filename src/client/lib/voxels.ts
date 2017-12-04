@@ -6,12 +6,12 @@ var debug = false;
 export class Voxels {
 	farPending: boolean;
 	farDistance: number;
-	meshDistances: {};
+	meshDistances: any = {};
 	nearPending: boolean;
-	farMeshes: {};
-	nearMeshes: {};
-	farBuffersByTexture: {};
-	nearBuffersByTexture: {};
+	farMeshes: any = {};
+	nearMeshes: any = {};
+	farBuffersByTexture: any = {};
+	nearBuffersByTexture: any = {};
 	releaseMeshCallback: any;
 	shader: any;
 	textures: any;
@@ -58,19 +58,19 @@ export class Voxels {
 
 	showMesh(chunkId: any, mesh: any) {
 		if (chunkId in this.meshDistances) {
-			var distance = this.meshDistances[ chunkId ];
+			var distance = this.meshDistances[chunkId];
 			if (distance < this.farDistance) {
-				this.nearMeshes[ chunkId ] = mesh;
+				this.nearMeshes[chunkId] = mesh;
 				this.nearPending = true;
 				if (chunkId in this.farMeshes) {
-					delete this.farMeshes[ chunkId ];
+					delete this.farMeshes[chunkId];
 					this.farPending = true;
 				}
 			} else {
-				this.farMeshes[ chunkId ] = mesh;
+				this.farMeshes[chunkId] = mesh;
 				this.farPending = true;
 				if (chunkId in this.nearMeshes) {
-					delete this.nearMeshes[ chunkId ];
+					delete this.nearMeshes[chunkId];
 					this.nearPending = true;
 				}
 			}
@@ -97,17 +97,17 @@ export class Voxels {
 			// meshDistances contains the meshes we want to draw
 			if (chunkId in meshDistances) {
 				// If it's no longer nearby, remove it from this.nearMeshes
-				if (meshDistances[ chunkId ] < this.farDistance) {
+				if (meshDistances[chunkId] < this.farDistance) {
 				} else {
-					self.farMeshes[ chunkId ] = self.nearMeshes[ chunkId ];
-					delete self.nearMeshes[ chunkId ];
+					self.farMeshes[chunkId] = self.nearMeshes[chunkId];
+					delete self.nearMeshes[chunkId];
 				}
 				continue;
 			}
 			// We're not drawing this mesh anymore
-			mesh = self.nearMeshes[ chunkId ];
+			mesh = self.nearMeshes[chunkId];
 			self.releaseMeshCallback(mesh);
-			delete self.nearMeshes[ chunkId ];
+			delete self.nearMeshes[chunkId];
 		}
 
 		chunkIds = Object.keys(self.farMeshes);
@@ -116,16 +116,16 @@ export class Voxels {
 			// meshDistances contains the meshes we want to draw
 			if (chunkId in meshDistances) {
 				// If it's nearby instead of far, remove it from this.farMeshes
-				if (meshDistances[ chunkId ] < this.farDistance) {
-					self.nearMeshes[ chunkId ] = self.farMeshes[ chunkId ];
-					delete self.farMeshes[ chunkId ];
+				if (meshDistances[chunkId] < this.farDistance) {
+					self.nearMeshes[chunkId] = self.farMeshes[chunkId];
+					delete self.farMeshes[chunkId];
 				}
 				continue;
 			}
 			// We're not drawing this mesh anymore
-			mesh = self.farMeshes[ chunkId ];
+			mesh = self.farMeshes[chunkId];
 			self.releaseMeshCallback(mesh);
-			delete self.farMeshes[ chunkId ];
+			delete self.farMeshes[chunkId];
 		}
 
 		// This that once we change regions we should re-fill all GL buffers
@@ -153,28 +153,28 @@ export class Voxels {
 		}
 
 		// Tally up the bytes we need to allocate for each texture's buffer tuple
-		var bytesByTexture = {};
+		var bytesByTexture: any = {};
 		// Queue up texture-specific data so we can push it into GL buffers later
-		var attributesByTexture = {};
+		var attributesByTexture: any = {};
 		for (var chunkId in currentMeshes) {
-			var mesh = currentMeshes[ chunkId ];
+			var mesh = currentMeshes[chunkId];
 			for (textureValue in mesh) {
 				attributes = mesh[textureValue];
 
 				if (textureValue in bytesByTexture) {
-					bytesByTexture[ textureValue ].position += attributes.position.offsetBytes;
-					bytesByTexture[ textureValue ].texcoord += attributes.texcoord.offsetBytes;
+					bytesByTexture[textureValue].position += attributes.position.offsetBytes;
+					bytesByTexture[textureValue].texcoord += attributes.texcoord.offsetBytes;
 					// Normal bytes is always same as position
 
-					attributesByTexture[ textureValue ].push(attributes);
+					attributesByTexture[textureValue].push(attributes);
 
 				} else {
-					bytesByTexture[ textureValue ] = {
+					bytesByTexture[textureValue] = {
 						position: attributes.position.offsetBytes,
 						texcoord: attributes.texcoord.offsetBytes
 					};
 
-					attributesByTexture[ textureValue ] = [
+					attributesByTexture[textureValue] = [
 						attributes
 					];
 				}
@@ -184,14 +184,14 @@ export class Voxels {
 		// Delete buffers we don't need right now
 		// Eventually maybe do something different
 		for (textureValue in currentBuffersByTexture) {
-			var bufferBundle = currentBuffersByTexture[ textureValue ];
+			var bufferBundle = currentBuffersByTexture[textureValue];
 			bufferBundle.tuples = 0;
 		}
 
 		// Create 3 GL buffers for each texture and allocate the necessary space
-		var buffersByTexture = {};
+		var buffersByTexture: any = {};
 		for (textureValue in bytesByTexture) {
-			var bytes = bytesByTexture[ textureValue ];
+			var bytes = bytesByTexture[textureValue];
 
 			var offsets = {
 				position: 0,
@@ -201,7 +201,7 @@ export class Voxels {
 			var buffers;
 			if (textureValue in currentBuffersByTexture) {
 				var newLength;
-				buffers = currentBuffersByTexture[ textureValue ];
+				buffers = currentBuffersByTexture[textureValue];
 				buffers.tuples = 0;
 				// Destroy and re-create as double if not large enough
 				if (buffers.positionBytes < bytes.position) {
@@ -253,7 +253,7 @@ export class Voxels {
 				gl.bufferData(gl.ARRAY_BUFFER, bytes.texcoord, gl.STATIC_DRAW);
 			}
 
-			var attributeQueue = attributesByTexture[ textureValue ];
+			var attributeQueue = attributesByTexture[textureValue];
 			for (var i = 0; i < attributeQueue.length; i++) {
 				attributes = attributeQueue[i];
 
@@ -276,7 +276,7 @@ export class Voxels {
 				buffers.tuples += attributes.position.tuples;
 			}
 
-			buffersByTexture[ textureValue ] =  buffers;
+			buffersByTexture[textureValue] = buffers;
 		}
 		// This will replace nearBuffersByTexture or farBuffersByTexture
 		if (near) {
@@ -302,7 +302,7 @@ export class Voxels {
 
 		for (textureValue in this.nearBuffersByTexture) {
 			textureValue = parseInt(textureValue);
-			bufferBundle = this.nearBuffersByTexture[ textureValue ];
+			bufferBundle = this.nearBuffersByTexture[textureValue];
 			if (bufferBundle.tuples === 0) {
 				continue;
 			}
@@ -347,7 +347,7 @@ export class Voxels {
 
 		for (textureValue in this.farBuffersByTexture) {
 			textureValue = parseInt(textureValue);
-			bufferBundle = this.farBuffersByTexture[ textureValue ];
+			bufferBundle = this.farBuffersByTexture[textureValue];
 			if (bufferBundle.tuples === 0) {
 				continue;
 			}

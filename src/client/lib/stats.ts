@@ -9,7 +9,7 @@ var Stats = function () {
 	var fps = 0, fpsMin = Infinity, fpsMax = 0;
 	var frames = 0, mode = 0;
 	var bar;
-	var container = document.createElement( 'div' );
+	var container:HTMLDivElement = (<HTMLDivElement>document.createElement( 'div' ));
 	container.id = 'stats';
 	container.addEventListener( 'mousedown', function ( event ) {
 		event.preventDefault(); setMode( ++ mode % 2 );

@@ -72,7 +72,7 @@ module.exports = {
 		}
 	},
 	// A flat triangle
-	triangle: function(offset: number) {
+	triangle: function(offset: any[]) {
 		var points = [0, 0, 0, 1, 0, 0, 1, 1, 0];
 		for (var i = 0; i < points.length; i += 3) {
 			points[i] += offset[0];
@@ -86,7 +86,7 @@ module.exports = {
 		};
 	},
 	// A flat square - two triangles
-	square: function(offset: number) {
+	square: function(offset: any[]) {
 		var points = [
 			0, 0, 0,
 			0, 1, 0,
@@ -109,7 +109,7 @@ module.exports = {
 	},
 	two: {
 		// start coordinates and end coordinates
-		rectangle: function(start: number, end: number) {
+		rectangle: function(start: any[], end: any[]) {
 			var points:any[] = [];
 			/*
 				0, 0, 0,

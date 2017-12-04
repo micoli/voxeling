@@ -10,10 +10,10 @@ var worldId = 1;
 
 export class MysqlChunkStore extends ChunkStore {
 	emitter: any;
-	requested: {};
 	mysqlPool: any;
-	changes: {};
-	toSave: {};
+	requested: any = {};
+	changes: any = {};
+	toSave: any = {};
 	constructor(generator: any, config: any) {
 		super(generator);
 		var self = this;

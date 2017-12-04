@@ -62,12 +62,12 @@ export class Game {
 		log('Game.regionChange: playerPosition is', playerPosition);
 
 		// These help us remove voxels and meshes we no longer need
-		var nearbyVoxels = {};
+		var nearbyVoxels:any = {};
 		// We tell our web worker about these, so it knows what to fetch and return
 		var onlyTheseVoxels:any[] = [];
 		var missingVoxels:any[] = [];
 
-		var meshHash = {};
+		var meshHash:any = {};
 		var len = self.config.drawDistance * 3;
 		var priority = new Array(len);
 		for (i = 0; i < len; i++) {

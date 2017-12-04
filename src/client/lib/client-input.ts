@@ -3,7 +3,7 @@ var debug = false;
 
 var mouseCallback = function(x: number, y: number) {};
 
-var codeMap = {
+var codeMap:any = {
 	// control
 	17: 'alt',
 	// shift
@@ -22,8 +22,7 @@ var codeMap = {
 	70: 'fly'
 };
 
-
-var states = {
+var states:any = {
 	start: {
 		to: function() {
 			if (debug) {
@@ -264,12 +263,12 @@ var states = {
 			if (debug) {
 				console.log('leaving chat state');
 			}
-			document.getElementById('chat').className = '';
-			document.getElementById('cmd').value = '';
+			(<HTMLInputElement>document.getElementById('chat')).className = '';
+			(<HTMLInputElement>document.getElementById('cmd')).value = '';
 		},
 		keyup: function(event: any) {
 			if (event.which === 13) {
-				var el = document.getElementById('cmd');
+				var el = (<HTMLInputElement>document.getElementById('cmd'));
 				if (document.activeElement === el) {
 					//unbind mouse would be nice
 					this.emitter.emit('chat', el.value);
@@ -295,7 +294,7 @@ var states = {
 	}
 };
 
-var controlStates = {
+var controlStates:any = {
 	select: false,
 	alt: false,
 	forward: 0,
@@ -322,7 +321,7 @@ const buttonPressed = function(b: any) {
 // movement handler.
 
 export class InputHandler {
-	boundStates: {};
+	boundStates:any = {};
 	state: {
 		select: boolean;
 		alt: boolean;

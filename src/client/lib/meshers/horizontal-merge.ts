@@ -12,8 +12,18 @@ var chunkSize: number = 2;
 var voxelArraySize: number = chunkSize * chunkSize * chunkSize;
 var tab: string = " ";
 var debug: boolean = false;
-var out = {};
+var out: any = {};
 var texturesByValue: any;
+
+interface IAdjacent {
+	[key:string]: any;
+	front?: any;
+	back?: any;
+	top?: any;
+	bottom?: any;
+	left?: any;
+	right?: any;
+}
 
 // helps us load a cube with more than 1 texture
 var addFace = function(basePosition: any, face: any, info: any) {
@@ -325,7 +335,7 @@ var shouldSkipFace = function(currentVoxelValue: any, opposingVoxelValue: any) {
 };
 
 var faceIndex = function(face: any) {
-	var map = {
+	var map : any = {
 		top: 0,
 		front: 1,
 		left: 2,
@@ -345,7 +355,7 @@ var calculate = function(basePosition: any, voxels: any) {
 	// Make position relative ... lower bound to 0 and adjust everything else
 	for (var y = 0; y < chunkSize; y++) {
 		// points to current start/end object for this face
-		var adjacent = {
+		var adjacent: IAdjacent = {
 			front: null,
 			back: null,
 			top: null,
@@ -432,12 +442,8 @@ var calculate = function(basePosition: any, voxels: any) {
 		} // end Z
 
 		adjacent = {
-			//front: null,
-			//back: null,
-			//top: null,
-			//bottom: null
 			left: null,
-            right: null
+			right: null
 		};
 		for (x = 0; x < chunkSize; x++) {
 			index = part + x;

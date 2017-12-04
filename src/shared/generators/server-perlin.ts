@@ -5,7 +5,7 @@ var noise = require('perlin').noise;
 
 
 
-var debug = true;
+var debug = false;
 
 function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min;

@@ -31,7 +31,7 @@ console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.g
 var outDir = 'build/';
 var tsOptions = {
 	declaration : true,
-	lib : [ "es2015" ],
+	lib : [ "es2015","DOM" ],
 	target : "es6",
 	module : "commonjs",
 	moduleResolution : "node",
@@ -39,6 +39,9 @@ var tsOptions = {
 	typeRoots : [ "node_modules/@types" ],
 	noImplicitAny : true
 };
+//"suppressImplicitAnyIndexErrors" : true,
+//"noImplicitAny": false
+
 const tsProject = plugins.typescript.createProject(tsOptions);
 
 gulp.task('lint-ts', () => {

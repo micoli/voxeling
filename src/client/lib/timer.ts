@@ -1,4 +1,4 @@
-var items = {};
+var items: any = {};
 
 module.exports = {
 	log: function(name: any, time: any) {

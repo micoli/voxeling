@@ -9,6 +9,7 @@ var log = require('../../shared/log')('lib/game', false);
 
 // miscellaneous state
 var previousTimeStamp = 0;
+
 export class Game {
 	regionChangeCallback: any;
 	currentVoxels: any;
@@ -77,7 +78,7 @@ export class Game {
 	/*
 	Modifies the chunkVoxelIndexValue data structure
 	*/
-	setBlock(x: number, y: number, z: number, value:any, chunkVoxelIndexValue:any, touching:any) {
+	setBlock(x: number, y: number, z: number, value:any, chunkVoxelIndexValue:any, touching?:any) {
 		var parts = this.coordinates.coordinatesToChunkAndVoxelIndex(x, y, z, touching);
 		var chunkID = parts[0];
 		var voxelIndex = parts[1];

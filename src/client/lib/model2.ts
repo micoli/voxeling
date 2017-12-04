@@ -20,6 +20,7 @@ export class Model2 {
 	meshes: any;
 	shader: any;
 	gl: any;
+	num : number;
 	constructor(gl: any, shader: any, meshes: any, tick: any) {
 		this.gl = gl;
 		this.shader = shader;

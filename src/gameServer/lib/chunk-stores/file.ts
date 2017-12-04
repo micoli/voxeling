@@ -1,7 +1,9 @@
+
 import {VoxelStats} from '../voxel-stats';
 import {ChunkStore} from '../chunk-store';
 import {LRU} from '../lru';
 
+var fs = require('fs');
 var concur = require('../min-concurrent');
 var cache = new LRU(200);
 var debug = false;
@@ -26,7 +28,7 @@ Note: with our current setup, there's a very small chance we could lose data due
 */
 
 export class FileChunkStore extends ChunkStore {
-	toSave: {};
+	toSave: any = {};
 	chunkFolder: any;
 
 	constructor(generator: any, chunkFolder: any) {

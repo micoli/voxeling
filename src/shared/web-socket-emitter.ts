@@ -91,7 +91,7 @@ class WebSocketEmitter {
 		log('emit');
 
 		if (!name) {
-			throw new Exception('name required');
+			throw 'Name required (emit)';
 		}
 
 		if (!this.webSocket) {

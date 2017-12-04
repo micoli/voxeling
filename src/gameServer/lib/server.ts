@@ -6,20 +6,33 @@ var uuid = require('hat');
 import {Coordinates} from '../../shared/coordinates';
 import {LRU} from './lru';
 var encoder = require('./rle-encoder');
-var debug = true;
+var debug = false;
 
-function getRandomInt(min:number, max:number) {
+function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min;
+}
+
+export interface IClient {
+	id: any;
+	lastSeen: number;
+	connected: boolean;
+	connection: any;
+	avatar: string;
+	position: any;
+	yaw: number;
+	pitch: number;
+	requestedChunks: any;
+	onlyTheseChunks: any[];
 }
 
 export class Server {
 	encodedChunkCache: any;
-	clients: {};
-	chunksForClients: {};
+	clients: any = {};
+	chunksForClients: any = {};
 	coords: any;
 	emitter: any;
 	lastWorldChunks: number[];
-	requestedChunks: {};
+	requestedChunks: any = {};
 	clientSettings: any;
 	serverSettings: any;
 	chunkStore: any;
@@ -110,11 +123,11 @@ export class Server {
 
 
 	// Setup the client connection - register events, etc
-	public connectClient (wseSocket: any) {
+	public connectClient(wseSocket: any) {
 		var self = this;
 		var tnull: any = null;
 		var id = wseSocket.id = uuid();
-		var client = self.clients[id] = {
+		var client: IClient = {
 			id: id,
 			// This gets updated when we get their position updates
 			// Server should remove stale clients
@@ -125,18 +138,18 @@ export class Server {
 			position: tnull,
 			yaw: 0,
 			pitch: 0,
-
 			requestedChunks: {},
 			// The chunk ids this client cares about
 			onlyTheseChunks: []
 		};
+		self.clients[id] = client;
 		// setup client response handlers
 		self.bindClientEvents(client);
 		// send client id and initial game settings
 		wseSocket.emit('settings', self.clientSettings, id);
 	}
 
-	public bindClientEvents (client: any) {
+	public bindClientEvents(client: any) {
 		var self = this;
 		var id = client.id;
 		var connection = client.connection;
@@ -157,13 +170,17 @@ export class Server {
 		// forward chat message
 		connection.on('chat', function(message: any) {
 			// ignore if no message provided
-			if (!message.text) { return; }
+			if (!message.text) {
+				return;
+			}
 			if (message.text.match(/script/i)) {
 				console.log('Found script tag in message. Dropping');
 				return;
 			}
 			// limit chat message length
-			if (message.text.length > 255) { message.text = message.text.substr(0, 140); }
+			if (message.text.length > 255) {
+				message.text = message.text.substr(0, 140);
+			}
 			self.broadcast(null, 'chat', message);
 			self.emitter.emit('chat', message);
 		});
@@ -191,7 +208,7 @@ export class Server {
 
 			// Re-broadcast this to the other players, too
 			for (var chunkID in changes) {
-				var chunkChanges = {};
+				var chunkChanges: any = {};
 				chunkChanges[chunkID] = changes[chunkID];
 
 				self.encodedChunkCache.remove(chunkID);
@@ -240,20 +257,20 @@ export class Server {
 					self.chunksForClients[chunkId] = {};
 				}
 				// Keep track of which client wants this chunk
-				self.chunksForClients[ chunkId ][ client.id ] = true;
+				self.chunksForClients[chunkId][client.id] = true;
 				self.chunkStore.get(chunkId);
 			}
 		});
 	}
 
 	// send message to all clients
-	public broadcast (id: any, event: any, data?: any) {
+	public broadcast(id: any, event: any, data?: any) {
 		var self = this;
 		// normalize arguments
 		var len = arguments.length;
 		var args = new Array(len);
 		// skip client `id` argument
-		for (var i = 0, j = 1; j < len; i++, j++) {
+		for (var i = 0, j = 1; j < len; i++ , j++) {
 			args[i] = arguments[j];
 		}
 		// emit on self for module consumers, unless specified not to
@@ -281,14 +298,14 @@ export class Server {
 
 
 	// broadcast position, rotation updates for each player
-	public sendPlayers () {
+	public sendPlayers() {
 		var self = this;
 		var clientIds = Object.keys(self.clients);
 		if (clientIds.length === 0) {
 			return;
 		}
 		//console.log('Sending updates for ' + clientIds.length + ' clients')
-		var players = {};
+		var players: any = {};
 
 		clientIds.map(function(id) {
 			var client = self.clients[id];
@@ -313,7 +330,7 @@ export class Server {
 	}
 
 
-	public requestNearbyChunks (position: any) {
+	public requestNearbyChunks(position: any) {
 		var self = this;
 		this.coords.nearbyChunkIDsEach(position, 2, function(chunkID: any) {
 			self.chunkStore.get(chunkID);
@@ -321,7 +338,7 @@ export class Server {
 	}
 
 
-	public sendChunk (chunk: any) {
+	public sendChunk(chunk: any) {
 		var self = this;
 		var chunkId = chunk.chunkID;
 		if (!(chunkId in this.chunksForClients)) {
@@ -376,7 +393,7 @@ export class Server {
 		}
 	}
 
-	public isChunkInBounds (chunkID: any) {
+	public isChunkInBounds(chunkID: any) {
 		var self = this;
 		var position = chunkID.split('|').map(function(value: any) {
 			return Number(value);
@@ -399,7 +416,7 @@ export class Server {
 		return true;
 	}
 
-	public on (name: any, callback: any) {
+	public on(name: any, callback: any) {
 		this.emitter.on(name, callback);
 	}
 }
