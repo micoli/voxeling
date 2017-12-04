@@ -5921,6 +5921,8 @@ function applyRules(axiom, rules) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var config = require('../../config');
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
+var chunkSize = config.chunkSize;
+console.log('ChunkSize', chunkSize);
 var randomName = require('sillyname');
 const voxeling_client_1 = require("./lib/voxeling-client");
 const client_input_1 = require("./lib/client-input");
@@ -5929,24 +5931,22 @@ const textures_1 = require("./lib/textures");
 const player_1 = require("./lib/player");
 const sky_1 = require("./lib/sky");
 const voxels_1 = require("./lib/voxels");
+//var Voxels = require('./lib/voxels');
 const camera_1 = require("./lib/camera");
 const game_1 = require("./lib/game");
 const lines_1 = require("./lib/lines");
 const physics_1 = require("./lib/physics");
 const coordinates_1 = require("../shared/coordinates");
+//var InputHandler = require('./lib/client-input');
+//var Meshing = require('../lib/meshers/non-blocked')
 var raycast = require('voxel-raycast');
 var Shapes = require('./lib/shapes');
-//var InputHandler = require('./lib/client-input');
 var Stats = require('./lib/stats');
 var timer = require('./lib/timer');
 var mesher = require('./lib/meshers/horizontal-merge');
 var pool = require('./lib/object-pool');
-//var Meshing = require('../lib/meshers/non-blocked')
-var chunkSize = config.chunkSize;
-console.log('chunkSize', chunkSize);
-var coordinates = new coordinates_1.Coordinates(chunkSize);
-// other
 var trees = require('voxel-trees');
+var coordinates = new coordinates_1.Coordinates(chunkSize);
 var client = new voxeling_client_1.VoxelingClient(config);
 console.log(1289);
 // UI DIALOG SETUP
@@ -6487,7 +6487,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var EventEmitter = require('events').EventEmitter;
 var debug = false;
 var mouseCallback = function (x, y) { };
-console.log('client-input');
 var codeMap = {
     // control
     17: 'alt',
@@ -11795,9 +11794,9 @@ var bytes = 0;
 var mallocs = 0;
 var news = 0;
 var frees = 0;
-var create = function (type, size) {
+var create = function (_type, size) {
     news++;
-    switch (type) {
+    switch (_type) {
         case 'float32':
             return new Float32Array(size);
         case 'uint8':
@@ -11806,10 +11805,10 @@ var create = function (type, size) {
         case 'array':
             return new Array(size);
     }
-    throw new Exception('Unexpected type: ' + type);
+    throw new Exception('Unexpected type: ' + _type);
 };
-var getSize = function (type, o) {
-    switch (type) {
+var getSize = function (_type, o) {
+    switch (_type) {
         case 'float32':
         case 'uint8':
         case 'array':
@@ -11819,16 +11818,16 @@ var getSize = function (type, o) {
     return 0;
 };
 module.exports = {
-    malloc: function (type, size) {
-        var current;
+    malloc: function (_type, size) {
         var o;
+        var current;
         mallocs++;
-        if (type in pool) {
-            current = pool[type];
+        if (pool.hasOwnProperty(_type)) {
+            current = pool[_type];
             // Any types of this size available?
             if (size in current && current[size].length > 0) {
                 o = current[size].pop();
-                bytes -= getSize(type, o);
+                bytes -= getSize(_type, o);
                 return o;
             }
             else {
@@ -11836,14 +11835,14 @@ module.exports = {
             }
         }
         else {
-            current = pool[type] = {};
+            current = pool[_type] = {};
             current[size] = [];
         }
-        return create(type, size);
+        return create(_type, size);
     },
-    free: function (type, o) {
-        var size = getSize(type, o);
-        pool[type][size].push(o);
+    free: function (_type, o) {
+        var size = getSize(_type, o);
+        pool[_type][size].push(o);
         bytes += size;
         frees++;
     },

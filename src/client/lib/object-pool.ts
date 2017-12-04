@@ -9,57 +9,57 @@ var news = 0;
 
 var frees = 0;
 
-var create = function(type, size) {
+var create = function(_type: any, size: any) {
 	news++;
-	switch (type) {
-	case 'float32':
-		return new Float32Array(size);
+	switch (_type) {
+		case 'float32':
+			return new Float32Array(size);
 
-	case 'uint8':
-		return new Uint8Array(size);
+		case 'uint8':
+			return new Uint8Array(size);
 
-	// Generic array of 3 elements
-	case 'array':
-		return new Array(size);
+		// Generic array of 3 elements
+		case 'array':
+			return new Array(size);
 	}
-	throw new Exception('Unexpected type: ' + type);
+	throw new Exception('Unexpected type: ' + _type);
 };
 
-var getSize = function(type, o) {
-	switch (type) {
-	case 'float32':
-	case 'uint8':
-	case 'array':
-		return o.length;
+var getSize = function(_type: any, o: any) {
+	switch (_type) {
+		case 'float32':
+		case 'uint8':
+		case 'array':
+			return o.length;
 	}
 	// unknown
 	return 0;
 };
 
 module.exports = {
-	malloc: function(type, size) {
-		var current;
+	malloc: function(_type: any, size: any) {
 		var o;
+		var current;
 		mallocs++;
-		if (type in pool) {
-			current = pool[type];
+		if (pool.hasOwnProperty(_type)) {
+			current = pool[_type];
 			// Any types of this size available?
 			if (size in current && current[size].length > 0) {
 				o = current[size].pop();
-				bytes -= getSize(type, o);
+				bytes -= getSize(_type, o);
 				return o;
 			} else {
 				current[size] = [];
 			}
 		} else {
-			current = pool[type] = {};
+			current = pool[_type] = {};
 			current[size] = [];
 		}
-		return create(type, size);
+		return create(_type, size);
 	},
-	free: function(type, o) {
-		var size = getSize(type, o);
-		pool[type][size].push(o);
+	free: function(_type: any, o: any) {
+		var size = getSize(_type, o);
+		pool[_type][size].push(o);
 		bytes += size;
 		frees++;
 	},

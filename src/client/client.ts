@@ -4,6 +4,8 @@ var glm = require('gl-matrix'),
 	vec4 = glm.vec4,
 	mat4 = glm.mat4,
 	quat = glm.quat;
+var chunkSize = config.chunkSize;
+console.log('ChunkSize', chunkSize);
 
 var randomName = require('sillyname');
 import {VoxelingClient} from './lib/voxeling-client';
@@ -13,27 +15,25 @@ import {Textures} from './lib/textures';
 import {Player} from './lib/player';
 import {Weather} from './lib/sky';
 import {Voxels} from './lib/voxels';
+//var Voxels = require('./lib/voxels');
 import {Camera} from './lib/camera';
 import {Game} from './lib/game';
 import {Lines} from './lib/lines';
 import {Physics} from './lib/physics';
 import {Coordinates} from '../shared/coordinates';
+//var InputHandler = require('./lib/client-input');
+//var Meshing = require('../lib/meshers/non-blocked')
 
 var raycast = require('voxel-raycast');
 var Shapes = require('./lib/shapes');
-//var InputHandler = require('./lib/client-input');
 var Stats = require('./lib/stats');
 var timer = require('./lib/timer');
 var mesher = require('./lib/meshers/horizontal-merge');
 var pool = require('./lib/object-pool');
-
-//var Meshing = require('../lib/meshers/non-blocked')
-var chunkSize = config.chunkSize;
-console.log('chunkSize', chunkSize);
-var coordinates = new Coordinates(chunkSize);
-
-// other
 var trees = require('voxel-trees');
+
+
+var coordinates = new Coordinates(chunkSize);
 var client = new VoxelingClient(config);
 
 

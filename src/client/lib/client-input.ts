@@ -2,7 +2,7 @@ var EventEmitter = require('events').EventEmitter;
 var debug = false;
 
 var mouseCallback = function(x: number, y: number) {};
-console.log('client-input');
+
 var codeMap = {
 	// control
 	17: 'alt',
