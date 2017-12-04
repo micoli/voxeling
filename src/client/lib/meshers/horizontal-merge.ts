@@ -1,6 +1,6 @@
 // TODO: clean this up. fewer globals
 
-var Growable = require('../growable');
+import {Growable} from '../growable';
 
 // TODO: use object pool for vector arrays
 var pool = require('../object-pool');
@@ -297,7 +297,7 @@ var isFaceBlocked = function(
 		return false;
 	}
 	var index = Coordinator.coordinatesToVoxelIndex(x, y, z);
-	let opposingVoxelValue = voxels[index];
+	var opposingVoxelValue = voxels[index];
 
 	return shouldSkipFace(currentVoxelValue, opposingVoxelValue);
 };
@@ -337,8 +337,7 @@ var faceIndex = function(face: any) {
 };
 
 var calculate = function(basePosition: any, voxels: any) {
-	var outside: number = -1;
-	var chunkSize: number = - 1;
+	var outside: number = chunkSize - 1;
 	var x: any;
 	var index: number;
 	var voxelTextureValue: any;
@@ -382,6 +381,7 @@ var calculate = function(basePosition: any, voxels: any) {
 					isBlocked = isFaceBlocked(basePosition, voxels, chunkSize, face, x, y, z, textureValue);
 					if (debug) {
 						console.log('face: ' + face);
+						//console.log('isBlocked', isBlocked, voxels, chunkSize, face, x, y, z, textureValue);
 					}
 					if (isBlocked) {
 						if (adjacent[face] != null) {
@@ -432,10 +432,12 @@ var calculate = function(basePosition: any, voxels: any) {
 		} // end Z
 
 		adjacent = {
-			front: null,
-			back: null,
-			top: null,
-			bottom: null
+			//front: null,
+			//back: null,
+			//top: null,
+			//bottom: null
+			left: null,
+            right: null
 		};
 		for (x = 0; x < chunkSize; x++) {
 			index = part + x;

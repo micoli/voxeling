@@ -70,6 +70,7 @@
 		"merge2": "^1.2.0",
 		"mocha": "^3.4.1",
 		"node": "0.0.0",
+		"node-notifier": "^5.1.2",
 		"plumber": "^0.4.8",
 		"reactify": "^1.1.1",
 		"sinon": "^2.2.0",

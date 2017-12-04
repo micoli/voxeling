@@ -1,4 +1,5 @@
 config.js
+src/config.ts
 chunks
 node_modules
 .tern-project

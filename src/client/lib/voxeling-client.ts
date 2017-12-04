@@ -73,6 +73,7 @@ export class VoxelingClient {
 			},
 
 			chunkVoxels: function(chunk: any) {
+				//console.log(chunk);
 				self.game.storeVoxels(chunk);
 			},
 			// Game no longer needs to hold this voxel data

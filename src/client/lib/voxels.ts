@@ -254,7 +254,7 @@ export class Voxels {
 			}
 
 			var attributeQueue = attributesByTexture[ textureValue ];
-			for (i = 0; i < attributeQueue.length; i++) {
+			for (var i = 0; i < attributeQueue.length; i++) {
 				attributes = attributeQueue[i];
 
 				var positions = new Float32Array(attributes.position.buffer, 0, attributes.position.offset);
@@ -326,7 +326,6 @@ export class Voxels {
 
 			// set which of the 32 handles we want this bound to
 			gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
-			console.log(this.textures.byValue[textureValue]);
 
 			// bind the texture to this handle
 			gl.uniform1i(this.shader.uniforms.texture, 0);

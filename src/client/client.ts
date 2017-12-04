@@ -45,7 +45,7 @@ var fillMaterials = function(textures: any) {
 	var html = '';
 	for (var i = 0; i < textures.textureArray.length; i++) {
 		var material = textures.textureArray[i];
-		console.log(material);
+		//console.log(material);
 		var src;
 		if ('hidden' in material && material.hidden) {
 			continue;

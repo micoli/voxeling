@@ -1,4 +1,4 @@
-var Growable = require('../growable');
+import {Growable} from '../growable';
 
 var Coordinator;
 

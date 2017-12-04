@@ -11,6 +11,8 @@ const gulp = require('gulp-help')(_gulp);
 const watchify = require('watchify');
 const sourceStream = require('vinyl-source-stream');
 const plugins = require('gulp-load-plugins')();
+//const notify = require("gulp-notify");
+const notifier = require('node-notifier');
 
 console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.green(Object.keys(plugins)));
 
@@ -24,7 +26,6 @@ console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.g
 //const env = require('gulp-env');
 //const connect = require('gulp-connect');
 //const rename = require('gulp-rename');
-//const notify = require("gulp-notify");
 
 
 var outDir = 'build/';
@@ -94,6 +95,7 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 		}
 	})
 	.once('start', () => {
+
 		console.log('start')
 	})
 	.on('restart', function() {
@@ -130,7 +132,7 @@ gulp.task('server-production', [ 'build' ], (cb) => {
 	})
 	.on('crash', function() {
 		console.log('Application has crashed!\n')
-		stream.emit('restart', 2)
+		//stream.emit('restart', 2)
 	});
 });
 
@@ -188,7 +190,8 @@ function bundleClient(file){
 			path.dirname = "client";
 			path.basename = file;
 			path.extname = ".js"
-			console.error(plugins.util.colors.yellow('Generate')+' '+plugins.util.colors.yellow(path.dirname+'/'+path.basename + path.extname));
+			console.log(plugins.util.colors.yellow('Generate')+' '+plugins.util.colors.yellow(path.dirname+'/'+path.basename + path.extname));
+			notifier.notify('Generated '+path.dirname+'/'+path.basename + path.extname);
 		}))
 		.pipe(gulp.dest('public/'));
 
