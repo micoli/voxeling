@@ -12,7 +12,7 @@ export class Frustum {
 	farHeight: number;
 	nearWidth: number;
 	nearHeight: number;
-	constructor(verticalFieldOfView, ratio, nearDistance, farDistance) {
+	constructor(verticalFieldOfView: any, ratio: any, nearDistance: number, farDistance: number) {
 		var self = this;
 
 		this.nearHeight = Math.tan(verticalFieldOfView / 2) * nearDistance;
@@ -89,7 +89,7 @@ export class Frustum {
 		this.satProjections = {};
 	}
 
-	update(position, rotationQuat) {
+	update(position: any, rotationQuat: any) {
 		var len = 8;
 		var start = Date.now();
 		// Rotation frustum
@@ -104,7 +104,7 @@ export class Frustum {
 	}
 
 
-	private project(axis, points) {
+	private project(axis: any, points: any) {
 		var min = vec3.dot(axis, points[0]);
 		var max = min;
 		for (var i = 1; i < points.length; i++) {
@@ -119,7 +119,7 @@ export class Frustum {
 		return [min, max];
 	}
 
-	private overlap(a, b0, b1) {
+	private overlap(a: any, b0: any, b1: any) {
 		return (
 			(a[0] <= b0 && b0 <= a[1])
 			||
@@ -127,7 +127,7 @@ export class Frustum {
 		);
 	}
 
-	private separatingAxisTheorum(chunkProjections, points) {
+	private separatingAxisTheorum(chunkProjections: any, points: any) {
 
 		// AABB axes
 		var aabbAxes = [
@@ -153,13 +153,13 @@ export class Frustum {
 
 
 	// Check whether chunk is within view frustum
-	visible(chunkID) {
+	visible(chunkID: any) {
 		// Calculate satProjection
 		var projection;
 		if (chunkID in this.satProjections) {
 			projection = this.satProjections[chunkID];
 		} else {
-			var position = chunkID.split('|').map(function(value) {
+			var position = chunkID.split('|').map(function(value: any) {
 				return Number(value);
 			});
 			projection = pool.malloc('array', 6);
@@ -179,7 +179,7 @@ export class Frustum {
 		return false;
 	}
 
-	chunkVisible(chunkID, position) {
+	chunkVisible(chunkID: any, position: any) {
 		// Calculate satProjection
 		var projection;
 		projection = pool.malloc('array', 6);

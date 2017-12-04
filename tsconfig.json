@@ -6,7 +6,9 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"typeRoots": ["node_modules/@types"],
-		"lib": [ "es2015" ]
+		"lib": [ "es2015","DOM"],
+		"suppressImplicitAnyIndexErrors" : true,
+		"noImplicitAny" : true
 	},
 	"include": [
 		"src/**/**.ts",

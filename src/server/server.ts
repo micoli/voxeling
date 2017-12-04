@@ -1,6 +1,6 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import * as Path from 'Path';
+//import * as Path from 'Path';
 import * as Wreck from 'wreck';
 import * as Tasks from "./games";
 import * as Users from "./users";
@@ -34,7 +34,7 @@ export function init(configs: IServerConfigurations, database: IDatabase): Promi
 			serverConfigs: configs
 		};
 
-		let pluginPromises = [];
+		let pluginPromises:any[] = [];
 
 		plugins.forEach((pluginName: string) => {
 			var plugin: IPlugin = (require("./plugins/" + pluginName)).default();

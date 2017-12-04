@@ -35,14 +35,14 @@ var states = {
 				console.log('leaving start state');
 			}
 		},
-		mouseup: function(event) {
+		mouseup: function(event: any) {
 			// Only if event target is the canvas
 			if (event.target.tagName === 'CANVAS') {
 				this.transition('playing');
 				return false;
 			}
 		},
-		change: function(event) {
+		change: function(event: any) {
 			switch (event.target.id) {
 				case 'drawDistance':
 					this.emitter.emit('drawDistance', event.target.value);
@@ -71,7 +71,7 @@ var states = {
 			}
 		},
 		// Chrome intercepts Escape key presses, so let's transition based on this event
-		pointerlockchange: function(event) {
+		pointerlockchange: function(event: any) {
 			if (document.pointerLockElement === this.canvas) {
 				//console.log('The pointer lock status is now locked');
 			} else {
@@ -79,7 +79,7 @@ var states = {
 				this.transition('start');
 			}
 		},
-		mousedown: function(event) {
+		mousedown: function(event: any) {
 			if (event.which === 3 || controlStates.alt) {
 				controlStates.firealt = true;
 				this.emitter.emit('firealt.down');
@@ -88,7 +88,7 @@ var states = {
 				this.emitter.emit('fire.down');
 			}
 		},
-		mouseup: function(event) {
+		mouseup: function(event: any) {
 			if (event.which === 3 || controlStates.alt) {
 				controlStates.firealt = false;
 				this.emitter.emit('firealt.up');
@@ -97,13 +97,13 @@ var states = {
 				this.emitter.emit('fire.up');
 			}
 		},
-		mousemove: function(ev) {
+		mousemove: function(ev: any) {
 			mouseCallback(
 				ev.movementX,
 				ev.movementY
 			);
 		},
-		keydown: function(event) {
+		keydown: function(event: any) {
 			if (debug) {
 				console.log(event);
 			}
@@ -133,7 +133,7 @@ var states = {
 				return false;
 			}
 		},
-		keyup: function(event) {
+		keyup: function(event: any) {
 			var code = event.which;
 			var key;
 			if (debug) {
@@ -181,7 +181,7 @@ var states = {
 				console.log('leaving materials state');
 			}
 		},
-		keydown: function(event) {
+		keydown: function(event: any) {
 			if (debug) {
 				console.log(event);
 			}
@@ -241,7 +241,7 @@ var states = {
 				this.emitter.emit('currentMaterial', Number(matches[from + adjustment].getAttribute('data-texturevalue')));
 			}
 		},
-		mousedown: function(event) {
+		mousedown: function(event: any) {
 			var $div = $(event.target).closest('div');
 			var matches = document.querySelectorAll('#textureContainer div');
 			var from = 0;
@@ -267,7 +267,7 @@ var states = {
 			document.getElementById('chat').className = '';
 			document.getElementById('cmd').value = '';
 		},
-		keyup: function(event) {
+		keyup: function(event: any) {
 			if (event.which === 13) {
 				var el = document.getElementById('cmd');
 				if (document.activeElement === el) {
@@ -311,7 +311,7 @@ var controlStates = {
 var currentState = '';
 
 var gamepad;
-const buttonPressed = function(b) {
+const buttonPressed = function(b: any) {
 	if (typeof b === "object") {
 		return b.pressed;
 	}
@@ -339,7 +339,7 @@ export class InputHandler {
 	canvas: any;
 	bindToElement: any;
 	fired = false;
-	constructor(bindToElement, canvas) {
+	constructor(bindToElement: any, canvas: any) {
 		var self = this;
 		this.bindToElement = bindToElement;
 		this.canvas = canvas;
@@ -356,20 +356,18 @@ export class InputHandler {
 			}
 		}
 
-		document.addEventListener(
-			'pointerlockerror',
-			function(error) {
-				console.log('Pointer Lock Error', error);
-			},
+		document.addEventListener('pointerlockerror', function(error: any) {
+			console.log('Pointer Lock Error', error);
+		},
 			false
 		);
 	}
 
-	mouseDeltaCallback(callback) {
+	mouseDeltaCallback(callback: any) {
 		mouseCallback = callback;
 	}
 
-	transition(newState) {
+	transition(newState: any) {
 		var current;
 		var method;
 		if (currentState) {
@@ -495,7 +493,7 @@ export class InputHandler {
 		}
 	}
 
-	on(name, callback) {
+	on(name: any, callback: any) {
 		this.emitter.on(name, callback);
 	}
 }

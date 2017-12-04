@@ -5924,26 +5924,27 @@ var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat
 var randomName = require('sillyname');
 const voxeling_client_1 = require("./lib/voxeling-client");
 const client_input_1 = require("./lib/client-input");
+const webgl_1 = require("./lib/webgl");
+const textures_1 = require("./lib/textures");
+const player_1 = require("./lib/player");
+const sky_1 = require("./lib/sky");
+const voxels_1 = require("./lib/voxels");
+const camera_1 = require("./lib/camera");
+const game_1 = require("./lib/game");
+const lines_1 = require("./lib/lines");
+const physics_1 = require("./lib/physics");
+const coordinates_1 = require("../shared/coordinates");
 var raycast = require('voxel-raycast');
-var WebGL = require('./lib/webgl');
-var Camera = require('./lib/camera');
-//var InputHandler = require('./lib/client-input');
-var Lines = require('./lib/lines');
 var Shapes = require('./lib/shapes');
-var Textures = require('./lib/textures');
-var Player = require('./lib/player');
-var Sky = require('./lib/sky');
-var Physics = require('./lib/physics');
+//var InputHandler = require('./lib/client-input');
 var Stats = require('./lib/stats');
-var Coordinates = require('../shared/coordinates');
-var Voxels = require('./lib/voxels');
-var Game = require('./lib/game');
 var timer = require('./lib/timer');
-//var Meshing = require('../lib/meshers/non-blocked')
 var mesher = require('./lib/meshers/horizontal-merge');
-var chunkSize = config.chunkSize;
-var coordinates = new Coordinates(chunkSize);
 var pool = require('./lib/object-pool');
+//var Meshing = require('../lib/meshers/non-blocked')
+var chunkSize = config.chunkSize;
+console.log('chunkSize', chunkSize);
+var coordinates = new coordinates_1.Coordinates(chunkSize);
 // other
 var trees = require('voxel-trees');
 var client = new voxeling_client_1.VoxelingClient(config);
@@ -5981,7 +5982,9 @@ var fillSettings = function (textures) {
         if ('sides' in material) {
             continue;
         }
-        html += '<input name="' + matrial.name + '" data-id="' + material.value + '" value="' + material.src + '" /> ' + material.name + '<br />';
+        html += '<input name="' + material.name + '" data-id="' + material.value + '" value="' + material.src + '" /> '
+            + material.name
+            + '<br />';
     }
     container.innerHTML = html;
     $(container).on('blur', 'input', function (e) {
@@ -6002,16 +6005,16 @@ client.on('ready', function () {
     var textures;
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    webgl = new WebGL(canvas);
-    textures = new Textures(config.textures);
+    webgl = new webgl_1.WebGL(canvas);
+    textures = new textures_1.Textures(config.textures);
     // Wait until textures have fully loaded
     textures.load(webgl.gl, function () {
         // ready=false stops physics from running early
         var ready = false;
-        var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
+        var player = client.player = new player_1.Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
         var players = {};
-        var sky = new Sky(webgl.gl, webgl.shaders.projectionViewPosition, textures, player);
-        var voxels = client.voxels = new Voxels(webgl.gl, webgl.shaders.projectionPosition, textures, 
+        var sky = new sky_1.Weather(webgl.gl, webgl.shaders.projectionViewPosition, textures, player);
+        var voxels = client.voxels = new voxels_1.Voxels(webgl.gl, webgl.shaders.projectionPosition, textures, 
         // releaseMeshCallback
         function (mesh) {
             // Release old mesh
@@ -6026,14 +6029,14 @@ client.on('ready', function () {
             // specially list the ArrayBuffer object we want to transfer
             client.worker.postMessage(['freeMesh', mesh], transferList);
         });
-        var camera = client.camera = new Camera(canvas, player);
-        var game = client.game = new Game(config, coordinates, player, 
+        var camera = client.camera = new camera_1.Camera(canvas, player);
+        var game = client.game = new game_1.Game(config, coordinates, player, 
         // regionChangeCallback
         function () {
             client.regionChange();
         });
-        var physics = new Physics(player, inputHandler.state, game);
-        var lines = new Lines(webgl.gl);
+        var physics = new physics_1.Physics(player, inputHandler.state, game);
+        var lines = new lines_1.Lines(webgl.gl);
         var highlightOn = true;
         // add cube wireframe
         //lines.fill( Shapes.wire.cube([0,0,0], [1,1,1]) )
@@ -6102,7 +6105,7 @@ client.on('ready', function () {
                         latest: updatedPlayerInfo.positions,
                         current: updatedPlayerInfo.positions,
                         adjustments: [0, 0, 0, 0, 0, 0],
-                        model: new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName['player'])
+                        model: new player_1.Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName['player'])
                     };
                     player.model.setTranslation(updatedPlayerInfo.positions[0], updatedPlayerInfo.positions[1], updatedPlayerInfo.positions[2]);
                     player.model.setRotation(updatedPlayerInfo.positions[3], updatedPlayerInfo.positions[4], updatedPlayerInfo.positions[5]);
@@ -6147,7 +6150,7 @@ client.on('ready', function () {
             // nickname
             element = document.getElementById('username');
             value = localStorage.getItem('name');
-            if (!value || value.length == 0 || value.trim().length == 0) {
+            if (!value || value.length === 0 || value.trim().length === 0) {
                 value = randomName();
                 localStorage.setItem('name', value);
             }
@@ -6157,7 +6160,7 @@ client.on('ready', function () {
             value = parseInt(localStorage.getItem('drawDistance'));
             if (!value) {
                 value = 2;
-                localStorage.setItem('drawDistance', value);
+                localStorage.setItem('drawDistance', '' + value);
             }
             element.value = value;
             config.drawDistance = value;
@@ -6168,7 +6171,7 @@ client.on('ready', function () {
             if (value < 0) {
                 value = 1;
             }
-            localStorage.setItem('drawDistance', value);
+            localStorage.setItem('drawDistance', '' + value);
             config.drawDistance = value;
             config.removeDistance = value + 1;
             client.regionChange();
@@ -6403,71 +6406,80 @@ setInterval(function () {
 }, 10000);
 
 },{"../../config":1,"../shared/coordinates":43,"./lib/camera":18,"./lib/client-input":19,"./lib/game":20,"./lib/lines":23,"./lib/meshers/horizontal-merge":24,"./lib/object-pool":29,"./lib/physics":30,"./lib/player":31,"./lib/shapes":34,"./lib/sky":36,"./lib/stats":37,"./lib/textures":38,"./lib/timer":39,"./lib/voxeling-client":40,"./lib/voxels":41,"./lib/webgl":42,"gl-matrix":3,"sillyname":14,"voxel-raycast":15,"voxel-trees":16}],18:[function(require,module,exports){
-var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var glm = require('gl-matrix');
+/*,
+vec3 = glm.vec3,
+vec4 = glm.vec4,
+mat4 = glm.mat4,
+quat = glm.quat;
+ */
 var inherits = require('inherits');
-var Movable = require('./movable');
+const movable_1 = require("./movable");
 var scratch = require('./scratch');
-function Camera(canvas, follow) {
-    Movable.call(this);
-    this.canvas = canvas;
-    this.matrix = mat4.create();
-    this.inverse = mat4.create();
-    this.verticalFieldOfView = Math.PI / 4;
-    this.ratio;
-    // 32 * 20 = 640 ... 20 chunks away
-    this.farDistance = 640;
-    this.projection = mat4.create();
-    this.follow = follow;
-    this.view = 0;
-    this.shoulderOffset = [0.4, 2, 2];
-    this.thirdPersonOffset = [0, 2, 4];
-    this.canvasResized();
-}
-inherits(Camera, Movable);
-Camera.prototype.canvasResized = function () {
-    this.ratio = this.canvas.clientWidth / this.canvas.clientHeight;
-    // Adjusts coordinates for the screen's aspect ration
-    // Not sure to set near and far to ... seems arbitrary. Surely those values should match the frustum
-    mat4.perspective(this.projection, this.verticalFieldOfView, this.ratio, 0.1, this.farDistance);
-};
-Camera.prototype.updateProjection = function () {
-    var offset;
-    switch (this.view) {
-        // Over shoulder
-        case 1:
-            offset = this.shoulderOffset;
-            //vec3.transformQuat(this.tempVector, offset, this.follow.getRotationQuat());
-            // transform this offset, according to yaw
-            //vec3.add(this.position, this.follow.getPosition(), this.tempVector);
-            break;
-        // Birds-eye
-        case 2:
-            offset = this.thirdPersonOffset;
-            //vec3.transformQuat(this.tempVector, offset, this.follow.getRotationQuat());
-            // transform this offset, according to yaw
-            //vec3.add(this.position, this.follow.getPosition(), this.tempVector);
-            break;
-        // First-person
-        default:
-            offset = this.follow.getEyeOffset();
-            break;
-    }
-    // Rotate eye offset into tempVector, which we'll then add to player position
-    quat.rotateY(scratch.quat, scratch.identityQuat, this.follow.getYaw());
-    vec3.transformQuat(scratch.vec3, offset, scratch.quat);
-    vec3.add(this.position, this.follow.getPosition(), scratch.vec3);
-    mat4.fromRotationTranslation(this.matrix, this.follow.getRotationQuat(), this.position);
-    mat4.invert(this.inverse, this.matrix);
-    mat4.multiply(this.inverse, this.projection, this.inverse);
-    return this.inverse;
-};
-Camera.prototype.nextView = function () {
-    this.view++;
-    if (this.view > 2) {
+class Camera extends movable_1.Movable {
+    constructor(canvas, follow) {
+        super();
+        this.canvas = canvas;
+        this.matrix = glm.mat4.create();
+        this.inverse = glm.mat4.create();
+        this.verticalFieldOfView = Math.PI / 4;
+        this.ratio;
+        // 32 * 20 = 640 ... 20 chunks away
+        this.farDistance = 640;
+        this.projection = glm.mat4.create();
+        this.follow = follow;
         this.view = 0;
+        this.shoulderOffset = [0.4, 2, 2];
+        this.thirdPersonOffset = [0, 2, 4];
+        this.canvasResized();
     }
-};
-module.exports = Camera;
+    canvasResized() {
+        this.ratio = this.canvas.clientWidth / this.canvas.clientHeight;
+        // Adjusts coordinates for the screen's aspect ration
+        // Not sure to set near and far to ... seems arbitrary. Surely those values should match the frustum
+        glm.mat4.perspective(this.projection, this.verticalFieldOfView, this.ratio, 0.1, this.farDistance);
+    }
+    updateProjection() {
+        var offset;
+        switch (this.view) {
+            // Over shoulder
+            case 1:
+                offset = this.shoulderOffset;
+                //glm.vec3.transformQuat(this.tempVector, offset, this.follow.getRotationQuat());
+                // transform this offset, according to yaw
+                //glm.vec3.add(this.position, this.follow.getPosition(), this.tempVector);
+                break;
+            // Birds-eye
+            case 2:
+                offset = this.thirdPersonOffset;
+                //glm.vec3.transformQuat(this.tempVector, offset, this.follow.getRotationQuat());
+                // transform this offset, according to yaw
+                //glm.vec3.add(this.position, this.follow.getPosition(), this.tempVector);
+                break;
+            // First-person
+            default:
+                offset = this.follow.getEyeOffset();
+                break;
+        }
+        // Rotate eye offset into tempVector, which we'll then add to player position
+        glm.quat.rotateY(scratch.quat, scratch.identityQuat, this.follow.getYaw());
+        glm.vec3.transformQuat(scratch.vec3, offset, scratch.quat);
+        glm.vec3.add(this.position, this.follow.getPosition(), scratch.vec3);
+        glm.mat4.fromRotationTranslation(this.matrix, this.follow.getRotationQuat(), this.position);
+        glm.mat4.invert(this.inverse, this.matrix);
+        glm.mat4.multiply(this.inverse, this.projection, this.inverse);
+        return this.inverse;
+    }
+    nextView() {
+        this.view++;
+        if (this.view > 2) {
+            this.view = 0;
+        }
+    }
+}
+exports.Camera = Camera;
 
 },{"./movable":28,"./scratch":33,"gl-matrix":3,"inherits":13}],19:[function(require,module,exports){
 "use strict";
@@ -6944,101 +6956,105 @@ exports.InputHandler = InputHandler;
  */
 
 },{"events":2}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var pool = require('../lib/object-pool');
 var log = require('../../shared/log')('lib/game', false);
 // miscellaneous state
 var previousTimeStamp = 0;
-var Game = function (config, coordinates, player, regionChangeCallback) {
-    var self = this;
-    this.currentVoxel = new Array(3);
-    // if this is vec3.create(), floating point messes things up
-    this.lastRegion = [0, 0, 0];
-    this.player = player;
-    this.regionChangeCallback = regionChangeCallback;
-    // Extract relevant values from config
-    this.config = config;
-    this.coordinates = coordinates;
-    // Same as above, but for voxel arrays
-    this.currentVoxels = {};
-};
-Game.prototype.storeVoxels = function (chunk) {
-    var chunkID = chunk.chunkID;
-    log('Game.storeVoxels: storing voxels for ' + chunkID);
-    this.currentVoxels[chunkID] = chunk;
-};
-Game.prototype.nearbyChunks = function (chunks) {
-    for (var chunkId in this.currentVoxels) {
-        if (!(chunkId in chunks)) {
-            delete this.currentVoxels[chunkId];
-        }
+class Game {
+    constructor(config, coordinates, player, regionChangeCallback) {
+        var self = this;
+        this.currentVoxel = new Array(3);
+        // if this is vec3.create(), floating point messes things up
+        this.lastRegion = [0, 0, 0];
+        this.player = player;
+        this.regionChangeCallback = regionChangeCallback;
+        // Extract relevant values from config
+        this.config = config;
+        this.coordinates = coordinates;
+        // Same as above, but for voxel arrays
+        this.currentVoxels = {};
     }
-};
-Game.prototype.positionChange = function (position) {
-    var thisRegion = this.coordinates.positionToChunk(position);
-    var lastRegion = this.lastRegion;
-    if (thisRegion[0] !== lastRegion[0] || thisRegion[1] !== lastRegion[1] || thisRegion[2] !== lastRegion[2]) {
-        this.regionChangeCallback(position);
+    storeVoxels(chunk) {
+        var chunkID = chunk.chunkID;
+        log('Game.storeVoxels: storing voxels for ' + chunkID);
+        this.currentVoxels[chunkID] = chunk;
     }
-    this.lastRegion = thisRegion;
-};
-// This is only used for collision detection
-Game.prototype.getBlock = function (x, y, z) {
-    var chunkID = this.coordinates.coordinatesToChunkID(x, y, z);
-    if (chunkID in this.currentVoxels) {
-        var voxelIndex = this.coordinates.coordinatesToVoxelIndex(x, y, z);
-        var voxelValue = this.currentVoxels[chunkID].voxels[voxelIndex];
-        // Uncomment the following when I'm ready to make water walkable
-        return (voxelValue > 0); // && voxelValue != 6);
-    }
-    else {
-        log('Game.getBlock: chunkid not found');
-    }
-    // if chunk doesn't exist, act like it's full of blocks (keep player out)
-    return 1;
-};
-/*
-Modifies the chunkVoxelIndexValue data structure
-*/
-Game.prototype.setBlock = function (x, y, z, value, chunkVoxelIndexValue, touching) {
-    var parts = this.coordinates.coordinatesToChunkAndVoxelIndex(x, y, z, touching);
-    var chunkID = parts[0];
-    var voxelIndex = parts[1];
-    this.currentVoxels[chunkID].voxels[voxelIndex] = value;
-    // Maybe some memoize setup could help with this
-    if (chunkID in chunkVoxelIndexValue) {
-        chunkVoxelIndexValue[chunkID].push(voxelIndex, value);
-    }
-    else {
-        chunkVoxelIndexValue[chunkID] = [
-            voxelIndex,
-            value
-        ];
-    }
-};
-// When webworker gets voxel changes, lib/client relays them here
-Game.prototype.updateVoxelCache = function (changes) {
-    var self = this;
-    for (var chunkID in changes) {
-        if (chunkID in self.currentVoxels) {
-            var chunk = self.currentVoxels[chunkID];
-            var details = changes[chunkID];
-            for (var i = 0; i < details.length; i += 2) {
-                var index = details[i];
-                var val = details[i + 1];
-                chunk.voxels[index] = val;
+    nearbyChunks(chunks) {
+        for (var chunkId in this.currentVoxels) {
+            if (!(chunkId in chunks)) {
+                delete this.currentVoxels[chunkId];
             }
         }
     }
-};
-// drawing and whatnot
-Game.prototype.tick = function () {
-    this.positionChange(this.player.getPosition());
-};
-Game.prototype.setPlayers = function (players) {
-    return;
-};
-module.exports = Game;
+    positionChange(position) {
+        var thisRegion = this.coordinates.positionToChunk(position);
+        var lastRegion = this.lastRegion;
+        if (thisRegion[0] !== lastRegion[0] || thisRegion[1] !== lastRegion[1] || thisRegion[2] !== lastRegion[2]) {
+            this.regionChangeCallback(position);
+        }
+        this.lastRegion = thisRegion;
+    }
+    // This is only used for collision detection
+    getBlock(x, y, z) {
+        var chunkID = this.coordinates.coordinatesToChunkID(x, y, z);
+        if (chunkID in this.currentVoxels) {
+            var voxelIndex = this.coordinates.coordinatesToVoxelIndex(x, y, z);
+            var voxelValue = this.currentVoxels[chunkID].voxels[voxelIndex];
+            // Uncomment the following when I'm ready to make water walkable
+            return (voxelValue > 0); // && voxelValue != 6);
+        }
+        else {
+            log('Game.getBlock: chunkid not found');
+        }
+        // if chunk doesn't exist, act like it's full of blocks (keep player out)
+        return 1;
+    }
+    /*
+    Modifies the chunkVoxelIndexValue data structure
+    */
+    setBlock(x, y, z, value, chunkVoxelIndexValue, touching) {
+        var parts = this.coordinates.coordinatesToChunkAndVoxelIndex(x, y, z, touching);
+        var chunkID = parts[0];
+        var voxelIndex = parts[1];
+        this.currentVoxels[chunkID].voxels[voxelIndex] = value;
+        // Maybe some memoize setup could help with this
+        if (chunkID in chunkVoxelIndexValue) {
+            chunkVoxelIndexValue[chunkID].push(voxelIndex, value);
+        }
+        else {
+            chunkVoxelIndexValue[chunkID] = [
+                voxelIndex,
+                value
+            ];
+        }
+    }
+    // When webworker gets voxel changes, lib/client relays them here
+    updateVoxelCache(changes) {
+        var self = this;
+        for (var chunkID in changes) {
+            if (chunkID in self.currentVoxels) {
+                var chunk = self.currentVoxels[chunkID];
+                var details = changes[chunkID];
+                for (var i = 0; i < details.length; i += 2) {
+                    var index = details[i];
+                    var val = details[i + 1];
+                    chunk.voxels[index] = val;
+                }
+            }
+        }
+    }
+    // drawing and whatnot
+    tick() {
+        this.positionChange(this.player.getPosition());
+    }
+    setPlayers(players) {
+        return;
+    }
+}
+exports.Game = Game;
 
 },{"../../shared/log":45,"../lib/object-pool":29,"gl-matrix":3}],21:[function(require,module,exports){
 /**
@@ -10608,45 +10624,51 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 })(this);
 
 },{}],22:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // maybe replace pool with a version that handles types of objects too
 var pool = require('./object-pool');
-var Growable = function (type, initialSize) {
-    this.type = type;
-    this.size = initialSize;
-    this.data = pool.malloc(type, initialSize);
-    // The offset to start writing at, also can be used as a count of items in the buffer
-    this.offset = 0;
-};
-// We want to append size amount of data, at the current offset
-// Re-allocate the array if necessary
-// Returns a handle to the TypedArray to use
-Growable.prototype.need = function (size) {
-    var needed = this.offset + size;
-    if (needed > this.size) {
-        var newSize = this.size * 2;
-        var data;
-        while (needed > newSize) {
-            newSize *= 2;
-        }
-        //console.log('GROWABLE: Reallocating to ' + newSize)
-        data = pool.malloc(this.type, newSize);
-        data.set(this.data);
-        pool.free(this.type, this.data);
-        this.data = data;
-        this.size = newSize;
+class Growable {
+    constructor(_type, initialSize) {
+        this.type = _type;
+        this.size = initialSize;
+        this.data = pool.malloc(_type, initialSize);
+        // The offset to start writing at, also can be used as a count of items in the buffer
+        this.offset = 0;
     }
-    return this.data;
-};
-Growable.prototype.append = function (arr) {
-    this.data.set(arr, this.offset);
-    this.offset += arr.length;
-};
-Growable.prototype.free = function () {
-    pool.free(this.type, this.data);
-};
-module.exports = Growable;
+    // We want to append size amount of data, at the current offset
+    // Re-allocate the array if necessary
+    // Returns a handle to the TypedArray to use
+    need(size) {
+        var needed = this.offset + size;
+        if (needed > this.size) {
+            var newSize = this.size * 2;
+            var data;
+            while (needed > newSize) {
+                newSize *= 2;
+            }
+            //console.log('GROWABLE: Reallocating to ' + newSize)
+            data = pool.malloc(this.type, newSize);
+            data.set(this.data);
+            pool.free(this.type, this.data);
+            this.data = data;
+            this.size = newSize;
+        }
+        return this.data;
+    }
+    append(arr) {
+        this.data.set(arr, this.offset);
+        this.offset += arr.length;
+    }
+    free() {
+        pool.free(this.type, this.data);
+    }
+}
+exports.Growable = Growable;
 
 },{"./object-pool":29}],23:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /*
 LineBuffer to hold all the lines we want to draw
 */
@@ -10656,86 +10678,103 @@ var vertexShaderCode = "uniform mat4 u_projection;" +
 var fragmentShaderCode = "precision mediump float;" +
     "uniform vec4 u_color;" +
     "void main() { gl_FragColor = u_color; }";
-var Lines = function (gl, color) {
-    this.gl = gl;
-    this.glBuffer;
-    this.tuples = 0;
-    this.shaders = {};
-    this.shaderAttributes = {};
-    this.shaderUniforms = {};
-    this.points = [];
-    this.pointOffsets = [];
-    this.color = color || [255, 0, 0, 1];
-    // Set up shaders
-    var shader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(shader, fragmentShaderCode);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        var errmsg = "fragment shader compile failed: " + gl.getShaderInfoLog(shader);
-        alert(errmsg);
-        throw new Error();
+class Lines {
+    constructor(gl, color) {
+        this.gl = gl;
+        this.glBuffer;
+        this.tuples = 0;
+        var errmsg = '';
+        this.shaders = {
+            fragment: null,
+            vertex: null
+        };
+        this.shaderAttributes = {
+            position: null,
+            shaderUniforms: {
+                projection: null,
+                color: null
+            }
+        };
+        this.shaderUniforms = {
+            projection: null,
+            color: null
+        };
+        this.points = [];
+        this.pointOffsets = [];
+        this.color = color || [255, 0, 0, 1];
+        // Set up shaders
+        var shader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(shader, fragmentShaderCode);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            errmsg = "fragment shader compile failed: " + gl.getShaderInfoLog(shader);
+            alert(errmsg);
+            throw new Error();
+        }
+        this.shaders.fragment = shader;
+        shader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(shader, vertexShaderCode);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            errmsg = "vertex shader compile failed : " + gl.getShaderInfoLog(shader);
+            alert(errmsg);
+            throw new Error(errmsg);
+        }
+        this.shaders.vertex = shader;
+        var shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, this.shaders.vertex);
+        gl.attachShader(shaderProgram, this.shaders.fragment);
+        gl.linkProgram(shaderProgram);
+        //gl.useProgram(shaderProgram);
+        this.shaderAttributes.position = gl.getAttribLocation(shaderProgram, "a_position");
+        this.shaderUniforms = {
+            projection: gl.getUniformLocation(shaderProgram, "u_projection"),
+            color: gl.getUniformLocation(shaderProgram, "u_color")
+        };
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            errmsg = "failed to initialize shader with data matrices";
+            alert(errmsg);
+            throw new Error(errmsg);
+        }
+        this.shaderProgram = shaderProgram;
+        this.glBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
     }
-    this.shaders.fragment = shader;
-    shader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(shader, vertexShaderCode);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        var errmsg = "vertex shader compile failed : " + gl.getShaderInfoLog(vertShader);
-        alert(errmsg);
-        throw new Error(errmsg);
+    /*
+    Buffer attributes will likely just be:
+    {
+        thickness: 1,
+        points: []
     }
-    this.shaders.vertex = shader;
-    var shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, this.shaders.vertex);
-    gl.attachShader(shaderProgram, this.shaders.fragment);
-    gl.linkProgram(shaderProgram);
-    //gl.useProgram(shaderProgram);
-    this.shaderAttributes.position = gl.getAttribLocation(shaderProgram, "a_position");
-    this.shaderUniforms.projection = gl.getUniformLocation(shaderProgram, "u_projection");
-    this.shaderUniforms.color = gl.getUniformLocation(shaderProgram, "u_color");
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        var errmsg = "failed to initialize shader with data matrices";
-        alert(errmsg);
-        throw new Error(errmsg);
+    */
+    // BAH, for now, all lines are the same
+    fill(points) {
+        var gl = this.gl;
+        this.skipDraw = false;
+        this.tuples = points.length / 3;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
     }
-    this.shaderProgram = shaderProgram;
-    this.glBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-};
-/*
-Buffer attributes will likely just be:
-{
-    thickness: 1,
-    points: []
+    render(projection) {
+        var gl = this.gl;
+        if (this.skipDraw) {
+            return;
+        }
+        gl.useProgram(this.shaderProgram);
+        gl.lineWidth(3);
+        // works!
+        gl.uniformMatrix4fv(this.shaderUniforms.projection, false, projection);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.enableVertexAttribArray(this.shaderAttributes.position);
+        gl.vertexAttribPointer(this.shaderAttributes.position, 3, gl.FLOAT, false, 0, 0);
+        gl.uniform4fv(this.shaderUniforms.color, this.color);
+        gl.drawArrays(gl.LINES, 0, this.tuples);
+    }
+    skip(yesno) {
+        this.skipDraw = yesno;
+    }
 }
-*/
-// BAH, for now, all lines are the same
-Lines.prototype.fill = function (points) {
-    var gl = this.gl;
-    this.skipDraw = false;
-    this.tuples = points.length / 3;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
-};
-Lines.prototype.render = function (projection) {
-    var gl = this.gl;
-    if (this.skipDraw) {
-        return;
-    }
-    gl.useProgram(this.shaderProgram);
-    gl.lineWidth(3);
-    // works!
-    gl.uniformMatrix4fv(this.shaderUniforms.projection, false, projection);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-    gl.enableVertexAttribArray(this.shaderAttributes.position);
-    gl.vertexAttribPointer(this.shaderAttributes.position, 3, gl.FLOAT, false, 0, 0);
-    gl.uniform4fv(this.shaderUniforms.color, this.color);
-    gl.drawArrays(gl.LINES, 0, this.tuples);
-};
-Lines.prototype.skip = function (yesno) {
-    this.skipDraw = yesno;
-};
-module.exports = Lines;
+exports.Lines = Lines;
 
 },{}],24:[function(require,module,exports){
 // TODO: clean this up. fewer globals
@@ -10990,17 +11029,17 @@ var isFaceBlocked = function (basePosition, voxels, chunkSize, face, x, y, z, cu
         //console.log(opposingChunkID, opposingIndex);
         if (opposingChunkID in chunkCache) {
             var opposingChunk = chunkCache[opposingChunkID];
-            var opposingVoxelValue = opposingChunk.voxels[opposingIndex];
+            let opposingVoxelValue = opposingChunk.voxels[opposingIndex];
             return shouldSkipFace(currentVoxelValue, opposingVoxelValue);
         }
         return false;
     }
     var index = Coordinator.coordinatesToVoxelIndex(x, y, z);
-    var opposingVoxelValue = voxels[index];
+    let opposingVoxelValue = voxels[index];
     return shouldSkipFace(currentVoxelValue, opposingVoxelValue);
 };
 var shouldSkipFace = function (currentVoxelValue, opposingVoxelValue) {
-    if (opposingVoxelValue == 0) {
+    if (opposingVoxelValue === 0) {
         return false;
     }
     /*
@@ -11032,7 +11071,12 @@ var faceIndex = function (face) {
     return map[face];
 };
 var calculate = function (basePosition, voxels) {
-    var outside = chunkSize - 1;
+    var outside = -1;
+    var chunkSize = -1;
+    var x;
+    var index;
+    var voxelTextureValue;
+    var z;
     // Make position relative ... lower bound to 0 and adjust everything else
     for (var y = 0; y < chunkSize; y++) {
         // points to current start/end object for this face
@@ -11043,12 +11087,12 @@ var calculate = function (basePosition, voxels) {
             bottom: null
         };
         var part = y * chunkSize;
-        for (var z = 0; z < chunkSize; z++) {
-            var index = part + (z * chunkSize * chunkSize);
+        for (z = 0; z < chunkSize; z++) {
+            index = part + (z * chunkSize * chunkSize);
             resetFaces(adjacent);
-            for (var x = 0; x < chunkSize; x++) {
-                var voxelTextureValue = voxels[index + x];
-                if (voxelTextureValue == 0) {
+            for (x = 0; x < chunkSize; x++) {
+                voxelTextureValue = voxels[index + x];
+                if (voxelTextureValue === 0) {
                     addFaces(basePosition, adjacent);
                     resetFaces(adjacent);
                     continue;
@@ -11082,7 +11126,7 @@ var calculate = function (basePosition, voxels) {
                     }
                     else {
                         // should we create a new face pointer?
-                        if (adjacent[face] == null) {
+                        if (adjacent[face] === null) {
                             if (debug) {
                                 console.log('new pointer');
                             }
@@ -11095,7 +11139,7 @@ var calculate = function (basePosition, voxels) {
                                 console.log(adjacent);
                             }
                         }
-                        else if (adjacent[face].textureValue == textureValue) {
+                        else if (adjacent[face].textureValue === textureValue) {
                             if (debug) {
                                 console.log('same texture');
                             }
@@ -11125,15 +11169,17 @@ var calculate = function (basePosition, voxels) {
             resetFaces(adjacent);
         } // end Z
         adjacent = {
-            left: null,
-            right: null
+            front: null,
+            back: null,
+            top: null,
+            bottom: null
         };
-        for (var x = 0; x < chunkSize; x++) {
-            var index = part + x;
+        for (x = 0; x < chunkSize; x++) {
+            index = part + x;
             resetFaces(adjacent);
-            for (var z = 0; z < chunkSize; z++) {
-                var voxelTextureValue = voxels[index + (z * chunkSize * chunkSize)];
-                if (voxelTextureValue == 0) {
+            for (z = 0; z < chunkSize; z++) {
+                voxelTextureValue = voxels[index + (z * chunkSize * chunkSize)];
+                if (voxelTextureValue === 0) {
                     addFaces(basePosition, adjacent);
                     resetFaces(adjacent);
                     continue;
@@ -11146,9 +11192,8 @@ var calculate = function (basePosition, voxels) {
                 // is left blocked, add it
                 // is right blocked? add it
                 // only loop through current pointer faces
-                for (var face in adjacent) {
-                    var isBlocked = false;
-                    var textureValue;
+                for (face in adjacent) {
+                    isBlocked = false;
                     if ('sides' in texturesByValue[voxelTextureValue]) {
                         textureValue = texturesByValue[voxelTextureValue].sides[faceIndex(face)];
                     }
@@ -11159,7 +11204,7 @@ var calculate = function (basePosition, voxels) {
                     if (debug) {
                         console.log('face: ' + face, 'blocked:', isBlocked);
                     }
-                    if (isBlocked > 0) {
+                    if (isBlocked) {
                         if (adjacent[face] != null) {
                             addFace(basePosition, face, adjacent[face]);
                             adjacent[face] = null;
@@ -11167,7 +11212,7 @@ var calculate = function (basePosition, voxels) {
                     }
                     else {
                         // should we create a new face pointer?
-                        if (adjacent[face] == null) {
+                        if (adjacent[face] === null) {
                             if (debug) {
                                 console.log('new pointer');
                             }
@@ -11180,7 +11225,7 @@ var calculate = function (basePosition, voxels) {
                                 console.log(adjacent);
                             }
                         }
-                        else if (adjacent[face].textureValue == textureValue) {
+                        else if (adjacent[face].textureValue === textureValue) {
                             // yes, update end position
                             adjacent[face].end[0] = x;
                             adjacent[face].end[1] = y;
@@ -11211,10 +11256,7 @@ var calculate = function (basePosition, voxels) {
         } // end X
     } // end Y
 };
-if (!module) {
-    var module = {};
-}
-var Meshing = module.exports = {
+module.exports = {
     config: function (cs, textures, coordinatorHandle, cache) {
         chunkSize = cs;
         voxelArraySize = chunkSize * chunkSize * chunkSize;
@@ -11224,7 +11266,7 @@ var Meshing = module.exports = {
     },
     // position is chunk lower boundary
     mesh: function (position, voxels) {
-        if (!voxels || voxels.length == 0) {
+        if (!voxels || voxels.length === 0) {
             console.log('Empty voxels');
             return null;
         }
@@ -11238,53 +11280,10 @@ var Meshing = module.exports = {
 };
 
 },{"../growable":22,"../object-pool":29,"../timer":39}],25:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var scratch = require('./scratch');
-var Model = function (gl, shader, meshes, texture, movable) {
-    this.gl = gl;
-    this.shader = shader;
-    this.meshes = meshes;
-    this.texture = texture;
-    this.shaders = {};
-    this.shaderAttributes = {};
-    this.shaderUniforms = {};
-    // Set up movable and the mesh
-    this.movable = movable;
-    this.initMeshes();
-};
-Model.prototype.initMeshes = function () {
-    var gl = this.gl;
-    var meshes = this.meshes;
-    for (var i = 0; i < meshes.length; i++) {
-        var mesh = meshes[i];
-        mesh.buffers = {
-            vertices: gl.createBuffer(),
-            //indices: gl.createBuffer(),
-            normal: gl.createBuffer(),
-            texcoord: gl.createBuffer()
-        };
-        // Fill with points that we'll translate per player
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
-        gl.bufferData(gl.ARRAY_BUFFER, mesh.vertices, gl.STATIC_DRAW);
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
-        //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.normals), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
-        gl.bufferData(gl.ARRAY_BUFFER, mesh.texcoords, gl.STATIC_DRAW);
-        mesh.tuples = 36;
-    }
-};
-Model.prototype.setTexture = function (texture) {
-    this.texture = texture;
-};
-/*
-Buffer attributes will likely just be:
-{
-    thickness: 1,
-    points: []
-}
-*/
 var tempQuat = scratch.quat;
 var model = scratch.mat4;
 var view = scratch.mat4_0;
@@ -11292,404 +11291,502 @@ var directionalLightVector = vec3.fromValues(0.85, 0.8, 0.75);
 var tempVector = scratch.vec3;
 var rotation1 = scratch.mat4_0;
 var rotation2 = scratch.mat4_1;
-Model.prototype.render = function (matrix, ts) {
-    var gl = this.gl;
-    //gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(this.shader.program);
-    //gl.lineWidth(3);
-    var meshes = this.meshes;
-    //mat4.translate(model, model, [16, 1, 3]);
-    mat4.translate(model, scratch.identityMat4, this.movable.getPosition());
-    mat4.rotateY(model, model, this.movable.getYaw());
-    // rotate light source
-    quat.rotateY(tempQuat, scratch.identityQuat, this.movable.getYaw());
-    vec3.transformQuat(tempVector, directionalLightVector, tempQuat);
-    gl.uniform3fv(this.shader.uniforms.directionalLightVector, tempVector);
-    gl.uniformMatrix4fv(this.shader.uniforms.projection, false, matrix);
-    //gl.uniformMatrix4fv(this.shaderUniforms.player, false, model);
-    //gl.uniform4fv(this.shaderUniforms.color, [ 0, 255, 255, 1 ]);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture.glTexture);
-    // bind the texture to this handle
-    gl.uniform1i(this.shader.uniforms.texture, 0);
-    for (var i = 0; i < meshes.length; i++) {
-        var mesh = meshes[i];
-        mesh.render(ts);
-        // Walk animation: http://math.stackexchange.com/questions/652102/rotate-a-point-around-another-point-by-an-angle
-        // positiveTranslatedMatrix * rotationMatrix * negativeTranslatedMatrix
-        mat4.translate(rotation1, scratch.identityMat4, mesh.rotateAround);
-        mat4.translate(rotation2, scratch.identityMat4, [-mesh.rotateAround[0], -mesh.rotateAround[1], -mesh.rotateAround[2]]);
-        mat4.multiply(view, rotation1, mesh.view);
-        mat4.rotateX(view, view, mesh.rotation[0]);
-        mat4.multiply(view, view, rotation2);
-        mat4.multiply(view, model, view);
-        gl.uniformMatrix4fv(this.shader.uniforms.view, false, view);
-        //gl.uniform1i(this.shaderUniforms.part, false, mesh.part);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
-        gl.enableVertexAttribArray(this.shader.attributes.position);
-        gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
-        gl.enableVertexAttribArray(this.shader.attributes.normal);
-        gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
-        gl.enableVertexAttribArray(this.shader.attributes.texcoord);
-        gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
-        //gl.drawElements(gl.TRIANGLES, mesh.tuples, gl.UNSIGNED_SHORT, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, mesh.tuples);
+class Model {
+    constructor(gl, shader, meshes, texture, movable) {
+        this.gl = gl;
+        this.shader = shader;
+        this.meshes = meshes;
+        this.texture = texture;
+        this.shaders = {};
+        this.shaderAttributes = {};
+        this.shaderUniforms = {};
+        // Set up movable and the mesh
+        this.movable = movable;
+        this.initMeshes();
     }
-};
-module.exports = Model;
+    initMeshes() {
+        var gl = this.gl;
+        var meshes = this.meshes;
+        for (var i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+            mesh.buffers = {
+                vertices: gl.createBuffer(),
+                //indices: gl.createBuffer(),
+                normal: gl.createBuffer(),
+                texcoord: gl.createBuffer()
+            };
+            // Fill with points that we'll translate per player
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
+            gl.bufferData(gl.ARRAY_BUFFER, mesh.vertices, gl.STATIC_DRAW);
+            //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
+            //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.normals), gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
+            gl.bufferData(gl.ARRAY_BUFFER, mesh.texcoords, gl.STATIC_DRAW);
+            mesh.tuples = 36;
+        }
+    }
+    setTexture(texture) {
+        this.texture = texture;
+    }
+    /*
+    Buffer attributes will likely just be:
+    {
+        thickness: 1,
+        points: []
+    }
+    */
+    render(matrix, ts) {
+        var gl = this.gl;
+        //gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(this.shader.program);
+        //gl.lineWidth(3);
+        var meshes = this.meshes;
+        //mat4.translate(model, model, [16, 1, 3]);
+        mat4.translate(model, scratch.identityMat4, this.movable.getPosition());
+        mat4.rotateY(model, model, this.movable.getYaw());
+        // rotate light source
+        quat.rotateY(tempQuat, scratch.identityQuat, this.movable.getYaw());
+        vec3.transformQuat(tempVector, directionalLightVector, tempQuat);
+        gl.uniform3fv(this.shader.uniforms.directionalLightVector, tempVector);
+        gl.uniformMatrix4fv(this.shader.uniforms.projection, false, matrix);
+        //gl.uniformMatrix4fv(this.shaderUniforms.player, false, model);
+        //gl.uniform4fv(this.shaderUniforms.color, [ 0, 255, 255, 1 ]);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture.glTexture);
+        // bind the texture to this handle
+        gl.uniform1i(this.shader.uniforms.texture, 0);
+        for (var i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+            mesh.render(ts);
+            // Walk animation: http://math.stackexchange.com/questions/652102/rotate-a-point-around-another-point-by-an-angle
+            // positiveTranslatedMatrix * rotationMatrix * negativeTranslatedMatrix
+            mat4.translate(rotation1, scratch.identityMat4, mesh.rotateAround);
+            mat4.translate(rotation2, scratch.identityMat4, [-mesh.rotateAround[0], -mesh.rotateAround[1], -mesh.rotateAround[2]]);
+            mat4.multiply(view, rotation1, mesh.view);
+            mat4.rotateX(view, view, mesh.rotation[0]);
+            mat4.multiply(view, view, rotation2);
+            mat4.multiply(view, model, view);
+            gl.uniformMatrix4fv(this.shader.uniforms.view, false, view);
+            //gl.uniform1i(this.shaderUniforms.part, false, mesh.part);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
+            gl.enableVertexAttribArray(this.shader.attributes.position);
+            gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
+            gl.enableVertexAttribArray(this.shader.attributes.normal);
+            gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
+            gl.enableVertexAttribArray(this.shader.attributes.texcoord);
+            gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
+            //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
+            //gl.drawElements(gl.TRIANGLES, mesh.tuples, gl.UNSIGNED_SHORT, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, mesh.tuples);
+        }
+    }
+}
+exports.Model = Model;
 
 },{"./scratch":33,"gl-matrix":3}],26:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var scratch = require('./scratch');
-// Only contains the stuff we need for WebGL drawing
-var Model = function (gl, shader, meshes, tick) {
-    this.gl = gl;
-    this.shader = shader;
-    this.meshes = meshes;
-    this._tick = tick || null;
-    this.localMatrix = mat4.create();
-    this.worldMatrix = mat4.create();
-    this.initMeshes();
-};
-Model.prototype.initMeshes = function () {
-    var gl = this.gl;
-    var meshes = this.meshes;
-    // This needs to work for all types and sizes of meshes
-    for (var i = 0; i < meshes.length; i++) {
-        var mesh = meshes[i];
-        mesh.buffers = {
-            vertices: gl.createBuffer(),
-            //indices: gl.createBuffer(),
-            normal: gl.createBuffer(),
-            texcoord: gl.createBuffer()
-        };
-        // Fill with points that we'll translate per player
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
-        gl.bufferData(gl.ARRAY_BUFFER, mesh.vertices, gl.STATIC_DRAW);
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
-        //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.normals), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
-        gl.bufferData(gl.ARRAY_BUFFER, mesh.texcoords, gl.STATIC_DRAW);
-        mesh.tuples = 36;
-    }
-};
-Model.prototype.setTexture = function (texture) {
-    this.texture = texture;
-};
-Model.prototype.tick = function (parentWorldMatrix) {
-    if (this._tick) {
-        this._tick();
-    }
-    // Flip the order here?
-    //mat4.multiply(this.worldMatrix, this.localMatrix, parentWorldMatrix);
-    mat4.multiply(this.worldMatrix, parentWorldMatrix, this.localMatrix);
-};
-/*
-Buffer attributes will likely just be:
-{
-    thickness: 1,
-    points: []
-}
-*/
 var tempQuat = scratch.quat;
 var directionalLightVector = vec3.fromValues(0.85, 0.8, 0.75);
 var tempVector = scratch.vec3;
 var rotation1 = scratch.mat4_0;
 var rotation2 = scratch.mat4_1;
-Model.prototype.render = function (ts) {
-    var gl = this.gl;
-    //gl.clear(gl.COLOR_BUFFER_BIT);
-    //gl.useProgram(this.shader.program);
-    //gl.lineWidth(3);
-    var meshes = this.meshes;
-    // rotate light source
-    /*
-    quat.rotateY(tempQuat, scratch.identityQuat, this.movable.getYaw());
-    vec3.transformQuat(tempVector, directionalLightVector, tempQuat);
-    gl.uniform3fv(this.shader.uniforms.directionalLightVector, tempVector);
-    */
-    gl.uniformMatrix4fv(this.shader.uniforms.view, false, this.worldMatrix);
-    for (var i = 0; i < meshes.length; i++) {
-        var mesh = meshes[i];
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, mesh.texture.glTexture);
-        // bind the texture to this handle
-        gl.uniform1i(this.shader.uniforms.texture, 0);
-        //gl.uniform1i(this.shaderUniforms.part, false, mesh.part);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
-        gl.enableVertexAttribArray(this.shader.attributes.position);
-        gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
-        gl.enableVertexAttribArray(this.shader.attributes.normal);
-        gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
-        gl.enableVertexAttribArray(this.shader.attributes.texcoord);
-        gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
-        //gl.drawElements(gl.TRIANGLES, mesh.tuples, gl.UNSIGNED_SHORT, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, mesh.tuples);
+// Only contains the stuff we need for WebGL drawing
+class Model2 {
+    constructor(gl, shader, meshes, tick) {
+        this.gl = gl;
+        this.shader = shader;
+        this.meshes = meshes;
+        this._tick = tick || null;
+        this.localMatrix = mat4.create();
+        this.worldMatrix = mat4.create();
+        this.initMeshes();
     }
-};
-module.exports = Model;
+    initMeshes() {
+        var gl = this.gl;
+        var meshes = this.meshes;
+        // This needs to work for all types and sizes of meshes
+        for (var i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+            mesh.buffers = {
+                vertices: gl.createBuffer(),
+                //indices: gl.createBuffer(),
+                normal: gl.createBuffer(),
+                texcoord: gl.createBuffer()
+            };
+            // Fill with points that we'll translate per player
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
+            gl.bufferData(gl.ARRAY_BUFFER, mesh.vertices, gl.STATIC_DRAW);
+            //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
+            //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.normals), gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
+            gl.bufferData(gl.ARRAY_BUFFER, mesh.texcoords, gl.STATIC_DRAW);
+            mesh.tuples = 36;
+        }
+    }
+    setTexture(texture) {
+        this.texture = texture;
+    }
+    tick(parentWorldMatrix) {
+        if (this._tick) {
+            this._tick();
+        }
+        // Flip the order here?
+        //mat4.multiply(this.worldMatrix, this.localMatrix, parentWorldMatrix);
+        mat4.multiply(this.worldMatrix, parentWorldMatrix, this.localMatrix);
+    }
+    /*
+    Buffer attributes will likely just be:
+    {
+        thickness: 1,
+        points: []
+    }
+    */
+    render(ts) {
+        var gl = this.gl;
+        //gl.clear(gl.COLOR_BUFFER_BIT);
+        //gl.useProgram(this.shader.program);
+        //gl.lineWidth(3);
+        var meshes = this.meshes;
+        // rotate light source
+        /*
+        quat.rotateY(tempQuat, scratch.identityQuat, this.movable.getYaw());
+        vec3.transformQuat(tempVector, directionalLightVector, tempQuat);
+        gl.uniform3fv(this.shader.uniforms.directionalLightVector, tempVector);
+        */
+        gl.uniformMatrix4fv(this.shader.uniforms.view, false, this.worldMatrix);
+        for (var i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, mesh.texture.glTexture);
+            // bind the texture to this handle
+            gl.uniform1i(this.shader.uniforms.texture, 0);
+            //gl.uniform1i(this.shaderUniforms.part, false, mesh.part);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.vertices);
+            gl.enableVertexAttribArray(this.shader.attributes.position);
+            gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.normal);
+            gl.enableVertexAttribArray(this.shader.attributes.normal);
+            gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffers.texcoord);
+            gl.enableVertexAttribArray(this.shader.attributes.texcoord);
+            gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
+            //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.buffers.indices);
+            //gl.drawElements(gl.TRIANGLES, mesh.tuples, gl.UNSIGNED_SHORT, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, mesh.tuples);
+        }
+    }
+}
+exports.Model2 = Model2;
 
 },{"./scratch":33,"gl-matrix":3}],27:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('../gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var scratch = require('../scratch');
 var Shapes = require('../shapes2');
-var Model = require('../model2');
+const model2_1 = require("../model2");
 var Scene = require('../scene-graph');
-function Sun(gl, shader, textures, player) {
-    var self = this;
-    this.sunRotation = 0;
-    var meshes = [];
-    var d = 6;
-    var uv = [
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d
-    ];
-    var sunMesh = this.sun = Shapes.three.rectangle(d, d, d, uv, 1, textures.byName.lava);
-    meshes.push(sunMesh);
-    this.model = new Model(gl, shader, meshes, 
-    // Tick method for doing movement
-    function () {
-        var position = player.getPosition();
-        //var translation = vec3.fromValues(position[0], position[1] - 20, position[2]);
-        mat4.translate(this.localMatrix, scratch.identityMat4, position);
-        mat4.rotateZ(this.localMatrix, this.localMatrix, self.sunRotation);
-        mat4.translate(this.localMatrix, this.localMatrix, [0, -200, 0]);
-    });
-    this.hierarchy = new Scene.Node(gl, this.model);
-    // Cube orbiting around the sun
-    var d = 2;
-    var uv = [
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d,
-        0, 0, d, d
-    ];
-    var shape = Shapes.three.rectangle(d, d, d, uv, 1, textures.byName.lava);
-    var meshes = [shape];
-    var num = 10;
-    var circ = Math.PI * 2;
-    for (var i = 0; i < num; i++) {
-        var orbital = new Model(gl, shader, meshes, 
+class Sun {
+    constructor(gl, shader, textures, player) {
+        var self = this;
+        var d;
+        var uv;
+        var meshes = [];
+        var i;
+        var orbital;
+        this.sunRotation = 0;
+        meshes = [];
+        d = 6;
+        uv = [
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d
+        ];
+        var sunMesh = this.sun = Shapes.three.rectangle(d, d, d, uv, 1, textures.byName.lava);
+        meshes.push(sunMesh);
+        this.model = new model2_1.Model2(gl, shader, meshes, 
         // Tick method for doing movement
-        function (seconds) {
-            var translation = vec3.fromValues(4, 0, 0);
-            mat4.rotateY(this.localMatrix, scratch.identityMat4, self.tempSpeed + (this.num * (circ / num)));
-            mat4.translate(this.localMatrix, this.localMatrix, translation);
-            // Rotate them back for more pointy shimmer
-            mat4.rotateY(this.localMatrix, this.localMatrix, -(self.tempSpeed + (this.num * (circ / num))));
+        function () {
+            var position = player.getPosition();
+            //var translation = vec3.fromValues(position[0], position[1] - 20, position[2]);
+            mat4.translate(this.localMatrix, scratch.identityMat4, position);
+            mat4.rotateZ(this.localMatrix, this.localMatrix, self.sunRotation);
+            mat4.translate(this.localMatrix, this.localMatrix, [0, -200, 0]);
         });
-        orbital.num = i;
-        this.hierarchy.addChild(new Scene.Node(gl, orbital));
+        this.hierarchy = new Scene.Node(gl, this.model);
+        // Cube orbiting around the sun
+        d = 2;
+        uv = [
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d,
+            0, 0, d, d
+        ];
+        var shape = Shapes.three.rectangle(d, d, d, uv, 1, textures.byName.lava);
+        meshes = [shape];
+        var num = 10;
+        var circ = Math.PI * 2;
+        for (i = 0; i < num; i++) {
+            orbital = new model2_1.Model2(gl, shader, meshes, 
+            // Tick method for doing movement
+            function (seconds) {
+                var translation = vec3.fromValues(4, 0, 0);
+                mat4.rotateY(this.localMatrix, scratch.identityMat4, self.tempSpeed + (this.num * (circ / num)));
+                mat4.translate(this.localMatrix, this.localMatrix, translation);
+                // Rotate them back for more pointy shimmer
+                mat4.rotateY(this.localMatrix, this.localMatrix, -(self.tempSpeed + (this.num * (circ / num))));
+            });
+            orbital.num = i;
+            this.hierarchy.addChild(new Scene.Node(gl, orbital));
+        }
+        for (i = 0; i < num; i++) {
+            orbital = new model2_1.Model2(gl, shader, meshes, 
+            // Tick method for doing movement
+            function (seconds) {
+                var translation = vec3.fromValues(0, 4, 0);
+                mat4.rotateX(this.localMatrix, scratch.identityMat4, self.tempSpeed + (this.num * (circ / num)));
+                mat4.translate(this.localMatrix, this.localMatrix, translation);
+                mat4.rotateX(this.localMatrix, this.localMatrix, -(self.tempSpeed + (this.num * (circ / num))));
+            });
+            orbital.num = i;
+            this.hierarchy.addChild(new Scene.Node(gl, orbital));
+        }
     }
-    for (var i = 0; i < num; i++) {
-        var orbital = new Model(gl, shader, meshes, 
-        // Tick method for doing movement
-        function (seconds) {
-            var translation = vec3.fromValues(0, 4, 0);
-            mat4.rotateX(this.localMatrix, scratch.identityMat4, self.tempSpeed + (this.num * (circ / num)));
-            mat4.translate(this.localMatrix, this.localMatrix, translation);
-            mat4.rotateX(this.localMatrix, this.localMatrix, -(self.tempSpeed + (this.num * (circ / num))));
-        });
-        orbital.num = i;
-        this.hierarchy.addChild(new Scene.Node(gl, orbital));
+    tick(weatherTime, sunRotation) {
+        this.weatherTime = weatherTime;
+        this.sunRotation = sunRotation;
+        // tick the models hierarchy
+        // TODO: calculate self.weatherTime / 300.0 and cache somewhere so child Nodes don't have to repeatedly calculate?
+        this.tempSpeed = this.weatherTime / 300.0;
+        this.hierarchy.tick(scratch.identityMat4, 0);
+    }
+    render(parentView, ts) {
+        this.hierarchy.render(scratch.identityMat4, ts);
     }
 }
-Sun.prototype.tick = function (weatherTime, sunRotation) {
-    this.weatherTime = weatherTime;
-    this.sunRotation = sunRotation;
-    // tick the models hierarchy
-    // TODO: calculate self.weatherTime / 300.0 and cache somewhere so child Nodes don't have to repeatedly calculate?
-    this.tempSpeed = this.weatherTime / 300.0;
-    this.hierarchy.tick(scratch.identityMat4, 0);
-};
-Sun.prototype.render = function (parentView, ts) {
-    this.hierarchy.render(scratch.identityMat4, ts);
-};
-module.exports = Sun;
+exports.Sun = Sun;
 
 },{"../gl-matrix":21,"../model2":26,"../scene-graph":32,"../scratch":33,"../shapes2":35}],28:[function(require,module,exports){
-var glm = require('gl-matrix'), vec3 = glm.vec3, mat4 = glm.mat4, vec4 = glm.vec4, quat = glm.quat;
-var Movable = function () {
-    this.isMoving = false;
-    this.yaw = 0.00;
-    this.pitch = 0.00;
-    this.bank = 0.00;
-    this.rotationQuat = quat.create();
-    this.rotationQuatNeedsUpdate = false;
-    this.position = vec3.create();
-    this.bounds = {
-        bottomFrontLeft: [0, 0, 0],
-        bottomFrontRight: [0, 0, 0],
-        bottomBackLeft: [0, 0, 0],
-        bottomBackRight: [0, 0, 0],
-        middleFrontLeft: [0, 0, 0],
-        middleFrontRight: [0, 0, 0],
-        middleBackLeft: [0, 0, 0],
-        middleBackRight: [0, 0, 0],
-        topFrontLeft: [0, 0, 0],
-        topFrontRight: [0, 0, 0],
-        topBackLeft: [0, 0, 0],
-        topBackRight: [0, 0, 0],
-        all: null,
-        front: null,
-        back: null,
-        left: null,
-        right: null,
-        top: null,
-        bottom: null
-    };
-    this.bounds.all = [this.bounds.bottomFrontLeft, this.bounds.bottomFrontRight, this.bounds.bottomBackLeft, this.bounds.bottomBackRight, this.bounds.middleFrontLeft, this.bounds.middleFrontRight, this.bounds.middleBackLeft, this.bounds.middleBackRight, this.bounds.topFrontLeft, this.bounds.topFrontRight, this.bounds.topBackLeft, this.bounds.topBackRight];
-    this.bounds.front = [this.bounds.bottomFrontLeft, this.bounds.bottomFrontRight, this.bounds.middleFrontLeft, this.bounds.middleFrontRight, this.bounds.topFrontLeft, this.bounds.topFrontRight];
-    this.bounds.back = [this.bounds.bottomBackLeft, this.bounds.bottomBackRight, this.bounds.middleBackLeft, this.bounds.middleBackRight, this.bounds.topBackLeft, this.bounds.topBackRight];
-    this.bounds.left = [this.bounds.bottomFrontLeft, this.bounds.bottomBackLeft, this.bounds.middleFrontLeft, this.bounds.middleBackLeft, this.bounds.topFrontLeft, this.bounds.topBackLeft];
-    this.bounds.right = [this.bounds.bottomFrontRight, this.bounds.bottomBackRight, this.bounds.middleFrontRight, this.bounds.middleBackRight, this.bounds.topFrontRight, this.bounds.topBackRight];
-    this.bounds.top = [this.bounds.topFrontLeft, this.bounds.topFrontRight, this.bounds.topBackLeft, this.bounds.topBackRight];
-    this.bounds.bottom = [this.bounds.bottomFrontLeft, this.bounds.bottomFrontRight, this.bounds.bottomBackLeft, this.bounds.bottomBackRight];
-};
-Movable.prototype.translate = function (vector) {
-    vec3.add(this.position, this.position, vector);
-};
-Movable.prototype.setTranslation = function (x, y, z) {
-    vec3.copy(this.position, arguments);
-};
-Movable.prototype.rotateY = function (radians) {
-    this.yaw += radians;
-    if (this.yaw > Math.PI * 2) {
-        this.yaw -= (Math.PI * 2);
-    }
-    else if (this.yaw < 0) {
-        this.yaw += (Math.PI * 2);
-    }
-    this.rotationQuatNeedsUpdate = true;
-};
-Movable.prototype.rotateX = function (radians) {
-    // clamp absolute camera pitch, after applying pitch delta
-    this.pitch += radians;
-    if (this.pitch > 1.5) {
-        this.pitch = 1.5;
-    }
-    else if (this.pitch < -1.5) {
-        this.pitch = -1.5;
-    }
-    this.rotationQuatNeedsUpdate = true;
-};
-Movable.prototype.setRotation = function (x, y, z) {
-    this.yaw = y;
-    this.pitch = x;
-    this.bank = z;
-    if (this.pitch > 1.5) {
-        this.pitch = 1.5;
-    }
-    else if (this.pitch < -1.5) {
-        this.pitch = -1.5;
-    }
-    this.rotationQuatNeedsUpdate = true;
-};
-Movable.prototype.getPosition = function () {
-    return this.position;
-};
-Movable.prototype.getX = function () {
-    return this.position[0];
-};
-Movable.prototype.getY = function () {
-    return this.position[1];
-};
-Movable.prototype.getZ = function () {
-    return this.position[2];
-};
-Movable.prototype.getPitch = function () {
-    return this.pitch;
-};
-Movable.prototype.getYaw = function () {
-    return this.yaw;
-};
-Movable.prototype.getRotationQuat = function () {
-    if (this.rotationQuatNeedsUpdate) {
-        quat.identity(this.rotationQuat);
-        quat.rotateY(this.rotationQuat, this.rotationQuat, this.yaw);
-        quat.rotateX(this.rotationQuat, this.rotationQuat, this.pitch);
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var glm = require('gl-matrix');
+/*,
+vec3 = glm.vec3,
+mat4 = glm.mat4,
+vec4 = glm.vec4,
+quat = glm.quat;*/
+class Movable {
+    constructor() {
+        this.isMoving = false;
+        this.yaw = 0.00;
+        this.pitch = 0.00;
+        this.bank = 0.00;
+        this.rotationQuat = glm.quat.create();
         this.rotationQuatNeedsUpdate = false;
+        this.position = glm.vec3.create();
+        this.bounds = {
+            bottomFrontLeft: [0, 0, 0],
+            bottomFrontRight: [0, 0, 0],
+            bottomBackLeft: [0, 0, 0],
+            bottomBackRight: [0, 0, 0],
+            middleFrontLeft: [0, 0, 0],
+            middleFrontRight: [0, 0, 0],
+            middleBackLeft: [0, 0, 0],
+            middleBackRight: [0, 0, 0],
+            topFrontLeft: [0, 0, 0],
+            topFrontRight: [0, 0, 0],
+            topBackLeft: [0, 0, 0],
+            topBackRight: [0, 0, 0],
+            all: null,
+            front: null,
+            back: null,
+            left: null,
+            right: null,
+            top: null,
+            bottom: null
+        };
+        this.bounds.all = [
+            this.bounds.bottomFrontLeft, this.bounds.bottomFrontRight,
+            this.bounds.bottomBackLeft, this.bounds.bottomBackRight,
+            this.bounds.middleFrontLeft, this.bounds.middleFrontRight,
+            this.bounds.middleBackLeft, this.bounds.middleBackRight,
+            this.bounds.topFrontLeft, this.bounds.topFrontRight,
+            this.bounds.topBackLeft, this.bounds.topBackRight
+        ];
+        this.bounds.front = [
+            this.bounds.bottomFrontLeft, this.bounds.bottomFrontRight,
+            this.bounds.middleFrontLeft, this.bounds.middleFrontRight,
+            this.bounds.topFrontLeft, this.bounds.topFrontRight
+        ];
+        this.bounds.back = [
+            this.bounds.bottomBackLeft, this.bounds.bottomBackRight,
+            this.bounds.middleBackLeft, this.bounds.middleBackRight,
+            this.bounds.topBackLeft, this.bounds.topBackRight
+        ];
+        this.bounds.left = [
+            this.bounds.bottomFrontLeft, this.bounds.bottomBackLeft,
+            this.bounds.middleFrontLeft, this.bounds.middleBackLeft,
+            this.bounds.topFrontLeft, this.bounds.topBackLeft
+        ];
+        this.bounds.right = [
+            this.bounds.bottomFrontRight, this.bounds.bottomBackRight,
+            this.bounds.middleFrontRight, this.bounds.middleBackRight,
+            this.bounds.topFrontRight, this.bounds.topBackRight
+        ];
+        this.bounds.top = [
+            this.bounds.topFrontLeft, this.bounds.topFrontRight,
+            this.bounds.topBackLeft, this.bounds.topBackRight
+        ];
+        this.bounds.bottom = [
+            this.bounds.bottomFrontLeft, this.bounds.bottomFrontRight,
+            this.bounds.bottomBackLeft, this.bounds.bottomBackRight
+        ];
     }
-    return this.rotationQuat;
-};
-Movable.prototype.getBank = function () {
-    return this.bank;
-};
-Movable.prototype.updateBounds = function (position) {
-    var x = position[0], y = position[1], z = position[2];
-    var width = .6;
-    var height = 1.6;
-    var w = width / 2;
-    var h = height / 2;
-    var bounds;
-    // x0/y0/z0 - forward + left
-    bounds = this.bounds.bottomFrontLeft;
-    bounds[0] = x - w;
-    bounds[1] = y;
-    bounds[2] = z - w;
-    // x0/y0/z1 - backward + left
-    bounds = this.bounds.bottomBackLeft;
-    bounds[0] = x - w;
-    bounds[1] = y;
-    bounds[2] = z + w;
-    // x1/y0/z1 - backward + right
-    bounds = this.bounds.bottomBackRight;
-    bounds[0] = x + w;
-    bounds[1] = y;
-    bounds[2] = z + w;
-    // x1/y0/z0 - forward + right
-    bounds = this.bounds.bottomFrontRight;
-    bounds[0] = x + w;
-    bounds[1] = y;
-    bounds[2] = z - w;
-    bounds = this.bounds.middleFrontLeft;
-    bounds[0] = x - w;
-    bounds[1] = y + h;
-    bounds[2] = z - w;
-    bounds = this.bounds.middleBackLeft;
-    bounds[0] = x - w;
-    bounds[1] = y + h;
-    bounds[2] = z + w;
-    bounds = this.bounds.middleBackRight;
-    bounds[0] = x + w;
-    bounds[1] = y + h;
-    bounds[2] = z + w;
-    bounds = this.bounds.middleFrontRight;
-    bounds[0] = x + w;
-    bounds[1] = y + h;
-    bounds[2] = z - w;
-    bounds = this.bounds.topFrontLeft;
-    bounds[0] = x - w;
-    bounds[1] = y + height;
-    bounds[2] = z - w;
-    bounds = this.bounds.topBackLeft;
-    bounds[0] = x - w;
-    bounds[1] = y + height;
-    bounds[2] = z + w;
-    bounds = this.bounds.topBackRight;
-    bounds[0] = x + w;
-    bounds[1] = y + height;
-    bounds[2] = z + w;
-    bounds = this.bounds.topFrontRight;
-    bounds[0] = x + w;
-    bounds[1] = y + height;
-    bounds[2] = z - w;
-};
-module.exports = Movable;
+    translate(vector) {
+        glm.vec3.add(this.position, this.position, vector);
+    }
+    setTranslation(x, y, z) {
+        glm.vec3.copy(this.position, arguments);
+    }
+    rotateY(radians) {
+        this.yaw += radians;
+        if (this.yaw > Math.PI * 2) {
+            this.yaw -= (Math.PI * 2);
+        }
+        else if (this.yaw < 0) {
+            this.yaw += (Math.PI * 2);
+        }
+        this.rotationQuatNeedsUpdate = true;
+    }
+    rotateX(radians) {
+        // clamp absolute camera pitch, after applying pitch delta
+        this.pitch += radians;
+        if (this.pitch > 1.5) {
+            this.pitch = 1.5;
+        }
+        else if (this.pitch < -1.5) {
+            this.pitch = -1.5;
+        }
+        this.rotationQuatNeedsUpdate = true;
+    }
+    setRotation(x, y, z) {
+        this.yaw = y;
+        this.pitch = x;
+        this.bank = z;
+        if (this.pitch > 1.5) {
+            this.pitch = 1.5;
+        }
+        else if (this.pitch < -1.5) {
+            this.pitch = -1.5;
+        }
+        this.rotationQuatNeedsUpdate = true;
+    }
+    getPosition() {
+        return this.position;
+    }
+    getX() {
+        return this.position[0];
+    }
+    getY() {
+        return this.position[1];
+    }
+    getZ() {
+        return this.position[2];
+    }
+    getPitch() {
+        return this.pitch;
+    }
+    getYaw() {
+        return this.yaw;
+    }
+    getRotationQuat() {
+        if (this.rotationQuatNeedsUpdate) {
+            glm.quat.identity(this.rotationQuat);
+            glm.quat.rotateY(this.rotationQuat, this.rotationQuat, this.yaw);
+            glm.quat.rotateX(this.rotationQuat, this.rotationQuat, this.pitch);
+            this.rotationQuatNeedsUpdate = false;
+        }
+        return this.rotationQuat;
+    }
+    getBank() {
+        return this.bank;
+    }
+    updateBounds(position) {
+        var x = position[0], y = position[1], z = position[2];
+        var width = .6;
+        var height = 1.6;
+        var w = width / 2;
+        var h = height / 2;
+        var bounds;
+        // x0/y0/z0 - forward + left
+        bounds = this.bounds.bottomFrontLeft;
+        bounds[0] = x - w;
+        bounds[1] = y;
+        bounds[2] = z - w;
+        // x0/y0/z1 - backward + left
+        bounds = this.bounds.bottomBackLeft;
+        bounds[0] = x - w;
+        bounds[1] = y;
+        bounds[2] = z + w;
+        // x1/y0/z1 - backward + right
+        bounds = this.bounds.bottomBackRight;
+        bounds[0] = x + w;
+        bounds[1] = y;
+        bounds[2] = z + w;
+        // x1/y0/z0 - forward + right
+        bounds = this.bounds.bottomFrontRight;
+        bounds[0] = x + w;
+        bounds[1] = y;
+        bounds[2] = z - w;
+        bounds = this.bounds.middleFrontLeft;
+        bounds[0] = x - w;
+        bounds[1] = y + h;
+        bounds[2] = z - w;
+        bounds = this.bounds.middleBackLeft;
+        bounds[0] = x - w;
+        bounds[1] = y + h;
+        bounds[2] = z + w;
+        bounds = this.bounds.middleBackRight;
+        bounds[0] = x + w;
+        bounds[1] = y + h;
+        bounds[2] = z + w;
+        bounds = this.bounds.middleFrontRight;
+        bounds[0] = x + w;
+        bounds[1] = y + h;
+        bounds[2] = z - w;
+        bounds = this.bounds.topFrontLeft;
+        bounds[0] = x - w;
+        bounds[1] = y + height;
+        bounds[2] = z - w;
+        bounds = this.bounds.topBackLeft;
+        bounds[0] = x - w;
+        bounds[1] = y + height;
+        bounds[2] = z + w;
+        bounds = this.bounds.topBackRight;
+        bounds[0] = x + w;
+        bounds[1] = y + height;
+        bounds[2] = z + w;
+        bounds = this.bounds.topFrontRight;
+        bounds[0] = x + w;
+        bounds[1] = y + height;
+        bounds[2] = z - w;
+    }
+}
+exports.Movable = Movable;
 
 },{"gl-matrix":3}],29:[function(require,module,exports){
 var pool = {};
@@ -11765,6 +11862,8 @@ module.exports = {
 };
 
 },{}],30:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var raycast = require('voxel-raycast');
 var debug = false;
@@ -11787,396 +11886,403 @@ var velocities = {
     maxFly: 15 / tps
 };
 var slowFall = false;
-// need to pass in start position
-function Physics(movable, controlState, game) {
-    this.controlState = controlState;
-    this.movable = movable;
-    this.game = game;
-    this.currentVelocity = vec3.create();
-    this.rotatedMovementVector = vec3.create();
-    this.rotationQuat = quat.create();
-    this.previousVelocity = vec3.create();
-}
-Physics.prototype.tick = function () {
-    this.movable.isMoving = this.controlState.forward || this.controlState.backward;
-    // don't tick based on delta milliseconds ... lets always assume our tick rate:
-    // much less math, and if we have a pause, the character won't lurch forward
-    if (this.controlState.forward == 1) {
-        this.currentVelocity[2] += -accelerations.walk;
-        this.currentVelocity[2] = Math.max(this.currentVelocity[2], -velocities.maxWalk);
+class Physics {
+    // need to pass in start position
+    constructor(movable, controlState, game) {
+        this.controlState = controlState;
+        this.movable = movable;
+        this.game = game;
+        this.currentVelocity = vec3.create();
+        this.rotatedMovementVector = vec3.create();
+        this.rotationQuat = quat.create();
+        this.previousVelocity = vec3.create();
     }
-    else if (this.controlState.forward > 0) {
-        this.currentVelocity[2] = -velocities.maxWalk * this.controlState.forward;
-    }
-    else if (this.controlState.backward == 1) {
-        this.currentVelocity[2] += accelerations.walk;
-        this.currentVelocity[2] = Math.min(this.currentVelocity[2], velocities.maxWalk);
-    }
-    else if (this.controlState.backward > 0) {
-        this.currentVelocity[2] = velocities.maxWalk * this.controlState.backward;
-    }
-    else {
-        // Slowdown
-        if (this.currentVelocity[2] > 0) {
-            this.currentVelocity[2] -= accelerations.slowdown;
-            if (this.currentVelocity[2] < 0) {
-                this.currentVelocity[2] = 0.00;
-            }
+    tick() {
+        this.movable.isMoving = this.controlState.forward || this.controlState.backward;
+        // don't tick based on delta milliseconds ... lets always assume our tick rate:
+        // much less math, and if we have a pause, the character won't lurch forward
+        if (this.controlState.forward === 1) {
+            this.currentVelocity[2] += -accelerations.walk;
+            this.currentVelocity[2] = Math.max(this.currentVelocity[2], -velocities.maxWalk);
         }
-        else if (this.currentVelocity[2] < 0) {
-            this.currentVelocity[2] += accelerations.slowdown;
-            if (this.currentVelocity[2] > 0) {
-                this.currentVelocity[2] = 0.00;
-            }
+        else if (this.controlState.forward > 0) {
+            this.currentVelocity[2] = -velocities.maxWalk * this.controlState.forward;
         }
-    }
-    if (this.controlState.left == 1) {
-        // keyboard, accelerate gradually
-        this.currentVelocity[0] += -accelerations.walk;
-        this.currentVelocity[0] = Math.max(this.currentVelocity[0], -velocities.maxWalk);
-    }
-    else if (this.controlState.left > 0) {
-        // gamepad, no acceleration, use stick percentage
-        this.currentVelocity[0] = -velocities.maxWalk * this.controlState.left;
-    }
-    else if (this.controlState.right == 1) {
-        this.currentVelocity[0] += accelerations.walk;
-        this.currentVelocity[0] = Math.min(this.currentVelocity[0], velocities.maxWalk);
-    }
-    else if (this.controlState.right > 0) {
-        this.currentVelocity[0] = velocities.maxWalk * this.controlState.right;
-    }
-    else {
-        // Slowdown
-        if (this.currentVelocity[0] > 0) {
-            this.currentVelocity[0] -= accelerations.slowdown;
-            if (this.currentVelocity[0] < 0) {
-                this.currentVelocity[0] = 0.00;
-            }
+        else if (this.controlState.backward === 1) {
+            this.currentVelocity[2] += accelerations.walk;
+            this.currentVelocity[2] = Math.min(this.currentVelocity[2], velocities.maxWalk);
         }
-        else if (this.currentVelocity[0] < 0) {
-            this.currentVelocity[0] += accelerations.slowdown;
-            if (this.currentVelocity[0] > 0) {
-                this.currentVelocity[0] = 0.00;
-            }
-        }
-    }
-    // flying and jumping should fall slowly
-    if (this.controlState.jump && this.currentVelocity[1] == 0) {
-        // only allow jumping if we're on the ground
-        slowFall = true;
-        this.currentVelocity[1] = velocities.jump;
-    }
-    else if (this.controlState.fly) {
-        slowFall = true;
-        // dont exceed maximum upward velocity
-        this.currentVelocity[1] += accelerations.fly;
-        if (this.currentVelocity[1] > 0) {
-            this.currentVelocity[1] = Math.min(this.currentVelocity[1], velocities.maxFly);
-        }
-    }
-    else {
-        if (slowFall && this.currentVelocity[1] < 0) {
-            this.currentVelocity[1] += accelerations.partialGravity;
+        else if (this.controlState.backward > 0) {
+            this.currentVelocity[2] = velocities.maxWalk * this.controlState.backward;
         }
         else {
-            this.currentVelocity[1] += accelerations.gravity;
+            // Slowdown
+            if (this.currentVelocity[2] > 0) {
+                this.currentVelocity[2] -= accelerations.slowdown;
+                if (this.currentVelocity[2] < 0) {
+                    this.currentVelocity[2] = 0.00;
+                }
+            }
+            else if (this.currentVelocity[2] < 0) {
+                this.currentVelocity[2] += accelerations.slowdown;
+                if (this.currentVelocity[2] > 0) {
+                    this.currentVelocity[2] = 0.00;
+                }
+            }
         }
-    }
-    this.handleCollision(this.currentVelocity);
-};
-Physics.prototype.handleCollision = function (movementVector) {
-    var self = this;
-    var currentPosition = this.movable.getPosition();
-    var testPosition = vec3.create();
-    var direction = vec3.create();
-    var direction2 = vec3.create();
-    var hit = vec3.create();
-    var normals = vec3.create();
-    var boundsMap = {
-        p0: 'front',
-        n0: 'back',
-        p1: 'top',
-        n1: 'bottom',
-        p2: 'right',
-        n2: 'left'
-    };
-    quat.identity(this.rotationQuat);
-    quat.rotateY(this.rotationQuat, this.rotationQuat, self.movable.getYaw());
-    vec3.transformQuat(direction, movementVector, this.rotationQuat);
-    // Try to step up, but only if we're on the ground
-    if (this.controlState.forward && this.previousVelocity[1] == 0.00) {
-        vec3.copy(testPosition, currentPosition);
-        testPosition[1] += 0.8;
-        var collision = raycast(self.game, testPosition, direction, 0.5, hit, normals);
-        testPosition[1] += 0.2;
-        if (collision
-            &&
-                self.game.getBlock(testPosition[0], testPosition[1], testPosition[2]) == 0) {
-            currentPosition[1] += 1.2;
-            this.movable.updateBounds(currentPosition);
-            vec3.copy(direction2, direction);
-            // Did we have any significant collisions? If so, roll back the Y-axis change
-            if (this.haggle(this.movable.bounds.all, currentPosition, direction2)) {
-                currentPosition[1] -= 1.2;
+        if (this.controlState.left === 1) {
+            // keyboard, accelerate gradually
+            this.currentVelocity[0] += -accelerations.walk;
+            this.currentVelocity[0] = Math.max(this.currentVelocity[0], -velocities.maxWalk);
+        }
+        else if (this.controlState.left > 0) {
+            // gamepad, no acceleration, use stick percentage
+            this.currentVelocity[0] = -velocities.maxWalk * this.controlState.left;
+        }
+        else if (this.controlState.right === 1) {
+            this.currentVelocity[0] += accelerations.walk;
+            this.currentVelocity[0] = Math.min(this.currentVelocity[0], velocities.maxWalk);
+        }
+        else if (this.controlState.right > 0) {
+            this.currentVelocity[0] = velocities.maxWalk * this.controlState.right;
+        }
+        else {
+            // Slowdown
+            if (this.currentVelocity[0] > 0) {
+                this.currentVelocity[0] -= accelerations.slowdown;
+                if (this.currentVelocity[0] < 0) {
+                    this.currentVelocity[0] = 0.00;
+                }
+            }
+            else if (this.currentVelocity[0] < 0) {
+                this.currentVelocity[0] += accelerations.slowdown;
+                if (this.currentVelocity[0] > 0) {
+                    this.currentVelocity[0] = 0.00;
+                }
+            }
+        }
+        // flying and jumping should fall slowly
+        if (this.controlState.jump && this.currentVelocity[1] === 0) {
+            // only allow jumping if we're on the ground
+            slowFall = true;
+            this.currentVelocity[1] = velocities.jump;
+        }
+        else if (this.controlState.fly) {
+            slowFall = true;
+            // dont exceed maximum upward velocity
+            this.currentVelocity[1] += accelerations.fly;
+            if (this.currentVelocity[1] > 0) {
+                this.currentVelocity[1] = Math.min(this.currentVelocity[1], velocities.maxFly);
+            }
+        }
+        else {
+            if (slowFall && this.currentVelocity[1] < 0) {
+                this.currentVelocity[1] += accelerations.partialGravity;
             }
             else {
-                vec3.copy(this.previousVelocity, direction2);
-                self.movable.translate(direction2);
-                return;
+                this.currentVelocity[1] += accelerations.gravity;
             }
         }
+        this.handleCollision(this.currentVelocity);
     }
-    this.movable.updateBounds(currentPosition);
-    this.haggle(this.movable.bounds.all, currentPosition, direction);
-    vec3.copy(this.previousVelocity, direction);
-    self.movable.translate(direction);
-};
-// Haggle for a stable, non-colliding position
-// Result of this is that direction vec3 gets adjusted in the process
-Physics.prototype.haggle = function (bounds, start, direction) {
-    var self = this;
-    var collided = false;
-    var len = vec3.length(direction);
-    var hit = vec3.create();
-    var normals = vec3.create();
-    for (var i = 0; i < bounds.length; i++) {
-        var start = bounds[i];
-        var adjusted = false;
-        // If we've already adjusted the direction to 0 (like when we're up against a wall), skip further dection
-        if (len == 0) {
-            break;
-        }
-        var collision = raycast(self.game, start, direction, len, hit, normals);
-        // Back off direction up to collision point along collision surface normals
-        for (var axis = 0; axis < 3; axis++) {
-            if (normals[axis] < 0.00 || 0.00 < normals[axis]) {
-                adjusted = true;
-                // Snap to voxel boundary upon collision
-                if (normals[axis] > 0) {
-                    direction[axis] = Math.ceil(hit[axis] - start[axis]);
+    handleCollision(movementVector) {
+        var self = this;
+        var currentPosition = this.movable.getPosition();
+        var testPosition = vec3.create();
+        var direction = vec3.create();
+        var direction2 = vec3.create();
+        var hit = vec3.create();
+        var normals = vec3.create();
+        var boundsMap = {
+            p0: 'front',
+            n0: 'back',
+            p1: 'top',
+            n1: 'bottom',
+            p2: 'right',
+            n2: 'left'
+        };
+        quat.identity(this.rotationQuat);
+        quat.rotateY(this.rotationQuat, this.rotationQuat, self.movable.getYaw());
+        vec3.transformQuat(direction, movementVector, this.rotationQuat);
+        // Try to step up, but only if we're on the ground
+        if (this.controlState.forward && this.previousVelocity[1] === 0.00) {
+            vec3.copy(testPosition, currentPosition);
+            testPosition[1] += 0.8;
+            var collision = raycast(self.game, testPosition, direction, 0.5, hit, normals);
+            testPosition[1] += 0.2;
+            if (collision
+                &&
+                    self.game.getBlock(testPosition[0], testPosition[1], testPosition[2]) === 0) {
+                currentPosition[1] += 1.2;
+                this.movable.updateBounds(currentPosition);
+                vec3.copy(direction2, direction);
+                // Did we have any significant collisions? If so, roll back the Y-axis change
+                if (this.haggle(this.movable.bounds.all, currentPosition, direction2)) {
+                    currentPosition[1] -= 1.2;
                 }
                 else {
-                    direction[axis] = Math.floor(hit[axis] - start[axis]);
+                    vec3.copy(this.previousVelocity, direction2);
+                    self.movable.translate(direction2);
+                    return;
                 }
-                this.currentVelocity[axis] = 0.00;
             }
         }
-        if (adjusted) {
-            collided = true;
-            len = vec3.length(direction);
-        }
+        this.movable.updateBounds(currentPosition);
+        this.haggle(this.movable.bounds.all, currentPosition, direction);
+        vec3.copy(this.previousVelocity, direction);
+        self.movable.translate(direction);
     }
-    return collided;
-};
-module.exports = Physics;
+    // Haggle for a stable, non-colliding position
+    // Result of this is that direction vec3 gets adjusted in the process
+    haggle(bounds, start, direction) {
+        var self = this;
+        var collided = false;
+        var len = vec3.length(direction);
+        var hit = vec3.create();
+        var normals = vec3.create();
+        for (var i = 0; i < bounds.length; i++) {
+            var start = bounds[i];
+            var adjusted = false;
+            // If we've already adjusted the direction to 0 (like when we're up against a wall), skip further dection
+            if (len === 0) {
+                break;
+            }
+            var collision = raycast(self.game, start, direction, len, hit, normals);
+            // Back off direction up to collision point along collision surface normals
+            for (var axis = 0; axis < 3; axis++) {
+                if (normals[axis] < 0.00 || 0.00 < normals[axis]) {
+                    adjusted = true;
+                    // Snap to voxel boundary upon collision
+                    if (normals[axis] > 0) {
+                        direction[axis] = Math.ceil(hit[axis] - start[axis]);
+                    }
+                    else {
+                        direction[axis] = Math.floor(hit[axis] - start[axis]);
+                    }
+                    this.currentVelocity[axis] = 0.00;
+                }
+            }
+            if (adjusted) {
+                collided = true;
+                len = vec3.length(direction);
+            }
+        }
+        return collided;
+    }
+}
+exports.Physics = Physics;
 
 },{"gl-matrix":3,"voxel-raycast":15}],31:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var inherits = require('inherits');
-var Movable = require('./movable');
+const movable_1 = require("./movable");
+const model_1 = require("./model");
 var Shapes = require('./shapes');
-var Model = require('./model');
-function Player(gl, shader, texture) {
-    var self = this;
-    Movable.call(this);
-    this.eyeOffset = vec3.fromValues(0, 1.25, -0.175);
-    this.eyePosition = vec3.create();
-    var uvCoordinates = {
-        head: [
-            //x  y   w   h
-            24, 16, 8, 8,
-            8, 16, 8, 8,
-            8, 24, 8, 8,
-            16, 24, 8, 8,
-            16, 16, 8, 8,
-            0, 16, 8, 8 // right
-        ],
-        body: [
-            32, 0, 8, 12,
-            20, 0, 8, 12,
-            20, 12, 8, 4,
-            28, 12, 8, 4,
-            28, 0, 4, 12,
-            32, 0, -4, 12 // right
-        ],
-        rightArm: [
-            52, 0, 4, 12,
-            44, 0, 4, 12,
-            44, 12, 4, 4,
-            48, 12, 4, 4,
-            48, 0, 4, 12,
-            40, 0, 4, 12 // right
-        ],
-        leftArm: [
-            44, 0, 4, 12,
-            52, 0, 4, 12,
-            44, 12, 4, 4,
-            48, 12, 4, 4,
-            40, 0, 4, 12,
-            48, 0, 4, 12 // right
-        ],
-        rightLeg: [
-            12, 0, 4, 12,
-            4, 0, 4, 12,
-            12, 12, -4, 4,
-            8, 12, -4, 4,
-            8, 0, 4, 12,
-            0, 0, 4, 12 // right
-        ],
-        leftLeg: [
-            12, 0, 4, 12,
-            4, 0, 4, 12,
-            12, 12, -4, 4,
-            8, 12, -4, 4,
-            8, 0, 4, 12,
-            0, 0, 4, 12 // right
-        ]
-    };
-    var meshes = [];
-    var shape;
-    var armRotation = 0.6662;
-    var walkAnimationSpeed = 40;
-    shape = Shapes.three.rectangle(0.33, 0.35, 0.33, uvCoordinates.head, 64);
-    shape.part = 0;
-    mat4.translate(shape.view, shape.view, [0, 1.12, 0]);
-    meshes.push(shape);
-    // 4, 12, 8
-    // out of 32
-    shape = Shapes.three.rectangle(0.33, 0.5, 0.2, uvCoordinates.body, 64);
-    shape.part = 1;
-    mat4.translate(shape.view, shape.view, [0, 0.68, 0]);
-    meshes.push(shape);
-    shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.leftArm, 64);
-    shape.part = 2;
-    shape.render = function (ts) {
-        if (self.isMoving) {
-            this.rotation[0] = Math.cos(0.6662 * (ts / walkAnimationSpeed));
-        }
-        else {
-            this.rotation[0] = 0;
-        }
-    };
-    shape.rotateAround[1] = 0.25;
-    mat4.rotateZ(shape.view, shape.view, -0.1);
-    mat4.translate(shape.view, shape.view, [-0.33, 0.62, 0]);
-    meshes.push(shape);
-    shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.rightArm, 64);
-    shape.part = 2;
-    shape.render = function (ts) {
-        if (self.isMoving) {
-            this.rotation[0] = -Math.cos(0.6662 * (ts / walkAnimationSpeed));
-        }
-        else {
-            this.rotation[0] = 0;
-        }
-    };
-    shape.rotateAround[1] = 0.25;
-    mat4.rotateZ(shape.view, shape.view, 0.1);
-    mat4.translate(shape.view, shape.view, [0.33, 0.62, 0]);
-    meshes.push(shape);
-    shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.leftLeg, 64);
-    shape.part = 3;
-    shape.render = function (ts) {
-        if (self.isMoving) {
-            this.rotation[0] = -Math.cos(0.6662 * (ts / walkAnimationSpeed));
-        }
-        else {
-            this.rotation[0] = 0;
-        }
-    };
-    shape.rotateAround[1] = 0.25;
-    mat4.translate(shape.view, shape.view, [-0.09, 0.2, 0]);
-    meshes.push(shape);
-    shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.rightLeg, 64);
-    shape.part = 3;
-    shape.render = function (ts) {
-        if (self.isMoving) {
-            this.rotation[0] = Math.cos(0.6662 * (ts / walkAnimationSpeed));
-        }
-        else {
-            this.rotation[0] = 0;
-        }
-    };
-    shape.rotateAround[1] = 0.25;
-    mat4.translate(shape.view, shape.view, [0.09, 0.2, 0]);
-    meshes.push(shape);
-    this.model = new Model(gl, shader, meshes, texture, this);
+class Player extends movable_1.Movable {
+    constructor(gl, shader, texture) {
+        super();
+        var self = this;
+        this.eyeOffset = vec3.fromValues(0, 1.25, -0.175);
+        this.eyePosition = vec3.create();
+        var uvCoordinates = {
+            head: [
+                //x  y   w   h
+                24, 16, 8, 8,
+                8, 16, 8, 8,
+                8, 24, 8, 8,
+                16, 24, 8, 8,
+                16, 16, 8, 8,
+                0, 16, 8, 8 // right
+            ],
+            body: [
+                32, 0, 8, 12,
+                20, 0, 8, 12,
+                20, 12, 8, 4,
+                28, 12, 8, 4,
+                28, 0, 4, 12,
+                32, 0, -4, 12 // right
+            ],
+            rightArm: [
+                52, 0, 4, 12,
+                44, 0, 4, 12,
+                44, 12, 4, 4,
+                48, 12, 4, 4,
+                48, 0, 4, 12,
+                40, 0, 4, 12 // right
+            ],
+            leftArm: [
+                44, 0, 4, 12,
+                52, 0, 4, 12,
+                44, 12, 4, 4,
+                48, 12, 4, 4,
+                40, 0, 4, 12,
+                48, 0, 4, 12 // right
+            ],
+            rightLeg: [
+                12, 0, 4, 12,
+                4, 0, 4, 12,
+                12, 12, -4, 4,
+                8, 12, -4, 4,
+                8, 0, 4, 12,
+                0, 0, 4, 12 // right
+            ],
+            leftLeg: [
+                12, 0, 4, 12,
+                4, 0, 4, 12,
+                12, 12, -4, 4,
+                8, 12, -4, 4,
+                8, 0, 4, 12,
+                0, 0, 4, 12 // right
+            ]
+        };
+        var meshes = [];
+        var shape;
+        var armRotation = 0.6662;
+        var walkAnimationSpeed = 40;
+        shape = Shapes.three.rectangle(0.33, 0.35, 0.33, uvCoordinates.head, 64);
+        shape.part = 0;
+        mat4.translate(shape.view, shape.view, [0, 1.12, 0]);
+        meshes.push(shape);
+        // 4, 12, 8
+        // out of 32
+        shape = Shapes.three.rectangle(0.33, 0.5, 0.2, uvCoordinates.body, 64);
+        shape.part = 1;
+        mat4.translate(shape.view, shape.view, [0, 0.68, 0]);
+        meshes.push(shape);
+        shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.leftArm, 64);
+        shape.part = 2;
+        shape.render = function (ts) {
+            if (self.isMoving) {
+                this.rotation[0] = Math.cos(0.6662 * (ts / walkAnimationSpeed));
+            }
+            else {
+                this.rotation[0] = 0;
+            }
+        };
+        shape.rotateAround[1] = 0.25;
+        mat4.rotateZ(shape.view, shape.view, -0.1);
+        mat4.translate(shape.view, shape.view, [-0.33, 0.62, 0]);
+        meshes.push(shape);
+        shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.rightArm, 64);
+        shape.part = 2;
+        shape.render = function (ts) {
+            if (self.isMoving) {
+                this.rotation[0] = -Math.cos(0.6662 * (ts / walkAnimationSpeed));
+            }
+            else {
+                this.rotation[0] = 0;
+            }
+        };
+        shape.rotateAround[1] = 0.25;
+        mat4.rotateZ(shape.view, shape.view, 0.1);
+        mat4.translate(shape.view, shape.view, [0.33, 0.62, 0]);
+        meshes.push(shape);
+        shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.leftLeg, 64);
+        shape.part = 3;
+        shape.render = function (ts) {
+            if (self.isMoving) {
+                this.rotation[0] = -Math.cos(0.6662 * (ts / walkAnimationSpeed));
+            }
+            else {
+                this.rotation[0] = 0;
+            }
+        };
+        shape.rotateAround[1] = 0.25;
+        mat4.translate(shape.view, shape.view, [-0.09, 0.2, 0]);
+        meshes.push(shape);
+        shape = Shapes.three.rectangle(0.16, 0.5, 0.16, uvCoordinates.rightLeg, 64);
+        shape.part = 3;
+        shape.render = function (ts) {
+            if (self.isMoving) {
+                this.rotation[0] = Math.cos(0.6662 * (ts / walkAnimationSpeed));
+            }
+            else {
+                this.rotation[0] = 0;
+            }
+        };
+        shape.rotateAround[1] = 0.25;
+        mat4.translate(shape.view, shape.view, [0.09, 0.2, 0]);
+        meshes.push(shape);
+        this.model = new model_1.Model(gl, shader, meshes, texture, this);
+    }
+    translate(vector) {
+        vec3.add(this.position, this.position, vector);
+        vec3.add(this.eyePosition, this.position, this.eyeOffset);
+    }
+    setTranslation(x, y, z) {
+        vec3.copy(this.position, arguments);
+        vec3.add(this.eyePosition, this.position, this.eyeOffset);
+    }
+    getEyeOffset() {
+        return this.eyeOffset;
+    }
+    getEyePosition() {
+        return this.eyePosition;
+    }
+    setTexture(texture) {
+        this.model.setTexture(texture);
+    }
+    render(projection, ts) {
+        this.model.render(projection, ts);
+    }
 }
-inherits(Player, Movable);
-Player.prototype.translate = function (vector) {
-    vec3.add(this.position, this.position, vector);
-    vec3.add(this.eyePosition, this.position, this.eyeOffset);
-};
-Player.prototype.setTranslation = function (x, y, z) {
-    vec3.copy(this.position, arguments);
-    vec3.add(this.eyePosition, this.position, this.eyeOffset);
-};
-Player.prototype.getEyeOffset = function () {
-    return this.eyeOffset;
-};
-Player.prototype.getEyePosition = function () {
-    return this.eyePosition;
-};
-Player.prototype.setTexture = function (texture) {
-    this.model.setTexture(texture);
-};
-Player.prototype.render = function (projection, ts) {
-    this.model.render(projection, ts);
-};
-module.exports = Player;
+exports.Player = Player;
 
 },{"./model":25,"./movable":28,"./shapes":34,"gl-matrix":3,"inherits":13}],32:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 // http://webglfundamentals.org/webgl/lessons/webgl-scene-graph.html
-var Node = function (gl, model) {
-    this.gl = gl;
-    this.children = [];
-    this.model = model;
-    this.localMatrix = mat4.create();
-    this.worldMatrix = mat4.create();
-};
-// setParent helps us prevent a child from being added to multiple parents
-/*
-Node.prototype.setParent = function(parent) {
-    // remove us from our parent
-    if (this.parent) {
-        var ndx = this.parent.children.indexOf(this);
-        if (ndx >= 0) {
-            this.parent.children.splice(ndx, 1);
+class Node {
+    constructor(gl, model) {
+        this.gl = gl;
+        this.children = [];
+        this.model = model;
+        this.localMatrix = mat4.create();
+        this.worldMatrix = mat4.create();
+    }
+    // setParent helps us prevent a child from being added to multiple parents
+    /*
+    setParent = function(parent) {
+        // remove us from our parent
+        if (this.parent) {
+            var ndx = this.parent.children.indexOf(this);
+            if (ndx >= 0) {
+                this.parent.children.splice(ndx, 1);
+            }
+        }
+
+        // Add us to our new parent
+        if (parent) {
+            parent.children.append(this);
+        }
+        this.parent = parent;
+    };
+    */
+    addChild(node) {
+        this.children.push(node);
+    }
+    // Update
+    tick(parentWorldMatrix, ts) {
+        this.model.tick(parentWorldMatrix, ts);
+        for (var i = 0; i < this.children.length; i++) {
+            var child = this.children[i];
+            // Don't really like that this reaches in
+            child.tick(this.model.worldMatrix, ts);
         }
     }
-
-    // Add us to our new parent
-    if (parent) {
-        parent.children.append(this);
+    render(ts) {
+        // Now render this item?
+        this.model.render(ts);
+        for (var i = 0; i < this.children.length; i++) {
+            var child = this.children[i];
+            child.render(ts);
+        }
     }
-    this.parent = parent;
-};
-*/
-Node.prototype.addChild = function (node) {
-    this.children.push(node);
-};
-// Update 
-Node.prototype.tick = function (parentWorldMatrix, ts) {
-    this.model.tick(parentWorldMatrix, ts);
-    for (var i = 0; i < this.children.length; i++) {
-        var child = this.children[i];
-        // Don't really like that this reaches in
-        child.tick(this.model.worldMatrix, ts);
-    }
-};
-Node.prototype.render = function (ts) {
-    // Now render this item?
-    this.model.render(ts);
-    for (var i = 0; i < this.children.length; i++) {
-        var child = this.children[i];
-        child.render(ts);
-    }
-};
-module.exports = {
-    Node: Node
-};
+}
+exports.Node = Node;
 
 },{"gl-matrix":3}],33:[function(require,module,exports){
 var glm = require('gl-matrix');
@@ -12199,7 +12305,7 @@ module.exports = {
 var glm = require('gl-matrix'), mat4 = glm.mat4, vec3 = glm.vec3;
 // NOTE: clean up indentation. uglify-js does lots of compressing.
 // Return points for WebGL use
-var shapes = module.exports = {
+module.exports = {
     wire: {
         triangle: function () { },
         cube: function (fromPoint, toPoint) {
@@ -12208,7 +12314,7 @@ var shapes = module.exports = {
                 toPoint[1] - fromPoint[1],
                 toPoint[2] - fromPoint[2]
             ];
-            // 
+            //
             var points = new Float32Array([
                 // lower face's outline
                 fromPoint[0], fromPoint[1], fromPoint[2],
@@ -12316,9 +12422,10 @@ var shapes = module.exports = {
             points.push(start[0], start[1], start[2]);
             points.push(end[0], end[1], end[2]);
             points.push(start[0], end[1], end[2]);
+            var texcoord = null;
             return {
                 position: points,
-                texcoord: null
+                texcoord: texcoord
             };
         }
     },
@@ -12535,7 +12642,7 @@ var shapes = module.exports = {
 var glm = require('gl-matrix'), mat4 = glm.mat4, vec3 = glm.vec3;
 // NOTE: clean up indentation. uglify-js does lots of compressing.
 // Return points for WebGL use
-var shapes = module.exports = {
+module.exports = {
     wire: {
         triangle: function () { },
         cube: function (fromPoint, toPoint) {
@@ -12544,7 +12651,7 @@ var shapes = module.exports = {
                 toPoint[1] - fromPoint[1],
                 toPoint[2] - fromPoint[2]
             ];
-            // 
+            //
             var points = new Float32Array([
                 // lower face's outline
                 fromPoint[0], fromPoint[1], fromPoint[2],
@@ -12652,10 +12759,11 @@ var shapes = module.exports = {
             points.push(start[0], start[1], start[2]);
             points.push(end[0], end[1], end[2]);
             points.push(start[0], end[1], end[2]);
+            var tnull = null;
             return {
                 position: points,
-                texcoord: null,
-                normals: null
+                texcoord: tnull,
+                normals: tnull
             };
         }
     },
@@ -12782,148 +12890,152 @@ var shapes = module.exports = {
 };
 
 },{"gl-matrix":3}],36:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('gl-matrix'), vec3 = glm.vec3, vec4 = glm.vec4, mat4 = glm.mat4, quat = glm.quat;
 var scratch = require('./scratch');
-var Sun = require('./models/sun');
-var Weather = function (gl, shader, textures, player) {
-    this.gl = gl;
-    this.shader = shader;
-    this.textures = textures;
-    // HELPERS
-    // be mindful of the ambient light value and it's affect with full sun
-    this.lightTypes = {
-        dark: vec3.fromValues(0, 0, 0),
-        dawn: vec3.fromValues(0.2, 0.1, 0.1),
-        full: vec3.fromValues(0.4, 0.4, 0.4),
-        dusk: vec3.fromValues(0.2, 0.1, 0.1)
-    };
-    this.ambientLightTypes = {
-        dark: vec3.fromValues(0.4, 0.4, 0.4),
-        dawn: vec3.fromValues(0.5, 0.5, 0.5),
-        full: vec3.fromValues(0.6, 0.6, 0.6),
-        dusk: vec3.fromValues(0.5, 0.5, 0.5)
-    };
-    // Seconds from 12 noon
-    this.time = 12 * 3600;
-    this.light = this.lightTypes.full;
-    this.lightAdjustment = vec3.fromValues(0, 0, 0);
-    this.ambientLight = this.ambientLightTypes.full;
-    this.ambientLightAdjustment = vec3.fromValues(0, 0, 0);
-    this.ambientLightColor = vec3.create();
-    this.directionalLight = {
-        color: vec3.create(),
-        start: vec3.fromValues(0, -1000, 0),
-        position: vec3.create()
-    };
-    // Initial setup
-    vec3.copy(this.directionalLight.color, this.light);
-    vec3.copy(this.ambientLightColor, this.ambientLight);
-    this.sun = new Sun(gl, shader, textures, player);
-};
-Weather.prototype.setLight = function (seconds) {
-    var light, ambientLight;
-    // Darkness
-    if (this.time >= 22 * 3600) {
-        // Directional
-        this.light = light = this.lightTypes.dark;
-        vec3.copy(this.directionalLight.color, light);
-        this.lightAdjustment[0] = 0.0;
-        this.lightAdjustment[1] = 0.0;
-        this.lightAdjustment[2] = 0.0;
-        // Ambient
-        this.ambientLight = ambientLight = this.ambientLightTypes.dark;
-        vec3.copy(this.ambientLightColor, ambientLight);
-        this.ambientLightAdjustment[0] = 0.0;
-        this.ambientLightAdjustment[1] = 0.0;
-        this.ambientLightAdjustment[2] = 0.0;
-    }
-    else 
-    // Transition to dark
-    if (this.time >= 20 * 3600) {
-        light = this.lightTypes.dark;
-        ambientLight = this.ambientLightTypes.dark;
-    }
-    else 
-    // Transition to dusk
-    if (this.time >= 18 * 3600) {
-        light = this.lightTypes.dusk;
-        ambientLight = this.ambientLightTypes.dusk;
-    }
-    else 
-    // Full sunlight
-    if (this.time >= 6 * 3600) {
-        this.light = light = this.lightTypes.full;
-        vec3.copy(this.directionalLight.color, light);
-        this.lightAdjustment[0] = 0.0;
-        this.lightAdjustment[1] = 0.0;
-        this.lightAdjustment[2] = 0.0;
-        // Ambient
-        this.ambientLight = ambientLight = this.ambientLightTypes.full;
-        vec3.copy(this.ambientLightColor, ambientLight);
-        this.ambientLightAdjustment[0] = 0.0;
-        this.ambientLightAdjustment[1] = 0.0;
-        this.ambientLightAdjustment[2] = 0.0;
-    }
-    else 
-    // Transition to full
-    if (this.time >= 4 * 3600) {
-        light = this.lightTypes.full;
-        ambientLight = this.ambientLightTypes.full;
-    }
-    else 
-    // Transition to dawn
-    if (this.time >= 2 * 3600) {
-        light = this.lightTypes.dawn;
-        ambientLight = this.ambientLightTypes.dawn;
-    }
-    else {
-        light = this.lightTypes.dark;
-        ambientLight = this.ambientLightTypes.dark;
-    }
-    if (light != this.light) {
-        // Calculate the adjustment
-        vec3.sub(this.lightAdjustment, light, this.directionalLight.color);
-        vec3.divide(this.lightAdjustment, this.lightAdjustment, [3600, 3600, 3600]);
-        vec3.multiply(this.lightAdjustment, this.lightAdjustment, [seconds, seconds, seconds]);
-        //vec3.copy(this.directionalLight.color, light);
-        this.light = light;
-    }
-    if (ambientLight != this.ambientLight) {
-        // Ambient
-        vec3.sub(this.ambientLightAdjustment, ambientLight, this.ambientLightColor);
-        vec3.divide(this.ambientLightAdjustment, this.ambientLightAdjustment, [3600, 3600, 3600]);
-        vec3.multiply(this.ambientLightAdjustment, this.ambientLightAdjustment, [seconds, seconds, seconds]);
-        //vec3.copy(this.directionalLight.color, light);
-        this.ambientLight = ambientLight;
-    }
-    // Do the adjustment
-    vec3.add(this.directionalLight.color, this.directionalLight.color, this.lightAdjustment);
-    vec3.add(this.ambientLightColor, this.ambientLightColor, this.ambientLightAdjustment);
-};
-// Currently runs every second
-Weather.prototype.tick = function (seconds) {
-    // Need to accompany this with a large cube sun travelling overhead
-    this.time += seconds;
-    if (this.time >= 86400) {
-        this.time -= 86400;
-    }
-    this.setLight(seconds);
-    var rotationPerSecond = (2 * Math.PI) / 86400;
-    this.sunRotation = rotationPerSecond * this.time;
-    // Rotate light source
-    quat.rotateZ(scratch.quat, scratch.identityQuat, this.sunRotation);
-    vec3.transformQuat(this.directionalLight.position, this.directionalLight.start, scratch.quat);
-    this.sun.tick(this.time, this.sunRotation);
-};
+const sun_1 = require("./models/sun");
 var full = vec3.fromValues(1.1, 1.1, 1.1);
-Weather.prototype.render = function (projection, ts) {
-    var gl = this.gl;
-    gl.useProgram(this.shader.program);
-    gl.uniformMatrix4fv(this.shader.uniforms.projection, false, projection);
-    gl.uniform3fv(this.shader.uniforms.ambientLightColor, full);
-    this.sun.render(scratch.identityMat4, ts);
-};
-module.exports = Weather;
+class Weather {
+    constructor(gl, shader, textures, player) {
+        this.gl = gl;
+        this.shader = shader;
+        this.textures = textures;
+        // HELPERS
+        // be mindful of the ambient light value and it's affect with full sun
+        this.lightTypes = {
+            dark: vec3.fromValues(0, 0, 0),
+            dawn: vec3.fromValues(0.2, 0.1, 0.1),
+            full: vec3.fromValues(0.4, 0.4, 0.4),
+            dusk: vec3.fromValues(0.2, 0.1, 0.1)
+        };
+        this.ambientLightTypes = {
+            dark: vec3.fromValues(0.4, 0.4, 0.4),
+            dawn: vec3.fromValues(0.5, 0.5, 0.5),
+            full: vec3.fromValues(0.6, 0.6, 0.6),
+            dusk: vec3.fromValues(0.5, 0.5, 0.5)
+        };
+        // Seconds from 12 noon
+        this.time = 12 * 3600;
+        this.light = this.lightTypes.full;
+        this.lightAdjustment = vec3.fromValues(0, 0, 0);
+        this.ambientLight = this.ambientLightTypes.full;
+        this.ambientLightAdjustment = vec3.fromValues(0, 0, 0);
+        this.ambientLightColor = vec3.create();
+        this.directionalLight = {
+            color: vec3.create(),
+            start: vec3.fromValues(0, -1000, 0),
+            position: vec3.create()
+        };
+        // Initial setup
+        vec3.copy(this.directionalLight.color, this.light);
+        vec3.copy(this.ambientLightColor, this.ambientLight);
+        this.sun = new sun_1.Sun(gl, shader, textures, player);
+    }
+    setLight(seconds) {
+        var light, ambientLight;
+        // Darkness
+        if (this.time >= 22 * 3600) {
+            // Directional
+            this.light = light = this.lightTypes.dark;
+            vec3.copy(this.directionalLight.color, light);
+            this.lightAdjustment[0] = 0.0;
+            this.lightAdjustment[1] = 0.0;
+            this.lightAdjustment[2] = 0.0;
+            // Ambient
+            this.ambientLight = ambientLight = this.ambientLightTypes.dark;
+            vec3.copy(this.ambientLightColor, ambientLight);
+            this.ambientLightAdjustment[0] = 0.0;
+            this.ambientLightAdjustment[1] = 0.0;
+            this.ambientLightAdjustment[2] = 0.0;
+        }
+        else 
+        // Transition to dark
+        if (this.time >= 20 * 3600) {
+            light = this.lightTypes.dark;
+            ambientLight = this.ambientLightTypes.dark;
+        }
+        else 
+        // Transition to dusk
+        if (this.time >= 18 * 3600) {
+            light = this.lightTypes.dusk;
+            ambientLight = this.ambientLightTypes.dusk;
+        }
+        else 
+        // Full sunlight
+        if (this.time >= 6 * 3600) {
+            this.light = light = this.lightTypes.full;
+            vec3.copy(this.directionalLight.color, light);
+            this.lightAdjustment[0] = 0.0;
+            this.lightAdjustment[1] = 0.0;
+            this.lightAdjustment[2] = 0.0;
+            // Ambient
+            this.ambientLight = ambientLight = this.ambientLightTypes.full;
+            vec3.copy(this.ambientLightColor, ambientLight);
+            this.ambientLightAdjustment[0] = 0.0;
+            this.ambientLightAdjustment[1] = 0.0;
+            this.ambientLightAdjustment[2] = 0.0;
+        }
+        else 
+        // Transition to full
+        if (this.time >= 4 * 3600) {
+            light = this.lightTypes.full;
+            ambientLight = this.ambientLightTypes.full;
+        }
+        else 
+        // Transition to dawn
+        if (this.time >= 2 * 3600) {
+            light = this.lightTypes.dawn;
+            ambientLight = this.ambientLightTypes.dawn;
+        }
+        else {
+            light = this.lightTypes.dark;
+            ambientLight = this.ambientLightTypes.dark;
+        }
+        if (light !== this.light) {
+            // Calculate the adjustment
+            vec3.sub(this.lightAdjustment, light, this.directionalLight.color);
+            vec3.divide(this.lightAdjustment, this.lightAdjustment, [3600, 3600, 3600]);
+            vec3.multiply(this.lightAdjustment, this.lightAdjustment, [seconds, seconds, seconds]);
+            //vec3.copy(this.directionalLight.color, light);
+            this.light = light;
+        }
+        if (ambientLight !== this.ambientLight) {
+            // Ambient
+            vec3.sub(this.ambientLightAdjustment, ambientLight, this.ambientLightColor);
+            vec3.divide(this.ambientLightAdjustment, this.ambientLightAdjustment, [3600, 3600, 3600]);
+            vec3.multiply(this.ambientLightAdjustment, this.ambientLightAdjustment, [seconds, seconds, seconds]);
+            //vec3.copy(this.directionalLight.color, light);
+            this.ambientLight = ambientLight;
+        }
+        // Do the adjustment
+        vec3.add(this.directionalLight.color, this.directionalLight.color, this.lightAdjustment);
+        vec3.add(this.ambientLightColor, this.ambientLightColor, this.ambientLightAdjustment);
+    }
+    // Currently runs every second
+    tick(seconds) {
+        // Need to accompany this with a large cube sun travelling overhead
+        this.time += seconds;
+        if (this.time >= 86400) {
+            this.time -= 86400;
+        }
+        this.setLight(seconds);
+        var rotationPerSecond = (2 * Math.PI) / 86400;
+        this.sunRotation = rotationPerSecond * this.time;
+        // Rotate light source
+        quat.rotateZ(scratch.quat, scratch.identityQuat, this.sunRotation);
+        vec3.transformQuat(this.directionalLight.position, this.directionalLight.start, scratch.quat);
+        this.sun.tick(this.time, this.sunRotation);
+    }
+    render(projection, ts) {
+        var gl = this.gl;
+        gl.useProgram(this.shader.program);
+        gl.uniformMatrix4fv(this.shader.uniforms.projection, false, projection);
+        gl.uniform3fv(this.shader.uniforms.ambientLightColor, full);
+        this.sun.render(scratch.identityMat4, ts);
+    }
+}
+exports.Weather = Weather;
 
 },{"./models/sun":27,"./scratch":33,"gl-matrix":3}],37:[function(require,module,exports){
 /**
@@ -12934,9 +13046,13 @@ var Stats = function () {
     var ms = 0, msMin = Infinity, msMax = 0;
     var fps = 0, fpsMin = Infinity, fpsMax = 0;
     var frames = 0, mode = 0;
+    var bar;
     var container = document.createElement('div');
     container.id = 'stats';
-    container.addEventListener('mousedown', function (event) { event.preventDefault(); setMode(++mode % 2); }, false);
+    container.addEventListener('mousedown', function (event) {
+        event.preventDefault();
+        setMode(++mode % 2);
+    }, false);
     container.style.cssText = 'width:80px;opacity:0.9;cursor:pointer';
     var fpsDiv = document.createElement('div');
     fpsDiv.id = 'fps';
@@ -12952,7 +13068,7 @@ var Stats = function () {
     fpsGraph.style.cssText = 'position:relative;width:74px;height:30px;background-color:#0ff';
     fpsDiv.appendChild(fpsGraph);
     while (fpsGraph.children.length < 74) {
-        var bar = document.createElement('span');
+        bar = document.createElement('span');
         bar.style.cssText = 'width:1px;height:30px;float:left;background-color:#113';
         fpsGraph.appendChild(bar);
     }
@@ -12970,7 +13086,7 @@ var Stats = function () {
     msGraph.style.cssText = 'position:relative;width:74px;height:30px;background-color:#0f0';
     msDiv.appendChild(msGraph);
     while (msGraph.children.length < 74) {
-        var bar = document.createElement('span');
+        bar = document.createElement('span');
         bar.style.cssText = 'width:1px;height:30px;float:left;background-color:#131';
         msGraph.appendChild(bar);
     }
@@ -13025,64 +13141,68 @@ var Stats = function () {
 module.exports = Stats;
 
 },{}],38:[function(require,module,exports){
-var Textures = function (textureArray) {
-    this.textureArray = textureArray;
-    this.byName = {};
-    this.byValue = {};
-    // Prepare name and value mapping
-    for (var i = 0; i < textureArray.length; i++) {
-        var texture = textureArray[i];
-        this.byValue[texture.value] = texture;
-        this.byName[texture.name] = texture;
-    }
-};
-// TODO: modify this to annotate the original data structure with buffer and image object
-Textures.prototype.load = function (gl, callback) {
-    var toLoad = this.textureArray.length;
-    // skip null (empty block) texture
-    var done = function () {
-        toLoad--;
-        if (toLoad == 0) {
-            callback();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class Textures {
+    constructor(textureArray) {
+        this.textureArray = textureArray;
+        this.byName = {};
+        this.byValue = {};
+        // Prepare name and value mapping
+        for (var i = 0; i < textureArray.length; i++) {
+            var texture = textureArray[i];
+            this.byValue[texture.value] = texture;
+            this.byName[texture.name] = texture;
         }
-    };
-    var textureClosure = function (texture) {
-        return function () {
-            gl.bindTexture(gl.TEXTURE_2D, texture.glTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-            // mipmap when scaling down
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-            // linear when scaling up
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.generateMipmap(gl.TEXTURE_2D);
-            done();
+    }
+    // TODO: modify this to annotate the original data structure with buffer and image object
+    load(gl, callback) {
+        var toLoad = this.textureArray.length;
+        // skip null (empty block) texture
+        var done = function () {
+            toLoad--;
+            if (toLoad === 0) {
+                callback();
+            }
         };
-    };
-    // Pre-multiply so opacity works correctly
-    // http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    // PNGs require this
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    for (var i = 0; i < this.textureArray.length; i++) {
-        var texture = this.textureArray[i];
-        // Is this a cube of different textures?
-        if ('sides' in texture) {
-            // all the sides must be loaded independently
-            done();
-        }
-        else {
-            texture.glTexture = gl.createTexture();
-            texture.image = new Image();
-            // Need closure here, to wrap texture
-            texture.image.onload = textureClosure(texture);
-            texture.image.crossOrigin = 'Anonymous';
-            texture.image.src = texture.src;
+        var textureClosure = function (texture) {
+            return function () {
+                gl.bindTexture(gl.TEXTURE_2D, texture.glTexture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                // mipmap when scaling down
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+                // linear when scaling up
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.generateMipmap(gl.TEXTURE_2D);
+                done();
+            };
+        };
+        // Pre-multiply so opacity works correctly
+        // http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+        // PNGs require this
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        for (var i = 0; i < this.textureArray.length; i++) {
+            var texture = this.textureArray[i];
+            // Is this a cube of different textures?
+            if ('sides' in texture) {
+                // all the sides must be loaded independently
+                done();
+            }
+            else {
+                texture.glTexture = gl.createTexture();
+                texture.image = new Image();
+                // Need closure here, to wrap texture
+                texture.image.onload = textureClosure(texture);
+                texture.image.crossOrigin = 'Anonymous';
+                texture.image.src = texture.src;
+            }
         }
     }
-};
-module.exports = Textures;
+}
+exports.Textures = Textures;
 
 },{}],39:[function(require,module,exports){
 var items = {};
@@ -13241,340 +13361,359 @@ class VoxelingClient {
 exports.VoxelingClient = VoxelingClient;
 
 },{"../../shared/log":45,"./object-pool":29,"events":2}],41:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /*
 WebGL stuff that pertains only to voxels
 */
 var timer = require('./timer');
 var debug = false;
-function Voxels(gl, shader, textures, releaseMeshCallback) {
-    var self = this;
-    this.gl = gl;
-    this.shader = shader;
-    this.textures = textures;
-    this.releaseMeshCallback = releaseMeshCallback;
-    this.nearBuffersByTexture = {};
-    this.farBuffersByTexture = {};
-    // We re-buffer nearby meshes more frequently than far meshes
-    this.nearMeshes = {};
-    this.farMeshes = {};
-    this.meshDistances = {};
-    this.nearPending = false;
-    this.farPending = false;
-    this.farDistance = 2;
-    // Schedule prepareMeshBuffers()
-    setInterval(function () {
-        if (self.nearPending) {
-            self.prepareMeshBuffers(true);
-            self.nearPending = false;
-        }
-    }, 100);
-    setInterval(function () {
-        if (self.farPending) {
-            self.prepareMeshBuffers(false);
-            self.farPending = false;
-        }
-    }, 1000);
-}
-;
-Voxels.prototype.showMesh = function (chunkId, mesh) {
-    if (chunkId in this.meshDistances) {
-        var distance = this.meshDistances[chunkId];
-        if (distance < this.farDistance) {
-            this.nearMeshes[chunkId] = mesh;
-            this.nearPending = true;
-            if (chunkId in this.farMeshes) {
-                delete this.farMeshes[chunkId];
-                this.farPending = true;
+class Voxels {
+    constructor(gl, shader, textures, releaseMeshCallback) {
+        var self = this;
+        this.gl = gl;
+        this.shader = shader;
+        this.textures = textures;
+        this.releaseMeshCallback = releaseMeshCallback;
+        this.nearBuffersByTexture = {};
+        this.farBuffersByTexture = {};
+        // We re-buffer nearby meshes more frequently than far meshes
+        this.nearMeshes = {};
+        this.farMeshes = {};
+        this.meshDistances = {};
+        this.nearPending = false;
+        this.farPending = false;
+        this.farDistance = 2;
+        // Schedule prepareMeshBuffers()
+        setInterval(function () {
+            if (self.nearPending) {
+                self.prepareMeshBuffers(true);
+                self.nearPending = false;
             }
-        }
-        else {
-            this.farMeshes[chunkId] = mesh;
-            this.farPending = true;
-            if (chunkId in this.nearMeshes) {
-                delete this.nearMeshes[chunkId];
+        }, 100);
+        setInterval(function () {
+            if (self.farPending) {
+                self.prepareMeshBuffers(false);
+                self.farPending = false;
+            }
+        }, 1000);
+    }
+    showMesh(chunkId, mesh) {
+        if (chunkId in this.meshDistances) {
+            var distance = this.meshDistances[chunkId];
+            if (distance < this.farDistance) {
+                this.nearMeshes[chunkId] = mesh;
                 this.nearPending = true;
-            }
-        }
-    }
-    if (debug) {
-        console.log('Voxels.showMesh ', chunkId);
-    }
-};
-// Due to player's current position, we only need to show these meshes
-Voxels.prototype.meshesToShow = function (meshDistances) {
-    var self = this;
-    this.meshDistances = meshDistances;
-    // Clean up nearby meshes
-    var chunkIds = Object.keys(self.nearMeshes);
-    for (var i = 0; i < chunkIds.length; i++) {
-        var chunkId = chunkIds[i];
-        // meshDistances contains the meshes we want to draw
-        if (chunkId in meshDistances) {
-            // If it's no longer nearby, remove it from this.nearMeshes
-            if (meshDistances[chunkId] < this.farDistance) {
+                if (chunkId in this.farMeshes) {
+                    delete this.farMeshes[chunkId];
+                    this.farPending = true;
+                }
             }
             else {
-                self.farMeshes[chunkId] = self.nearMeshes[chunkId];
-                delete self.nearMeshes[chunkId];
-            }
-            continue;
-        }
-        // We're not drawing this mesh anymore
-        var mesh = self.nearMeshes[chunkId];
-        self.releaseMeshCallback(mesh);
-        delete self.nearMeshes[chunkId];
-    }
-    var chunkIds = Object.keys(self.farMeshes);
-    for (var i = 0; i < chunkIds.length; i++) {
-        var chunkId = chunkIds[i];
-        // meshDistances contains the meshes we want to draw
-        if (chunkId in meshDistances) {
-            // If it's nearby instead of far, remove it from this.farMeshes
-            if (meshDistances[chunkId] < this.farDistance) {
-                self.nearMeshes[chunkId] = self.farMeshes[chunkId];
-                delete self.farMeshes[chunkId];
-            }
-            continue;
-        }
-        // We're not drawing this mesh anymore
-        var mesh = self.farMeshes[chunkId];
-        self.releaseMeshCallback(mesh);
-        delete self.farMeshes[chunkId];
-    }
-    // This that once we change regions we should re-fill all GL buffers
-    this.prepareMeshBuffers(true);
-    this.prepareMeshBuffers(false);
-    this.nearPending = this.farPending = false;
-};
-Voxels.prototype.prepareMeshBuffers = function (near) {
-    var self = this;
-    var start = Date.now();
-    var gl = this.gl;
-    var currentBuffersByTexture;
-    var currentMeshes;
-    if (near) {
-        currentBuffersByTexture = this.nearBuffersByTexture;
-        currentMeshes = this.nearMeshes;
-    }
-    else {
-        currentBuffersByTexture = this.farBuffersByTexture;
-        currentMeshes = this.farMeshes;
-    }
-    // Tally up the bytes we need to allocate for each texture's buffer tuple
-    var bytesByTexture = {};
-    // Queue up texture-specific data so we can push it into GL buffers later
-    var attributesByTexture = {};
-    for (var chunkId in currentMeshes) {
-        var mesh = currentMeshes[chunkId];
-        for (var textureValue in mesh) {
-            var attributes = mesh[textureValue];
-            if (textureValue in bytesByTexture) {
-                bytesByTexture[textureValue].position += attributes.position.offsetBytes;
-                bytesByTexture[textureValue].texcoord += attributes.texcoord.offsetBytes;
-                // Normal bytes is always same as position
-                attributesByTexture[textureValue].push(attributes);
-            }
-            else {
-                bytesByTexture[textureValue] = {
-                    position: attributes.position.offsetBytes,
-                    texcoord: attributes.texcoord.offsetBytes
-                };
-                attributesByTexture[textureValue] = [
-                    attributes
-                ];
-            }
-        }
-    }
-    // Delete buffers we don't need right now
-    // Eventually maybe do something different
-    for (var textureValue in currentBuffersByTexture) {
-        var bufferBundle = currentBuffersByTexture[textureValue];
-        bufferBundle.tuples = 0;
-    }
-    // Create 3 GL buffers for each texture and allocate the necessary space
-    var buffersByTexture = {};
-    for (var textureValue in bytesByTexture) {
-        var bytes = bytesByTexture[textureValue];
-        var offsets = {
-            position: 0,
-            texcoord: 0
-        };
-        var buffers;
-        if (textureValue in currentBuffersByTexture) {
-            var newLength;
-            buffers = currentBuffersByTexture[textureValue];
-            buffers.tuples = 0;
-            // Destroy and re-create as double if not large enough
-            if (buffers.positionBytes < bytes.position) {
-                newLength = buffers.positionBytes * 2;
-                while (newLength < bytes.position) {
-                    newLength *= 2;
+                this.farMeshes[chunkId] = mesh;
+                this.farPending = true;
+                if (chunkId in this.nearMeshes) {
+                    delete this.nearMeshes[chunkId];
+                    this.nearPending = true;
                 }
-                gl.deleteBuffer(buffers.position);
-                buffers.position = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-                gl.bufferData(gl.ARRAY_BUFFER, newLength, gl.STATIC_DRAW);
-                gl.deleteBuffer(buffers.normal);
-                buffers.normal = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-                gl.bufferData(gl.ARRAY_BUFFER, newLength, gl.STATIC_DRAW);
-                buffers.positionBytes = newLength;
             }
-            if (buffers.texcoordBytes < bytes.texcoord) {
-                newLength = buffers.texcoordBytes * 2;
-                while (newLength < bytes.texcoord) {
-                    newLength *= 2;
+        }
+        if (debug) {
+            console.log('Voxels.showMesh ', chunkId);
+        }
+    }
+    // Due to player's current position, we only need to show these meshes
+    meshesToShow(meshDistances) {
+        var self = this;
+        var i;
+        var attributes;
+        var chunkIds;
+        var chunkId;
+        var mesh;
+        this.meshDistances = meshDistances;
+        // Clean up nearby meshes
+        chunkIds = Object.keys(self.nearMeshes);
+        for (i = 0; i < chunkIds.length; i++) {
+            chunkId = chunkIds[i];
+            // meshDistances contains the meshes we want to draw
+            if (chunkId in meshDistances) {
+                // If it's no longer nearby, remove it from this.nearMeshes
+                if (meshDistances[chunkId] < this.farDistance) {
                 }
-                gl.deleteBuffer(buffers.texcoord);
-                buffers.texcoord = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
-                gl.bufferData(gl.ARRAY_BUFFER, newLength, gl.STATIC_DRAW);
-                buffers.texcoordBytes = newLength;
+                else {
+                    self.farMeshes[chunkId] = self.nearMeshes[chunkId];
+                    delete self.nearMeshes[chunkId];
+                }
+                continue;
             }
+            // We're not drawing this mesh anymore
+            mesh = self.nearMeshes[chunkId];
+            self.releaseMeshCallback(mesh);
+            delete self.nearMeshes[chunkId];
+        }
+        chunkIds = Object.keys(self.farMeshes);
+        for (i = 0; i < chunkIds.length; i++) {
+            chunkId = chunkIds[i];
+            // meshDistances contains the meshes we want to draw
+            if (chunkId in meshDistances) {
+                // If it's nearby instead of far, remove it from this.farMeshes
+                if (meshDistances[chunkId] < this.farDistance) {
+                    self.nearMeshes[chunkId] = self.farMeshes[chunkId];
+                    delete self.farMeshes[chunkId];
+                }
+                continue;
+            }
+            // We're not drawing this mesh anymore
+            mesh = self.farMeshes[chunkId];
+            self.releaseMeshCallback(mesh);
+            delete self.farMeshes[chunkId];
+        }
+        // This that once we change regions we should re-fill all GL buffers
+        this.prepareMeshBuffers(true);
+        this.prepareMeshBuffers(false);
+        this.nearPending = this.farPending = false;
+    }
+    prepareMeshBuffers(near) {
+        var self = this;
+        var start = Date.now();
+        var gl = this.gl;
+        var currentBuffersByTexture;
+        var currentMeshes;
+        var textureValue;
+        var attributes;
+        if (near) {
+            currentBuffersByTexture = this.nearBuffersByTexture;
+            currentMeshes = this.nearMeshes;
         }
         else {
-            // Destroy and create if not large enough, otherwise re-use
-            buffers = {
-                position: gl.createBuffer(),
-                texcoord: gl.createBuffer(),
-                normal: gl.createBuffer(),
-                tuples: 0,
-                positionBytes: bytes.position,
-                texcoordBytes: bytes.texcoord
+            currentBuffersByTexture = this.farBuffersByTexture;
+            currentMeshes = this.farMeshes;
+        }
+        // Tally up the bytes we need to allocate for each texture's buffer tuple
+        var bytesByTexture = {};
+        // Queue up texture-specific data so we can push it into GL buffers later
+        var attributesByTexture = {};
+        for (var chunkId in currentMeshes) {
+            var mesh = currentMeshes[chunkId];
+            for (textureValue in mesh) {
+                attributes = mesh[textureValue];
+                if (textureValue in bytesByTexture) {
+                    bytesByTexture[textureValue].position += attributes.position.offsetBytes;
+                    bytesByTexture[textureValue].texcoord += attributes.texcoord.offsetBytes;
+                    // Normal bytes is always same as position
+                    attributesByTexture[textureValue].push(attributes);
+                }
+                else {
+                    bytesByTexture[textureValue] = {
+                        position: attributes.position.offsetBytes,
+                        texcoord: attributes.texcoord.offsetBytes
+                    };
+                    attributesByTexture[textureValue] = [
+                        attributes
+                    ];
+                }
+            }
+        }
+        // Delete buffers we don't need right now
+        // Eventually maybe do something different
+        for (textureValue in currentBuffersByTexture) {
+            var bufferBundle = currentBuffersByTexture[textureValue];
+            bufferBundle.tuples = 0;
+        }
+        // Create 3 GL buffers for each texture and allocate the necessary space
+        var buffersByTexture = {};
+        for (textureValue in bytesByTexture) {
+            var bytes = bytesByTexture[textureValue];
+            var offsets = {
+                position: 0,
+                texcoord: 0
             };
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-            gl.bufferData(gl.ARRAY_BUFFER, bytes.position, gl.STATIC_DRAW);
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-            gl.bufferData(gl.ARRAY_BUFFER, bytes.position, gl.STATIC_DRAW);
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
-            gl.bufferData(gl.ARRAY_BUFFER, bytes.texcoord, gl.STATIC_DRAW);
+            var buffers;
+            if (textureValue in currentBuffersByTexture) {
+                var newLength;
+                buffers = currentBuffersByTexture[textureValue];
+                buffers.tuples = 0;
+                // Destroy and re-create as double if not large enough
+                if (buffers.positionBytes < bytes.position) {
+                    newLength = buffers.positionBytes * 2;
+                    while (newLength < bytes.position) {
+                        newLength *= 2;
+                    }
+                    gl.deleteBuffer(buffers.position);
+                    buffers.position = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                    gl.bufferData(gl.ARRAY_BUFFER, newLength, gl.STATIC_DRAW);
+                    gl.deleteBuffer(buffers.normal);
+                    buffers.normal = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+                    gl.bufferData(gl.ARRAY_BUFFER, newLength, gl.STATIC_DRAW);
+                    buffers.positionBytes = newLength;
+                }
+                if (buffers.texcoordBytes < bytes.texcoord) {
+                    newLength = buffers.texcoordBytes * 2;
+                    while (newLength < bytes.texcoord) {
+                        newLength *= 2;
+                    }
+                    gl.deleteBuffer(buffers.texcoord);
+                    buffers.texcoord = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
+                    gl.bufferData(gl.ARRAY_BUFFER, newLength, gl.STATIC_DRAW);
+                    buffers.texcoordBytes = newLength;
+                }
+            }
+            else {
+                // Destroy and create if not large enough, otherwise re-use
+                buffers = {
+                    position: gl.createBuffer(),
+                    texcoord: gl.createBuffer(),
+                    normal: gl.createBuffer(),
+                    tuples: 0,
+                    positionBytes: bytes.position,
+                    texcoordBytes: bytes.texcoord
+                };
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                gl.bufferData(gl.ARRAY_BUFFER, bytes.position, gl.STATIC_DRAW);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+                gl.bufferData(gl.ARRAY_BUFFER, bytes.position, gl.STATIC_DRAW);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
+                gl.bufferData(gl.ARRAY_BUFFER, bytes.texcoord, gl.STATIC_DRAW);
+            }
+            var attributeQueue = attributesByTexture[textureValue];
+            for (i = 0; i < attributeQueue.length; i++) {
+                attributes = attributeQueue[i];
+                var positions = new Float32Array(attributes.position.buffer, 0, attributes.position.offset);
+                var texcoords = new Float32Array(attributes.texcoord.buffer, 0, attributes.texcoord.offset);
+                var normals = new Float32Array(attributes.normal.buffer, 0, attributes.normal.offset);
+                // Fill buffers
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                gl.bufferSubData(gl.ARRAY_BUFFER, offsets.position, positions);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+                gl.bufferSubData(gl.ARRAY_BUFFER, offsets.position, normals);
+                offsets.position += attributes.position.offsetBytes;
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
+                gl.bufferSubData(gl.ARRAY_BUFFER, offsets.texcoord, texcoords);
+                offsets.texcoord += attributes.texcoord.offsetBytes;
+                buffers.tuples += attributes.position.tuples;
+            }
+            buffersByTexture[textureValue] = buffers;
         }
-        var attributeQueue = attributesByTexture[textureValue];
-        for (var i = 0; i < attributeQueue.length; i++) {
-            var attributes = attributeQueue[i];
-            var positions = new Float32Array(attributes.position.buffer, 0, attributes.position.offset);
-            var texcoords = new Float32Array(attributes.texcoord.buffer, 0, attributes.texcoord.offset);
-            var normals = new Float32Array(attributes.normal.buffer, 0, attributes.normal.offset);
-            // Fill buffers
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-            gl.bufferSubData(gl.ARRAY_BUFFER, offsets.position, positions);
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-            gl.bufferSubData(gl.ARRAY_BUFFER, offsets.position, normals);
-            offsets.position += attributes.position.offsetBytes;
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
-            gl.bufferSubData(gl.ARRAY_BUFFER, offsets.texcoord, texcoords);
-            offsets.texcoord += attributes.texcoord.offsetBytes;
-            buffers.tuples += attributes.position.tuples;
-        }
-        buffersByTexture[textureValue] = buffers;
-    }
-    // This will replace nearBuffersByTexture or farBuffersByTexture
-    if (near) {
-        this.nearBuffersByTexture = buffersByTexture;
-    }
-    else {
-        this.farBuffersByTexture = buffersByTexture;
-    }
-    timer.log('Voxels.prepareMeshBuffers', Date.now() - start);
-};
-Voxels.prototype.render = function (projection, ts, ambientLight, directionalLight) {
-    var start = Date.now();
-    var gl = this.gl;
-    gl.useProgram(this.shader.program);
-    gl.uniformMatrix4fv(this.shader.uniforms.projection, false, projection);
-    gl.uniform3fv(this.shader.uniforms.ambientLightColor, ambientLight);
-    gl.uniform3fv(this.shader.uniforms.directionalLightColor, directionalLight.color);
-    gl.uniform3fv(this.shader.uniforms.directionalLightPosition, directionalLight.position);
-    for (var textureValue in this.nearBuffersByTexture) {
-        var bufferBundle = this.nearBuffersByTexture[textureValue];
-        if (bufferBundle.tuples == 0) {
-            continue;
-        }
-        if (textureValue == 6) {
-            // poor man's water animation
-            gl.uniform1f(this.shader.uniforms.textureOffset, ts / 10000);
-        }
-        else if (textureValue < 100) {
-            // Don't do face culling when drawing textures with opacity
-            gl.enable(gl.CULL_FACE);
-            gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
-        }
-        else {
-            gl.disable(gl.CULL_FACE);
-            gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
-            //gl.uniform1f(this.shaderUniforms.textureOffset, ts / 10000);
-        }
-        // do the texture stuff ourselves ... too convoluted otherwise
-        gl.activeTexture(gl.TEXTURE0);
-        // set which of the 32 handles we want this bound to
-        gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
-        // bind the texture to this handle
-        gl.uniform1i(this.shader.uniforms.texture, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.position);
-        gl.enableVertexAttribArray(this.shader.attributes.position);
-        gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.texcoord);
-        gl.enableVertexAttribArray(this.shader.attributes.texcoord);
-        gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.normal);
-        gl.enableVertexAttribArray(this.shader.attributes.normal);
-        gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, bufferBundle.tuples);
-    }
-    for (var textureValue in this.farBuffersByTexture) {
-        var bufferBundle = this.farBuffersByTexture[textureValue];
-        if (bufferBundle.tuples == 0) {
-            continue;
-        }
-        if (textureValue == 6) {
-            // poor man's water animation
-            gl.uniform1f(this.shader.uniforms.textureOffset, ts / 10000);
-        }
-        else if (textureValue < 100) {
-            // Don't do face culling when drawing textures with opacity
-            gl.enable(gl.CULL_FACE);
-            gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
+        // This will replace nearBuffersByTexture or farBuffersByTexture
+        if (near) {
+            this.nearBuffersByTexture = buffersByTexture;
         }
         else {
-            gl.disable(gl.CULL_FACE);
-            gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
-            //gl.uniform1f(this.shaderUniforms.textureOffset, ts / 10000);
+            this.farBuffersByTexture = buffersByTexture;
         }
-        // do the texture stuff ourselves ... too convoluted otherwise
-        gl.activeTexture(gl.TEXTURE0);
-        // set which of the 32 handles we want this bound to
-        gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
-        // bind the texture to this handle
-        gl.uniform1i(this.shader.uniforms.texture, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.position);
-        gl.enableVertexAttribArray(this.shader.attributes.position);
-        gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.texcoord);
-        gl.enableVertexAttribArray(this.shader.attributes.texcoord);
-        gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.normal);
-        gl.enableVertexAttribArray(this.shader.attributes.normal);
-        gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, bufferBundle.tuples);
+        timer.log('Voxels.prepareMeshBuffers', Date.now() - start);
     }
-    timer.log('Voxels.render', Date.now() - start);
-};
-module.exports = Voxels;
+    render(projection, ts, ambientLight, directionalLight) {
+        var start = Date.now();
+        var gl = this.gl;
+        var textureValue;
+        var bufferBundle;
+        gl.useProgram(this.shader.program);
+        gl.uniformMatrix4fv(this.shader.uniforms.projection, false, projection);
+        gl.uniform3fv(this.shader.uniforms.ambientLightColor, ambientLight);
+        gl.uniform3fv(this.shader.uniforms.directionalLightColor, directionalLight.color);
+        gl.uniform3fv(this.shader.uniforms.directionalLightPosition, directionalLight.position);
+        for (textureValue in this.nearBuffersByTexture) {
+            textureValue = parseInt(textureValue);
+            bufferBundle = this.nearBuffersByTexture[textureValue];
+            if (bufferBundle.tuples === 0) {
+                continue;
+            }
+            if (textureValue === 6) {
+                // poor man's water animation
+                gl.uniform1f(this.shader.uniforms.textureOffset, ts / 10000);
+            }
+            else if (textureValue < 100) {
+                // Don't do face culling when drawing textures with opacity
+                gl.enable(gl.CULL_FACE);
+                gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
+            }
+            else {
+                gl.disable(gl.CULL_FACE);
+                gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
+                //gl.uniform1f(this.shaderUniforms.textureOffset, ts / 10000);
+            }
+            // do the texture stuff ourselves ... too convoluted otherwise
+            gl.activeTexture(gl.TEXTURE0);
+            // set which of the 32 handles we want this bound to
+            gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
+            // bind the texture to this handle
+            gl.uniform1i(this.shader.uniforms.texture, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.position);
+            gl.enableVertexAttribArray(this.shader.attributes.position);
+            gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.texcoord);
+            gl.enableVertexAttribArray(this.shader.attributes.texcoord);
+            gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.normal);
+            gl.enableVertexAttribArray(this.shader.attributes.normal);
+            gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, bufferBundle.tuples);
+        }
+        for (textureValue in this.farBuffersByTexture) {
+            textureValue = parseInt(textureValue);
+            bufferBundle = this.farBuffersByTexture[textureValue];
+            if (bufferBundle.tuples === 0) {
+                continue;
+            }
+            if (textureValue === 6) {
+                // poor man's water animation
+                gl.uniform1f(this.shader.uniforms.textureOffset, ts / 10000);
+            }
+            else if (textureValue < 100) {
+                // Don't do face culling when drawing textures with opacity
+                gl.enable(gl.CULL_FACE);
+                gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
+            }
+            else {
+                gl.disable(gl.CULL_FACE);
+                gl.uniform1f(this.shader.uniforms.textureOffset, 0.00);
+                //gl.uniform1f(this.shaderUniforms.textureOffset, ts / 10000);
+            }
+            // do the texture stuff ourselves ... too convoluted otherwise
+            gl.activeTexture(gl.TEXTURE0);
+            // set which of the 32 handles we want this bound to
+            gl.bindTexture(gl.TEXTURE_2D, this.textures.byValue[textureValue].glTexture);
+            // bind the texture to this handle
+            gl.uniform1i(this.shader.uniforms.texture, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.position);
+            gl.enableVertexAttribArray(this.shader.attributes.position);
+            gl.vertexAttribPointer(this.shader.attributes.position, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.texcoord);
+            gl.enableVertexAttribArray(this.shader.attributes.texcoord);
+            gl.vertexAttribPointer(this.shader.attributes.texcoord, 2, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferBundle.normal);
+            gl.enableVertexAttribArray(this.shader.attributes.normal);
+            gl.vertexAttribPointer(this.shader.attributes.normal, 3, gl.FLOAT, false, 0, 0);
+            gl.drawArrays(gl.TRIANGLES, 0, bufferBundle.tuples);
+        }
+        timer.log('Voxels.render', Date.now() - start);
+    }
+}
+exports.Voxels = Voxels;
 
 },{"./timer":39}],42:[function(require,module,exports){
-// Helper
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var createShader = function (gl, vertexShaderCode, fragmentShaderCode, attributes, uniforms) {
+    const tnull = null;
     var out = {
-        program: null,
+        program: tnull,
         attributes: {},
         uniforms: {}
     };
+    var errmsg;
+    var name;
+    var i;
     // Set up shaders
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmentShader, fragmentShaderCode);
     gl.compileShader(fragmentShader);
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-        var errmsg = "fragment shader compile failed: " + gl.getShaderInfoLog(fragmentShader);
+        errmsg = "fragment shader compile failed: " + gl.getShaderInfoLog(fragmentShader);
         alert(errmsg);
         throw new Error();
     }
@@ -13582,7 +13721,7 @@ var createShader = function (gl, vertexShaderCode, fragmentShaderCode, attribute
     gl.shaderSource(vertexShader, vertexShaderCode);
     gl.compileShader(vertexShader);
     if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-        var errmsg = "vertex shader compile failed : " + gl.getShaderInfoLog(vertexShader);
+        errmsg = "vertex shader compile failed : " + gl.getShaderInfoLog(vertexShader);
         alert(errmsg);
         throw new Error(errmsg);
     }
@@ -13591,117 +13730,101 @@ var createShader = function (gl, vertexShaderCode, fragmentShaderCode, attribute
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        var errmsg = "Error in program linking: " + gl.getProgramInfoLog(shaderProgram);
+        errmsg = "Error in program linking: " + gl.getProgramInfoLog(shaderProgram);
         alert(errmsg);
         throw new Error(errmsg);
     }
-    for (var i = 0; i < attributes.length; i++) {
-        var name = attributes[i];
+    for (i = 0; i < attributes.length; i++) {
+        name = attributes[i];
         // this hungarian notation seems unnecessary since our shaders are so simple
         out.attributes[name] = gl.getAttribLocation(shaderProgram, "a_" + name);
     }
-    for (var i = 0; i < uniforms.length; i++) {
-        var name = uniforms[i];
+    for (i = 0; i < uniforms.length; i++) {
+        name = uniforms[i];
         // this hungarian notation seems unnecessary since our shaders are so simple
         out.uniforms[name] = gl.getUniformLocation(shaderProgram, "u_" + name);
     }
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        var errmsg = "failed to initialize shader with data matrices";
+        errmsg = "failed to initialize shader with data matrices";
         alert(errmsg);
         throw new Error(errmsg);
     }
     out.program = shaderProgram;
     return out;
 };
-function WebGL(canvas) {
-    var gl;
-    gl = canvas.getContext("experimental-webgl");
-    // If we don't have a GL context, give up now
-    if (!gl) {
-        alert("Unable to initialize WebGL. Your browser may not support it.");
-        return;
+class WebGL {
+    constructor(canvas) {
+        var gl;
+        gl = canvas.getContext("experimental-webgl");
+        // If we don't have a GL context, give up now
+        if (!gl) {
+            alert("Unable to initialize WebGL. Your browser may not support it.");
+            return;
+        }
+        this.canvas = canvas;
+        this.gl = gl;
+        this.renderCallback = function (x) { };
+        this.shaders = {
+            projectionViewPosition: null,
+            projectionPosition: null
+        };
+        gl.enable(gl.DEPTH_TEST);
+        // if our fragment has a depth value that is less than the one that is currently there, use our new one
+        gl.depthFunc(gl.LESS);
+        // TODO: resize events might need to call this again
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.createShaders();
     }
-    this.canvas = canvas;
-    this.gl = gl;
-    this.renderCallback = function () { };
-    this.shaders = {};
-    gl.enable(gl.DEPTH_TEST);
-    // if our fragment has a depth value that is less than the one that is currently there, use our new one
-    gl.depthFunc(gl.LESS);
-    // TODO: resize events might need to call this again
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.createShaders();
-}
-;
-WebGL.prototype.createShaders = function () {
-    // Common
-    var fragmentShaderCode = "precision mediump float;" +
-        "uniform sampler2D u_texture;" +
-        "uniform float u_textureOffset;" +
-        "uniform vec3 u_ambientLightColor;" +
-        "uniform vec3 u_directionalLightColor;" +
-        "uniform vec3 u_directionalLightPosition;" +
-        "varying vec4 v_position;" +
-        "varying vec3 v_normal;" +
-        "varying vec2 v_texcoord;" +
-        "vec3 fogColor;" +
-        "void main() {" +
-        "vec4 texelColor = texture2D(u_texture, v_texcoord + vec2(0, u_textureOffset));" +
-        "vec3 temp;" +
-        "float hazeDistance = 70.0;" +
-        "if(texelColor.a < 0.5) " +
-        "discard;" +
-        //"float distance = length(v_position.xyz);" +
-        "vec3 lightDirection = normalize(u_directionalLightPosition - v_position.xyz);" +
-        "highp float directionalLightWeight = max(dot(v_normal, lightDirection), 0.0);" +
-        "vec3 lightWeight = u_ambientLightColor + (u_directionalLightColor * directionalLightWeight);" +
-        // Apply light before we apply the haze?
-        "temp = texelColor.rgb * lightWeight;" +
-        /*
-        "float add = 0.0;" +
-        "if (distance > hazeDistance) {" +
-            "add = (distance - hazeDistance) / 130.0;" +
-            "temp[2] = temp[2] + add;" +
-        "}" +
-        */
-        // Fog calculations from three.js
-        "fogColor[0] = 255.0;" +
-        "fogColor[1] = 255.0;" +
-        "fogColor[2] = 255.0;" +
-        "float depth = gl_FragCoord.z / gl_FragCoord.w;" +
-        //"float fogFactor = smoothstep( 80.0, 300.0, depth );" +
-        "float fogDensity = 0.00025;" +
-        "float fogFactor = 1.0 - clamp( exp2( - fogDensity * fogDensity * depth * depth * 1.442695 ), 0.0, 1.0 );" +
-        /*
-        - apply light color to texel
-        - shift to apply haze at a distance
-        */
-        "gl_FragColor.rgb = mix(temp, fogColor, fogFactor);" +
-        "gl_FragColor.a = texelColor.a;" +
-        "}";
-    // projection * view * position vertex shader
-    var vertexShaderCode = "uniform mat4 u_projection;" +
-        "uniform mat4 u_view;" +
-        "attribute vec4 a_position;" +
-        "attribute vec3 a_normal;" +
-        "attribute vec2 a_texcoord;" +
-        "varying vec4 v_position;" +
-        "varying vec3 v_normal;" +
-        "varying vec2 v_texcoord;" +
-        "void main() {" +
-        "v_position = u_projection * u_view * a_position;" +
-        "v_normal = a_normal;" +
-        "v_texcoord = a_texcoord;" +
-        "gl_Position = u_projection * u_view * a_position;" +
-        "}";
-    this.shaders.projectionViewPosition = createShader(this.gl, vertexShaderCode, fragmentShaderCode, 
-    // attributes
-    ['position', 'normal', 'texcoord'], 
-    // uniforms
-    ['projection', 'view', 'texture', 'textureOffset', 'ambientLightColor', 'directionalLightColor', 'directionalLightPosition']);
-    vertexShaderCode =
-        "uniform mat4 u_projection;" +
+    createShaders() {
+        // Common
+        var fragmentShaderCode = "precision mediump float;" +
+            "uniform sampler2D u_texture;" +
+            "uniform float u_textureOffset;" +
+            "uniform vec3 u_ambientLightColor;" +
+            "uniform vec3 u_directionalLightColor;" +
+            "uniform vec3 u_directionalLightPosition;" +
+            "varying vec4 v_position;" +
+            "varying vec3 v_normal;" +
+            "varying vec2 v_texcoord;" +
+            "vec3 fogColor;" +
+            "void main() {" +
+            "vec4 texelColor = texture2D(u_texture, v_texcoord + vec2(0, u_textureOffset));" +
+            "vec3 temp;" +
+            "float hazeDistance = 70.0;" +
+            "if(texelColor.a < 0.5) " +
+            "discard;" +
+            //"float distance = length(v_position.xyz);" +
+            "vec3 lightDirection = normalize(u_directionalLightPosition - v_position.xyz);" +
+            "highp float directionalLightWeight = max(dot(v_normal, lightDirection), 0.0);" +
+            "vec3 lightWeight = u_ambientLightColor + (u_directionalLightColor * directionalLightWeight);" +
+            // Apply light before we apply the haze?
+            "temp = texelColor.rgb * lightWeight;" +
+            /*
+            "float add = 0.0;" +
+            "if (distance > hazeDistance) {" +
+                "add = (distance - hazeDistance) / 130.0;" +
+                "temp[2] = temp[2] + add;" +
+            "}" +
+            */
+            // Fog calculations from three.js
+            "fogColor[0] = 255.0;" +
+            "fogColor[1] = 255.0;" +
+            "fogColor[2] = 255.0;" +
+            "float depth = gl_FragCoord.z / gl_FragCoord.w;" +
+            //"float fogFactor = smoothstep( 80.0, 300.0, depth );" +
+            "float fogDensity = 0.00025;" +
+            "float fogFactor = 1.0 - clamp( exp2( - fogDensity * fogDensity * depth * depth * 1.442695 ), 0.0, 1.0 );" +
+            /*
+            - apply light color to texel
+            - shift to apply haze at a distance
+            */
+            "gl_FragColor.rgb = mix(temp, fogColor, fogFactor);" +
+            "gl_FragColor.a = texelColor.a;" +
+            "}";
+        // projection * view * position vertex shader
+        var vertexShaderCode = "uniform mat4 u_projection;" +
+            "uniform mat4 u_view;" +
             "attribute vec4 a_position;" +
             "attribute vec3 a_normal;" +
             "attribute vec2 a_texcoord;" +
@@ -13709,146 +13832,172 @@ WebGL.prototype.createShaders = function () {
             "varying vec3 v_normal;" +
             "varying vec2 v_texcoord;" +
             "void main() {" +
-            "v_position = u_projection * a_position;" +
+            "v_position = u_projection * u_view * a_position;" +
             "v_normal = a_normal;" +
             "v_texcoord = a_texcoord;" +
-            "gl_Position = u_projection * a_position;" +
+            "gl_Position = u_projection * u_view * a_position;" +
             "}";
-    this.shaders.projectionPosition = createShader(this.gl, vertexShaderCode, fragmentShaderCode, 
-    // attributes
-    ['position', 'normal', 'texcoord'], 
-    // uniforms
-    ['projection', 'texture', 'textureOffset', 'ambientLightColor', 'directionalLightColor', 'directionalLightPosition']);
-};
-WebGL.prototype.start = function () {
-    this.render(0);
-};
-WebGL.prototype.render = function (ts) {
-    var self = this;
-    var gl = this.gl;
-    //this.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.renderCallback(ts);
-    requestAnimationFrame(this.render.bind(this));
-};
-WebGL.prototype.onRender = function (callback) {
-    this.renderCallback = callback;
-};
-WebGL.prototype.addRenderable = function (obj) {
-    this.renderables.push(obj);
-};
-module.exports = WebGL;
+        this.shaders.projectionViewPosition = createShader(this.gl, vertexShaderCode, fragmentShaderCode, 
+        // attributes
+        ['position', 'normal', 'texcoord'], 
+        // uniforms
+        ['projection', 'view', 'texture', 'textureOffset', 'ambientLightColor', 'directionalLightColor', 'directionalLightPosition']);
+        vertexShaderCode =
+            "uniform mat4 u_projection;" +
+                "attribute vec4 a_position;" +
+                "attribute vec3 a_normal;" +
+                "attribute vec2 a_texcoord;" +
+                "varying vec4 v_position;" +
+                "varying vec3 v_normal;" +
+                "varying vec2 v_texcoord;" +
+                "void main() {" +
+                "v_position = u_projection * a_position;" +
+                "v_normal = a_normal;" +
+                "v_texcoord = a_texcoord;" +
+                "gl_Position = u_projection * a_position;" +
+                "}";
+        this.shaders.projectionPosition = createShader(this.gl, vertexShaderCode, fragmentShaderCode, 
+        // attributes
+        ['position', 'normal', 'texcoord'], 
+        // uniforms
+        ['projection', 'texture', 'textureOffset', 'ambientLightColor', 'directionalLightColor', 'directionalLightPosition']);
+    }
+    start() {
+        this.render(0);
+    }
+    render(ts) {
+        var self = this;
+        var gl = this.gl;
+        //this.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.renderCallback(ts);
+        requestAnimationFrame(this.render.bind(this));
+    }
+    onRender(callback) {
+        this.renderCallback = callback;
+    }
+    addRenderable(obj) {
+        this.renderables.push(obj);
+    }
+}
+exports.WebGL = WebGL;
 
 },{}],43:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var distances = require('./distances');
-module.exports = function (opts) {
+/*module.exports = function(opts) {
     return new Coordinates(opts);
 };
+*/
 //module.exports.Coordinates = Coordinates;
-function Coordinates(chunkSize) {
-    this.chunkSize = chunkSize || 32;
-    if (this.chunkSize & this.chunkSize - 1 !== 0) {
-        throw new Error('chunkSize must be a power of 2');
+class Coordinates {
+    constructor(chunkSize) {
+        this.chunkSize = chunkSize || 32;
+        if (this.chunkSize & this.chunkSize - 1 !== 0) {
+            throw new Error('chunkSize must be a power of 2');
+        }
+        this.voxelMask = this.chunkSize - 1;
+        this.chunkMask = ~this.voxelMask;
     }
-    this.voxelMask = this.chunkSize - 1;
-    this.chunkMask = ~this.voxelMask;
-}
-;
-Coordinates.prototype.nearbyChunkIDsEach = function (position, maxDistance, callback) {
-    var current = this.positionToChunk(position);
-    var x = current[0];
-    var y = current[1];
-    var z = current[2];
-    for (var distanceAway = 0; distanceAway <= maxDistance; distanceAway++) {
-        var chunks = distances[distanceAway];
-        for (var j = 0; j < chunks.length; j++) {
-            // Create a copy so we can modity
-            var chunk = chunks[j].slice();
-            chunk[0] += x;
-            chunk[1] += y;
-            chunk[2] += z;
-            callback(chunk.join('|'), chunk, distanceAway);
-        }
-    }
-};
-// Use lower boundary as the chunk position/ID
-Coordinates.prototype.coordinatesToChunkID = function (x, y, z) {
-    var mask = this.chunkMask;
-    var cx = x & mask;
-    var cy = y & mask;
-    var cz = z & mask;
-    return cx + '|' + cy + '|' + cz;
-};
-Coordinates.prototype.positionToChunk = function (position) {
-    return this.coordinatesToChunk(position[0], position[1], position[2]);
-};
-Coordinates.prototype.coordinatesToChunk = function (x, y, z) {
-    var mask = this.chunkMask;
-    var cx = x & mask;
-    var cy = y & mask;
-    var cz = z & mask;
-    return [cx, cy, cz];
-};
-Coordinates.prototype.positionToChunkID = function (position) {
-    return this.coordinatesToChunkID(position[0], position[1], position[2]);
-};
-Coordinates.prototype.coordinatesToVoxelIndex = function (x, y, z, touching) {
-    var voxelMask = this.voxelMask;
-    var vx = x & voxelMask;
-    var vy = y & voxelMask;
-    var vz = z & voxelMask;
-    var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
-    return index;
-};
-Coordinates.prototype.coordinatesToChunkAndVoxelIndex = function (x, y, z, touching) {
-    var chunkMask = this.chunkMask;
-    var voxelMask = this.voxelMask;
-    var cx = x & chunkMask;
-    var cy = y & chunkMask;
-    var cz = z & chunkMask;
-    var chunkId = cx + '|' + cy + '|' + cz;
-    var vx = x & voxelMask;
-    var vy = y & voxelMask;
-    var vz = z & voxelMask;
-    //var val = chunk.voxels.get(mx, my, mz)
-    var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
-    // Fill touching with chunk ids that this voxel touches
-    if (!!touching) {
-        if (vx == 0) {
-            touching[(cx - 32) + '|' + cy + '|' + cz] = true;
-        }
-        else if (vx == 31) {
-            touching[(cx + 32) + '|' + cy + '|' + cz] = true;
-        }
-        if (vy == 0) {
-            touching[cx + '|' + (cy - 32) + '|' + cz] = true;
-        }
-        else if (vy == 31) {
-            touching[cx + '|' + (cy + 32) + '|' + cz] = true;
-        }
-        if (vz == 0) {
-            touching[cx + '|' + cy + '|' + (cz - 32)] = true;
-        }
-        else if (vz == 31) {
-            touching[cx + '|' + cy + '|' + (cz + 32)] = true;
-        }
-    }
-    return [chunkId, index];
-};
-Coordinates.prototype.positionToVoxelIndex = function (pos) {
-    return this.coordinatesToVoxelIndex(pos[0], pos[1], pos[2]);
-};
-Coordinates.prototype.lowToHighEach = function (low, high, callback) {
-    for (var i = low[0]; i <= high[0]; i++) {
-        for (var j = low[1]; j <= high[1]; j++) {
-            for (var k = low[2]; k <= high[2]; k++) {
-                callback(i, j, k);
+    nearbyChunkIDsEach(position, maxDistance, callback) {
+        var current = this.positionToChunk(position);
+        var x = current[0];
+        var y = current[1];
+        var z = current[2];
+        for (var distanceAway = 0; distanceAway <= maxDistance; distanceAway++) {
+            var chunks = distances[distanceAway];
+            for (var j = 0; j < chunks.length; j++) {
+                // Create a copy so we can modity
+                var chunk = chunks[j].slice();
+                chunk[0] += x;
+                chunk[1] += y;
+                chunk[2] += z;
+                callback(chunk.join('|'), chunk, distanceAway);
             }
         }
     }
-};
+    // Use lower boundary as the chunk position/ID
+    coordinatesToChunkID(x, y, z) {
+        var mask = this.chunkMask;
+        var cx = x & mask;
+        var cy = y & mask;
+        var cz = z & mask;
+        return cx + '|' + cy + '|' + cz;
+    }
+    positionToChunk(position) {
+        return this.coordinatesToChunk(position[0], position[1], position[2]);
+    }
+    coordinatesToChunk(x, y, z) {
+        var mask = this.chunkMask;
+        var cx = x & mask;
+        var cy = y & mask;
+        var cz = z & mask;
+        return [cx, cy, cz];
+    }
+    positionToChunkID(position) {
+        return this.coordinatesToChunkID(position[0], position[1], position[2]);
+    }
+    coordinatesToVoxelIndex(x, y, z, touching) {
+        var voxelMask = this.voxelMask;
+        var vx = x & voxelMask;
+        var vy = y & voxelMask;
+        var vz = z & voxelMask;
+        var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
+        return index;
+    }
+    coordinatesToChunkAndVoxelIndex(x, y, z, touching) {
+        var chunkMask = this.chunkMask;
+        var voxelMask = this.voxelMask;
+        var cx = x & chunkMask;
+        var cy = y & chunkMask;
+        var cz = z & chunkMask;
+        var chunkId = cx + '|' + cy + '|' + cz;
+        var vx = x & voxelMask;
+        var vy = y & voxelMask;
+        var vz = z & voxelMask;
+        //var val = chunk.voxels.get(mx, my, mz)
+        var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
+        // Fill touching with chunk ids that this voxel touches
+        if (!!touching) {
+            if (vx === 0) {
+                touching[(cx - 32) + '|' + cy + '|' + cz] = true;
+            }
+            else if (vx === 31) {
+                touching[(cx + 32) + '|' + cy + '|' + cz] = true;
+            }
+            if (vy === 0) {
+                touching[cx + '|' + (cy - 32) + '|' + cz] = true;
+            }
+            else if (vy === 31) {
+                touching[cx + '|' + (cy + 32) + '|' + cz] = true;
+            }
+            if (vz === 0) {
+                touching[cx + '|' + cy + '|' + (cz - 32)] = true;
+            }
+            else if (vz === 31) {
+                touching[cx + '|' + cy + '|' + (cz + 32)] = true;
+            }
+        }
+        return [chunkId, index];
+    }
+    positionToVoxelIndex(pos) {
+        return this.coordinatesToVoxelIndex(pos[0], pos[1], pos[2]);
+    }
+    lowToHighEach(low, high, callback) {
+        for (var i = low[0]; i <= high[0]; i++) {
+            for (var j = low[1]; j <= high[1]; j++) {
+                for (var k = low[2]; k <= high[2]; k++) {
+                    callback(i, j, k);
+                }
+            }
+        }
+    }
+}
+exports.Coordinates = Coordinates;
 
 },{"./distances":44}],44:[function(require,module,exports){
-module.exports = { '0': [[0, 0, 0], [0, 0, 0]],
+module.exports = {
+    '0': [[0, 0, 0], [0, 0, 0]],
     '1': [[-32, -32, -32],
         [-32, -32, 32],
         [-32, 0, -32],
@@ -82768,7 +82917,8 @@ module.exports = { '0': [[0, 0, 0], [0, 0, 0]],
         [-640, 576, 608],
         [640, 576, 608],
         [-640, 608, 608],
-        [640, 608, 608]] };
+        [640, 608, 608]]
+};
 
 },{}],45:[function(require,module,exports){
 // From: https://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9

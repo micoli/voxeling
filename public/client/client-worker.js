@@ -537,814 +537,6 @@ function isUndefined(arg) {
 }
 
 },{}],3:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],4:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],5:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],6:[function(require,module,exports){
-(function (process,global){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
-        try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
-        }
-      default:
-        return x;
-    }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
-
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
-}
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":5,"_process":3,"inherits":4}],7:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -1389,18 +581,18 @@ function ws(uri, protocols, opts) {
 
 if (WebSocket) ws.prototype = WebSocket.prototype;
 
-},{}],8:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var config = require('../../config');
 var WebSocketEmitter = require('../shared/web-socket-emitter');
-var Coordinates = require('../shared/coordinates');
+const coordinates_1 = require("../shared/coordinates");
+const textures_1 = require("./lib/textures");
+const frustum_1 = require("./lib/frustum");
+const client_1 = require("../shared/generators/client");
 var decoder = require('./lib/rle-decoder');
 var pool = require('./lib/object-pool');
-var Textures = require('./lib/textures');
 var mesher = require('./lib/meshers/horizontal-merge');
-var ClientGenerator = require('../shared/generators/client');
-const frustum_1 = require("./lib/frustum");
 var timer = require('./lib/timer');
 var chunkArrayLength = config.chunkSize * config.chunkSize * config.chunkSize;
 var chunkCache = {};
@@ -1420,6 +612,437 @@ close - websocket connection closed
 
 chunk - sending a decoded, meshed chunk to the client
 
+*/
+/*
+class Worker {
+    static coordinates: any = null;
+    static connected: boolean = false;
+    static connection: any = null;
+    static frustum: Frustum = null;
+    // When we get chunks from the server, we queue them here
+    static chunksToDecodeAndMesh: any = {};
+    // When we get chunks from server, or when user changed a voxel, we need to remesh. Queue them here
+    static chunksToMesh: any = {};
+    // When we get chunks from server and need to send voxel data to client, they're queued here
+    static voxelsToSend: any = {};
+    // Chunk ids (and meshes) in the order we want them
+    static chunkPriority: any[];
+    // Meshes we've recently sent
+    static meshesSent: any = {};
+    // Chunk ids we want voxels for
+    static voxels: any[];
+    static currentVoxels: any = {};
+
+    // Chunks we're in the process of requesting from the server
+    static neededChunks: any = {};
+
+    static createFrustum(verticalFieldOfView: any, ratio: number, farDistance: number) {
+        this.frustum = new Frustum(verticalFieldOfView, ratio, 0.1, farDistance);
+    }
+
+    static emit(name: any, data?: any, id?: any): any {
+        var len = arguments.length;
+        var args = new Array(len);
+        for (var i = 0; i < len; i++) {
+            args[i] = arguments[i];
+        }
+        postMessage(args);
+    }
+
+
+    static connect() {
+        var self = this;
+        var coordinates = this.coordinates = new Coordinates(config.chunkSize);
+        var textures = new Textures(config.textures);
+        var websocket = this.connection = new WebSocketEmitter.client();
+        var generator = new ClientGenerator(chunkCache, config.chunkSize);
+
+        mesher.config(config.chunkSize, textures, coordinates, chunkCache);
+
+        websocket.on('open', function() {
+            self.connected = true;
+            if (debug) {
+                log('websocket connection opened');
+            }
+            self.emit('open');
+        });
+
+        websocket.on('close', function() {
+            self.connected = false;
+            if (debug) {
+                log('websocket connection closed');
+            }
+            self.emit('close');
+        });
+
+        websocket.on('error', function(message: any) {
+            log('websocket error, ' + message);
+        });
+
+        websocket.on('settings', function(settings: any, id: any) {
+            if (debug) {
+                log('got settings', settings);
+            }
+            self.emit('settings', settings, id);
+        });
+
+        websocket.on('chunk', function(chunkID: any, encoded: any) {
+            if (debug) {
+                log('Websocket received chunk: ' + chunkID);
+            }
+            var index = self.chunkPriority.indexOf(chunkID);
+            if (index === -1) {
+                if (debug) {
+                    log('Got chunk, but we dont care about it', chunkID, self.chunkPriority);
+                }
+                return;
+            }
+            self.chunksToDecodeAndMesh[chunkID] = encoded;
+
+            // Cleanup
+            if (chunkID in self.neededChunks) {
+                delete self.neededChunks[chunkID];
+            }
+
+        });
+
+        // fires when server sends us voxel edits [chunkID, voxelIndex, value, voxelIndex, value...]
+        websocket.on('chunkVoxelIndexValue', function(changes: any) {
+            // Tell the client
+            self.emit('chunkVoxelIndexValue', changes);
+            // Update our local cache
+            for (var chunkID in changes) {
+                if (self.chunkPriority.indexOf(chunkID) === -1) {
+                    continue;
+                }
+                if (chunkID in chunkCache) {
+                    var chunk = chunkCache[chunkID];
+                    var details = changes[chunkID];
+                    for (var i = 0; i < details.length; i += 2) {
+                        var index = details[i];
+                        var val = details[i + 1];
+                        chunk.voxels[index] = val;
+                    }
+                    // Re-mesh this chunk
+                    self.chunksToMesh[chunkID] = true;
+                    if (self.voxels.indexOf(chunkID) > -1) {
+                        self.voxelsToSend[chunkID] = true;
+                    }
+                }
+            }
+        });
+
+        websocket.on('chat', function(message: any) {
+            self.emit('chat', message);
+        });
+
+        websocket.on('players', function(players: any) {
+            self.emit('players', players);
+        });
+
+        this.connection.connect(config.server);
+    }
+
+    static regionChange(playerPosition: any, rotationQuat: any, drawDistance: any, removeDistance: any) {
+        var i: number;
+        var self = this;
+
+        // TODO update the frustum
+        this.frustum.update(playerPosition, rotationQuat); //, drawDistance);
+
+        log('regionChange: playerPosition is', playerPosition);
+
+        // These help us remove voxels and meshes we no longer need
+        var nearbyVoxels: any = {};
+        // We tell our web worker about these, so it knows what to fetch and return
+        var onlyTheseVoxels: any = [];
+        var missingVoxels: any = [];
+
+        // Helps us ignore chunks we don't care about, and also prioritize re-drawing nearby chunks
+        var chunkDistances: any = {};
+        var len = drawDistance * 3;
+        var priority: any[] = new Array(len);
+
+        for (i = 0; i < len; i++) {
+            priority[i] = [];
+        }
+        var addPriority = function(level: any, chunkID: any) {
+            log('regionChange.addPriority: level', level);
+            priority[level].push(chunkID);
+        };
+
+        // Hmm, I seem to have removed the removeDistance logic. do we still want that 1 chunk buffer zone?
+
+        this.coordinates.nearbyChunkIDsEach(
+            playerPosition,
+            removeDistance,
+            function(chunkID: any, chunkPosition: any, distanceAway: any) {
+                // We only care about voxel data for the current chunk, and the ring around us
+                if (distanceAway < 3) {
+                    nearbyVoxels[chunkID] = 0;
+                    onlyTheseVoxels.push(chunkID);
+                    if (!(chunkID in self.currentVoxels)) {
+                        missingVoxels.push(chunkID);
+                    }
+                }
+                // We only care about meshes up to our draw distance
+                //if (distanceAway <= self.removeDistance) {
+                //nearbyMeshes[chunkID] = 0;
+                //}
+
+
+                // Set fetch priority
+                if (distanceAway < 2) {
+                    addPriority(distanceAway, chunkID);
+                    chunkDistances[chunkID] = distanceAway;
+                } else if (distanceAway <= drawDistance) {
+                    // If outside frustum, add config.drawDistnace to distanceAway as priority
+                    // Use frustum to determine our fetch priority.
+                    // We want visible meshes to be fetched and drawn first
+                    if (self.frustum.chunkVisible(chunkID, chunkPosition)) {
+                        addPriority(distanceAway, chunkID);
+                    } else {
+                        addPriority(distanceAway + removeDistance, chunkID);
+                    }
+                    chunkDistances[chunkID] = distanceAway;
+                } else if (distanceAway <= removeDistance) {
+
+                }
+            });
+
+        var prioritized: any = [];
+        for (i = 0; i < priority.length; i++) {
+            Array.prototype.push.apply(prioritized, priority[i]);
+        }
+
+        self.updateNeeds(prioritized, chunkDistances, onlyTheseVoxels, missingVoxels);
+        postMessage(
+            ['meshesToShow', chunkDistances]
+        );
+        postMessage(
+            ['nearbyChunks', nearbyVoxels]
+        );
+
+        log('nearbyVoxels', nearbyVoxels);
+    }
+
+
+    // Client told us the order it wants to receive chunks in
+    static updateNeeds(chunkIds: any, chunkDistances: any, onlyTheseVoxels: any, missingVoxels: any) {
+        // Prioritized list of meshes that we want
+        this.chunkPriority = chunkIds;
+        this.voxels = onlyTheseVoxels;
+
+        // Tell server that we only care about these chunks
+        this.connection.emit('onlyTheseChunks', chunkIds);
+
+        // Might be easier to process these later
+        for (var i: number = 0; i < chunkIds.length; i++) {
+            var chunkId = chunkIds[i];
+
+            // If we haven't recently sent this mesh to the client
+            if (!(chunkId in this.meshesSent)) {
+                if (chunkId in chunkCache) {
+                    this.chunksToMesh[chunkId] = true;
+                } else if (!(chunkId in this.neededChunks)) {
+                    // Request this chunk from server if we haven't yet
+                    this.neededChunks[chunkId] = true;
+                }
+            }
+            if (missingVoxels.indexOf(chunkId) > -1) {
+                if (chunkId in chunkCache) {
+                    this.voxelsToSend[chunkId] = true;
+                }
+            }
+        }
+
+        // We keep track of which meshes we've sent to the client,
+        // remove the ones we no longer care about
+        for (let chunkId in this.meshesSent) {
+            if (!(chunkId in chunkDistances)) {
+                delete this.meshesSent[chunkId];
+            }
+        }
+
+        // Ignore chunks we no longer care about
+        var _chunkIds = Object.keys(this.neededChunks);
+        for (let i = 0; i < chunkIds.length; i++) {
+            let chunkId = _chunkIds[i];
+            if (this.chunkPriority.indexOf(chunkId) === -1) {
+                delete this.neededChunks[chunkId];
+            }
+        }
+    }
+
+    //We queue up chunks when we receive them from the server. This method decodes them and meshes them,
+    //in preparation for rendering.
+    static processChunks() {
+        var chunkIds;
+        for (var chunkID in this.chunksToDecodeAndMesh) {
+            // Skip if we're no longer interested in this chunk
+            if (this.chunkPriority.indexOf(chunkID) === -1) {
+                continue;
+            }
+            var encoded = this.chunksToDecodeAndMesh[chunkID];
+            var position = chunkID.split('|').map(function(value: any) {
+                return Number(value);
+            });
+            var data = pool.malloc('uint8', chunkArrayLength);
+
+            var start = Date.now();
+            var chunk = {
+                chunkID: chunkID,
+                position: position,
+                voxels: decoder(encoded, data)
+            };
+            timer.log('rle-decode', Date.now() - start);
+            // Cache in webworker
+            // TODO: change this to an LRU cache
+            chunkCache[chunkID] = chunk;
+
+            if (this.voxels.indexOf(chunkID) > -1) {
+                this.voxelsToSend[chunkID] = true;
+            }
+            this.chunksToMesh[chunkID] = true;
+        }
+
+        // Transfer voxel data to client
+        chunkIds = Object.keys(this.voxelsToSend);
+        for (let i = 0; i < chunkIds.length; i++) {
+            var chunkId = chunkIds[i];
+            if (chunkId in chunkCache) {
+                postMessage(
+                    ['chunkVoxels', chunkCache[chunkId]]
+                );
+                delete this.voxelsToSend[chunkId];
+            } else {
+                //log('Error: attempted to send voxels that dont exist in chunkCache', chunkID)
+            }
+        }
+
+        chunkIds = Object.keys(this.chunksToMesh);
+        for (let i = 0; i < chunkIds.length; i++) {
+            let chunkId = chunkIds[i];
+            if (!(chunkId in chunkCache)) {
+                // Need to error here
+                log('Error: attempted to mesh a chunk not found in chunkCache', chunkID);
+                continue;
+            }
+
+            let chunk = chunkCache[chunkId];
+            var mesh = mesher.mesh(chunk.position, chunk.voxels);
+
+            var transfer = {};
+            var transferList = [];
+
+            for (var textureValue in mesh) {
+                var texture = mesh[textureValue];
+
+                // We pass data.buffer, the underlying ArrayBuffer
+                transfer[textureValue] = {
+                    position: {
+                        buffer: texture.position.data.buffer,
+                        offset: texture.position.offset,
+                        offsetBytes: texture.position.offset * 4,
+                        tuples: texture.position.offset / 3
+                    },
+                    texcoord: {
+                        buffer: texture.texcoord.data.buffer,
+                        offset: texture.texcoord.offset,
+                        offsetBytes: texture.texcoord.offset * 4
+                    },
+                    normal: {
+                        buffer: texture.normal.data.buffer,
+                        offset: texture.normal.offset,
+                        offsetBytes: texture.normal.offset * 4
+                    }
+                };
+                transferList.push(texture.position.data.buffer);
+                transferList.push(texture.texcoord.data.buffer);
+                transferList.push(texture.normal.data.buffer);
+            }
+
+            // specially list the ArrayBuffer object we want to transfer
+            postMessage(
+                ['chunkMesh', chunkId, transfer],
+                transferList
+            );
+            delete this.chunksToMesh[chunkId];
+            this.meshesSent[chunkId] = true;
+
+            // Stop after sending 10 meshes, to make sure we send voxel data in a timely manner
+            if (i > 9) {
+                break;
+            }
+        }
+
+        this.chunksToDecodeAndMesh = {};
+    }
+
+    // Update our local cache and tell the server
+    static chunkVoxelIndexValue(changes: any, touching: any) {
+        var self = this;
+        self.connection.emit('chunkVoxelIndexValue', changes);
+        for (var chunkID in changes) {
+            if (chunkID in chunkCache) {
+                var chunk = chunkCache[chunkID];
+                var details = changes[chunkID];
+                for (var i = 0; i < details.length; i += 2) {
+                    var index = details[i];
+                    var val = details[i + 1];
+                    chunk.voxels[index] = val;
+                }
+                // Re-mesh this chunk
+                self.chunksToMesh[chunkID] = true;
+            }
+        }
+
+        // Along with these voxel changes, there may be nearby chunks that we need to re-mesh
+        // so we don't "see through the world"
+        for (let chunkID in touching) {
+            if (chunkID in chunkCache) {
+                self.chunksToMesh[chunkID] = true;
+            }
+        }
+    }
+
+    static chat(message: any) {
+        var self = this;
+        self.connection.emit('chat', message);
+    }
+
+    //Client no longer needs this mesh
+    static freeMesh(mesh: any) {
+        for (var textureValue in mesh) {
+            var textureMesh = mesh[textureValue];
+            // We pass ArrayBuffers across worker boundary, so need to we-wrap in the appropriate type
+            pool.free('float32', new Float32Array(textureMesh.position.buffer));
+            pool.free('float32', new Float32Array(textureMesh.texcoord.buffer));
+            pool.free('float32', new Float32Array(textureMesh.normal.buffer));
+        }
+    }
+
+    //Client no longer needs this chunk (voxels and mesh)
+    //Add the arrays back to the pool
+    static freeChunk(chunk: any) {
+        var mesh = chunk.mesh;
+        for (var textureValue in mesh) {
+            var textureMesh = mesh[textureValue];
+            textureMesh.position.free();
+            textureMesh.texcoord.free();
+            textureMesh.normal.free();
+        }
+
+        pool.free('uint8', chunk.voxels);
+    }
+
+    static playerPosition(position: any, yaw: any, pitch: any, avatar: any) {
+        if (!worker.connected) {
+            return;
+        }
+        worker.connection.emit('myPosition', position, yaw, pitch, avatar);
+    }
+}
 */
 var worker = {
     coordinates: null,
@@ -1454,10 +1077,10 @@ var worker = {
     },
     connect: function () {
         var self = this;
-        var coordinates = this.coordinates = new Coordinates(config.chunkSize);
-        var textures = new Textures(config.textures);
+        var coordinates = this.coordinates = new coordinates_1.Coordinates(config.chunkSize);
+        var textures = new textures_1.Textures(config.textures);
         var websocket = this.connection = new WebSocketEmitter.client();
-        var generator = new ClientGenerator(chunkCache, config.chunkSize);
+        var generator = new client_1.ClientGenerator(chunkCache, config.chunkSize);
         mesher.config(config.chunkSize, textures, coordinates, chunkCache);
         websocket.on('open', function () {
             self.connected = true;
@@ -1566,9 +1189,9 @@ var worker = {
             // We only care about meshes up to our draw distance
             /*
             if (distanceAway <= self.removeDistance) {
-            nearbyMeshes[chunkID] = 0;
-        }
-        */
+                nearbyMeshes[chunkID] = 0;
+            }
+            */
             // Set fetch priority
             if (distanceAway < 2) {
                 addPriority(distanceAway, chunkID);
@@ -1785,7 +1408,7 @@ var worker = {
         }
         pool.free('uint8', chunk.voxels);
     },
-    playerPosition: function (position, yaw, pitch, avatar) {
+    playerPosition(position, yaw, pitch, avatar) {
         if (!worker.connected) {
             return;
         }
@@ -1799,7 +1422,7 @@ onmessage = function (e) {
         worker[type].apply(worker, message);
     }
     else {
-        log('worker does not have handler for ' + type, message);
+        log('Worker does not have handler for ' + type, message);
     }
 };
 var waitingOn = 0;
@@ -1839,7 +1462,7 @@ setInterval(function () {
     timer.print();
 }, 10000);
 
-},{"../../config":1,"../shared/coordinates":18,"../shared/generators/client":21,"../shared/log":22,"../shared/web-socket-emitter":23,"./lib/frustum":9,"./lib/meshers/horizontal-merge":13,"./lib/object-pool":14,"./lib/rle-decoder":15,"./lib/textures":16,"./lib/timer":17}],9:[function(require,module,exports){
+},{"../../config":1,"../shared/coordinates":14,"../shared/generators/client":17,"../shared/log":18,"../shared/web-socket-emitter":19,"./lib/frustum":5,"./lib/meshers/horizontal-merge":9,"./lib/object-pool":10,"./lib/rle-decoder":11,"./lib/textures":12,"./lib/timer":13}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var glm = require('./gl-matrix'), vec3 = glm.vec3;
@@ -1982,7 +1605,7 @@ class Frustum {
 }
 exports.Frustum = Frustum;
 
-},{"./gl-matrix":10,"./lines":12,"./object-pool":14,"./timer":17}],10:[function(require,module,exports){
+},{"./gl-matrix":6,"./lines":8,"./object-pool":10,"./timer":13}],6:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -5549,46 +5172,52 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
     })(shim.exports);
 })(this);
 
-},{}],11:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // maybe replace pool with a version that handles types of objects too
 var pool = require('./object-pool');
-var Growable = function (type, initialSize) {
-    this.type = type;
-    this.size = initialSize;
-    this.data = pool.malloc(type, initialSize);
-    // The offset to start writing at, also can be used as a count of items in the buffer
-    this.offset = 0;
-};
-// We want to append size amount of data, at the current offset
-// Re-allocate the array if necessary
-// Returns a handle to the TypedArray to use
-Growable.prototype.need = function (size) {
-    var needed = this.offset + size;
-    if (needed > this.size) {
-        var newSize = this.size * 2;
-        var data;
-        while (needed > newSize) {
-            newSize *= 2;
-        }
-        //console.log('GROWABLE: Reallocating to ' + newSize)
-        data = pool.malloc(this.type, newSize);
-        data.set(this.data);
-        pool.free(this.type, this.data);
-        this.data = data;
-        this.size = newSize;
+class Growable {
+    constructor(_type, initialSize) {
+        this.type = _type;
+        this.size = initialSize;
+        this.data = pool.malloc(_type, initialSize);
+        // The offset to start writing at, also can be used as a count of items in the buffer
+        this.offset = 0;
     }
-    return this.data;
-};
-Growable.prototype.append = function (arr) {
-    this.data.set(arr, this.offset);
-    this.offset += arr.length;
-};
-Growable.prototype.free = function () {
-    pool.free(this.type, this.data);
-};
-module.exports = Growable;
+    // We want to append size amount of data, at the current offset
+    // Re-allocate the array if necessary
+    // Returns a handle to the TypedArray to use
+    need(size) {
+        var needed = this.offset + size;
+        if (needed > this.size) {
+            var newSize = this.size * 2;
+            var data;
+            while (needed > newSize) {
+                newSize *= 2;
+            }
+            //console.log('GROWABLE: Reallocating to ' + newSize)
+            data = pool.malloc(this.type, newSize);
+            data.set(this.data);
+            pool.free(this.type, this.data);
+            this.data = data;
+            this.size = newSize;
+        }
+        return this.data;
+    }
+    append(arr) {
+        this.data.set(arr, this.offset);
+        this.offset += arr.length;
+    }
+    free() {
+        pool.free(this.type, this.data);
+    }
+}
+exports.Growable = Growable;
 
-},{"./object-pool":14}],12:[function(require,module,exports){
+},{"./object-pool":10}],8:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /*
 LineBuffer to hold all the lines we want to draw
 */
@@ -5598,88 +5227,105 @@ var vertexShaderCode = "uniform mat4 u_projection;" +
 var fragmentShaderCode = "precision mediump float;" +
     "uniform vec4 u_color;" +
     "void main() { gl_FragColor = u_color; }";
-var Lines = function (gl, color) {
-    this.gl = gl;
-    this.glBuffer;
-    this.tuples = 0;
-    this.shaders = {};
-    this.shaderAttributes = {};
-    this.shaderUniforms = {};
-    this.points = [];
-    this.pointOffsets = [];
-    this.color = color || [255, 0, 0, 1];
-    // Set up shaders
-    var shader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(shader, fragmentShaderCode);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        var errmsg = "fragment shader compile failed: " + gl.getShaderInfoLog(shader);
-        alert(errmsg);
-        throw new Error();
+class Lines {
+    constructor(gl, color) {
+        this.gl = gl;
+        this.glBuffer;
+        this.tuples = 0;
+        var errmsg = '';
+        this.shaders = {
+            fragment: null,
+            vertex: null
+        };
+        this.shaderAttributes = {
+            position: null,
+            shaderUniforms: {
+                projection: null,
+                color: null
+            }
+        };
+        this.shaderUniforms = {
+            projection: null,
+            color: null
+        };
+        this.points = [];
+        this.pointOffsets = [];
+        this.color = color || [255, 0, 0, 1];
+        // Set up shaders
+        var shader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(shader, fragmentShaderCode);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            errmsg = "fragment shader compile failed: " + gl.getShaderInfoLog(shader);
+            alert(errmsg);
+            throw new Error();
+        }
+        this.shaders.fragment = shader;
+        shader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(shader, vertexShaderCode);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            errmsg = "vertex shader compile failed : " + gl.getShaderInfoLog(shader);
+            alert(errmsg);
+            throw new Error(errmsg);
+        }
+        this.shaders.vertex = shader;
+        var shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, this.shaders.vertex);
+        gl.attachShader(shaderProgram, this.shaders.fragment);
+        gl.linkProgram(shaderProgram);
+        //gl.useProgram(shaderProgram);
+        this.shaderAttributes.position = gl.getAttribLocation(shaderProgram, "a_position");
+        this.shaderUniforms = {
+            projection: gl.getUniformLocation(shaderProgram, "u_projection"),
+            color: gl.getUniformLocation(shaderProgram, "u_color")
+        };
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            errmsg = "failed to initialize shader with data matrices";
+            alert(errmsg);
+            throw new Error(errmsg);
+        }
+        this.shaderProgram = shaderProgram;
+        this.glBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
     }
-    this.shaders.fragment = shader;
-    shader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(shader, vertexShaderCode);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        var errmsg = "vertex shader compile failed : " + gl.getShaderInfoLog(vertShader);
-        alert(errmsg);
-        throw new Error(errmsg);
+    /*
+    Buffer attributes will likely just be:
+    {
+        thickness: 1,
+        points: []
     }
-    this.shaders.vertex = shader;
-    var shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, this.shaders.vertex);
-    gl.attachShader(shaderProgram, this.shaders.fragment);
-    gl.linkProgram(shaderProgram);
-    //gl.useProgram(shaderProgram);
-    this.shaderAttributes.position = gl.getAttribLocation(shaderProgram, "a_position");
-    this.shaderUniforms.projection = gl.getUniformLocation(shaderProgram, "u_projection");
-    this.shaderUniforms.color = gl.getUniformLocation(shaderProgram, "u_color");
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        var errmsg = "failed to initialize shader with data matrices";
-        alert(errmsg);
-        throw new Error(errmsg);
+    */
+    // BAH, for now, all lines are the same
+    fill(points) {
+        var gl = this.gl;
+        this.skipDraw = false;
+        this.tuples = points.length / 3;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
     }
-    this.shaderProgram = shaderProgram;
-    this.glBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-};
-/*
-Buffer attributes will likely just be:
-{
-    thickness: 1,
-    points: []
+    render(projection) {
+        var gl = this.gl;
+        if (this.skipDraw) {
+            return;
+        }
+        gl.useProgram(this.shaderProgram);
+        gl.lineWidth(3);
+        // works!
+        gl.uniformMatrix4fv(this.shaderUniforms.projection, false, projection);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.enableVertexAttribArray(this.shaderAttributes.position);
+        gl.vertexAttribPointer(this.shaderAttributes.position, 3, gl.FLOAT, false, 0, 0);
+        gl.uniform4fv(this.shaderUniforms.color, this.color);
+        gl.drawArrays(gl.LINES, 0, this.tuples);
+    }
+    skip(yesno) {
+        this.skipDraw = yesno;
+    }
 }
-*/
-// BAH, for now, all lines are the same
-Lines.prototype.fill = function (points) {
-    var gl = this.gl;
-    this.skipDraw = false;
-    this.tuples = points.length / 3;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
-};
-Lines.prototype.render = function (projection) {
-    var gl = this.gl;
-    if (this.skipDraw) {
-        return;
-    }
-    gl.useProgram(this.shaderProgram);
-    gl.lineWidth(3);
-    // works!
-    gl.uniformMatrix4fv(this.shaderUniforms.projection, false, projection);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-    gl.enableVertexAttribArray(this.shaderAttributes.position);
-    gl.vertexAttribPointer(this.shaderAttributes.position, 3, gl.FLOAT, false, 0, 0);
-    gl.uniform4fv(this.shaderUniforms.color, this.color);
-    gl.drawArrays(gl.LINES, 0, this.tuples);
-};
-Lines.prototype.skip = function (yesno) {
-    this.skipDraw = yesno;
-};
-module.exports = Lines;
+exports.Lines = Lines;
 
-},{}],13:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // TODO: clean this up. fewer globals
 var Growable = require('../growable');
 // TODO: use object pool for vector arrays
@@ -5932,17 +5578,17 @@ var isFaceBlocked = function (basePosition, voxels, chunkSize, face, x, y, z, cu
         //console.log(opposingChunkID, opposingIndex);
         if (opposingChunkID in chunkCache) {
             var opposingChunk = chunkCache[opposingChunkID];
-            var opposingVoxelValue = opposingChunk.voxels[opposingIndex];
+            let opposingVoxelValue = opposingChunk.voxels[opposingIndex];
             return shouldSkipFace(currentVoxelValue, opposingVoxelValue);
         }
         return false;
     }
     var index = Coordinator.coordinatesToVoxelIndex(x, y, z);
-    var opposingVoxelValue = voxels[index];
+    let opposingVoxelValue = voxels[index];
     return shouldSkipFace(currentVoxelValue, opposingVoxelValue);
 };
 var shouldSkipFace = function (currentVoxelValue, opposingVoxelValue) {
-    if (opposingVoxelValue == 0) {
+    if (opposingVoxelValue === 0) {
         return false;
     }
     /*
@@ -5974,7 +5620,12 @@ var faceIndex = function (face) {
     return map[face];
 };
 var calculate = function (basePosition, voxels) {
-    var outside = chunkSize - 1;
+    var outside = -1;
+    var chunkSize = -1;
+    var x;
+    var index;
+    var voxelTextureValue;
+    var z;
     // Make position relative ... lower bound to 0 and adjust everything else
     for (var y = 0; y < chunkSize; y++) {
         // points to current start/end object for this face
@@ -5985,12 +5636,12 @@ var calculate = function (basePosition, voxels) {
             bottom: null
         };
         var part = y * chunkSize;
-        for (var z = 0; z < chunkSize; z++) {
-            var index = part + (z * chunkSize * chunkSize);
+        for (z = 0; z < chunkSize; z++) {
+            index = part + (z * chunkSize * chunkSize);
             resetFaces(adjacent);
-            for (var x = 0; x < chunkSize; x++) {
-                var voxelTextureValue = voxels[index + x];
-                if (voxelTextureValue == 0) {
+            for (x = 0; x < chunkSize; x++) {
+                voxelTextureValue = voxels[index + x];
+                if (voxelTextureValue === 0) {
                     addFaces(basePosition, adjacent);
                     resetFaces(adjacent);
                     continue;
@@ -6024,7 +5675,7 @@ var calculate = function (basePosition, voxels) {
                     }
                     else {
                         // should we create a new face pointer?
-                        if (adjacent[face] == null) {
+                        if (adjacent[face] === null) {
                             if (debug) {
                                 console.log('new pointer');
                             }
@@ -6037,7 +5688,7 @@ var calculate = function (basePosition, voxels) {
                                 console.log(adjacent);
                             }
                         }
-                        else if (adjacent[face].textureValue == textureValue) {
+                        else if (adjacent[face].textureValue === textureValue) {
                             if (debug) {
                                 console.log('same texture');
                             }
@@ -6067,15 +5718,17 @@ var calculate = function (basePosition, voxels) {
             resetFaces(adjacent);
         } // end Z
         adjacent = {
-            left: null,
-            right: null
+            front: null,
+            back: null,
+            top: null,
+            bottom: null
         };
-        for (var x = 0; x < chunkSize; x++) {
-            var index = part + x;
+        for (x = 0; x < chunkSize; x++) {
+            index = part + x;
             resetFaces(adjacent);
-            for (var z = 0; z < chunkSize; z++) {
-                var voxelTextureValue = voxels[index + (z * chunkSize * chunkSize)];
-                if (voxelTextureValue == 0) {
+            for (z = 0; z < chunkSize; z++) {
+                voxelTextureValue = voxels[index + (z * chunkSize * chunkSize)];
+                if (voxelTextureValue === 0) {
                     addFaces(basePosition, adjacent);
                     resetFaces(adjacent);
                     continue;
@@ -6088,9 +5741,8 @@ var calculate = function (basePosition, voxels) {
                 // is left blocked, add it
                 // is right blocked? add it
                 // only loop through current pointer faces
-                for (var face in adjacent) {
-                    var isBlocked = false;
-                    var textureValue;
+                for (face in adjacent) {
+                    isBlocked = false;
                     if ('sides' in texturesByValue[voxelTextureValue]) {
                         textureValue = texturesByValue[voxelTextureValue].sides[faceIndex(face)];
                     }
@@ -6101,7 +5753,7 @@ var calculate = function (basePosition, voxels) {
                     if (debug) {
                         console.log('face: ' + face, 'blocked:', isBlocked);
                     }
-                    if (isBlocked > 0) {
+                    if (isBlocked) {
                         if (adjacent[face] != null) {
                             addFace(basePosition, face, adjacent[face]);
                             adjacent[face] = null;
@@ -6109,7 +5761,7 @@ var calculate = function (basePosition, voxels) {
                     }
                     else {
                         // should we create a new face pointer?
-                        if (adjacent[face] == null) {
+                        if (adjacent[face] === null) {
                             if (debug) {
                                 console.log('new pointer');
                             }
@@ -6122,7 +5774,7 @@ var calculate = function (basePosition, voxels) {
                                 console.log(adjacent);
                             }
                         }
-                        else if (adjacent[face].textureValue == textureValue) {
+                        else if (adjacent[face].textureValue === textureValue) {
                             // yes, update end position
                             adjacent[face].end[0] = x;
                             adjacent[face].end[1] = y;
@@ -6153,10 +5805,7 @@ var calculate = function (basePosition, voxels) {
         } // end X
     } // end Y
 };
-if (!module) {
-    var module = {};
-}
-var Meshing = module.exports = {
+module.exports = {
     config: function (cs, textures, coordinatorHandle, cache) {
         chunkSize = cs;
         voxelArraySize = chunkSize * chunkSize * chunkSize;
@@ -6166,7 +5815,7 @@ var Meshing = module.exports = {
     },
     // position is chunk lower boundary
     mesh: function (position, voxels) {
-        if (!voxels || voxels.length == 0) {
+        if (!voxels || voxels.length === 0) {
             console.log('Empty voxels');
             return null;
         }
@@ -6179,8 +5828,8 @@ var Meshing = module.exports = {
     }
 };
 
-},{"../growable":11,"../object-pool":14,"../timer":17}],14:[function(require,module,exports){
-var pool = {};
+},{"../growable":7,"../object-pool":10,"../timer":13}],10:[function(require,module,exports){
+var pool;
 // Don't really need to keep track of those I've allocated, do I?
 var bytes = 0;
 var mallocs = 0;
@@ -6252,22 +5901,23 @@ module.exports = {
     }
 };
 
-},{}],15:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // Decoder
 var decode = function (input, destination) {
     var out;
     var previous;
     var length = 0;
     var index = 0;
+    var i;
     if (!destination) {
         // Determine length and allocate output array
         // Add up all the instance counts
-        for (var i = 1; i < input.length; i += 2) {
+        for (i = 1; i < input.length; i += 2) {
             length += input[i];
         }
         destination = new Uint8Array(length);
     }
-    for (var i = 0; i < input.length; i += 2) {
+    for (i = 0; i < input.length; i += 2) {
         var value = input[i];
         var count = input[i + 1];
         // TODO: would using TypedArray.fill() here be faster?
@@ -6279,67 +5929,71 @@ var decode = function (input, destination) {
 };
 module.exports = decode;
 
-},{}],16:[function(require,module,exports){
-var Textures = function (textureArray) {
-    this.textureArray = textureArray;
-    this.byName = {};
-    this.byValue = {};
-    // Prepare name and value mapping
-    for (var i = 0; i < textureArray.length; i++) {
-        var texture = textureArray[i];
-        this.byValue[texture.value] = texture;
-        this.byName[texture.name] = texture;
-    }
-};
-// TODO: modify this to annotate the original data structure with buffer and image object
-Textures.prototype.load = function (gl, callback) {
-    var toLoad = this.textureArray.length;
-    // skip null (empty block) texture
-    var done = function () {
-        toLoad--;
-        if (toLoad == 0) {
-            callback();
+},{}],12:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class Textures {
+    constructor(textureArray) {
+        this.textureArray = textureArray;
+        this.byName = {};
+        this.byValue = {};
+        // Prepare name and value mapping
+        for (var i = 0; i < textureArray.length; i++) {
+            var texture = textureArray[i];
+            this.byValue[texture.value] = texture;
+            this.byName[texture.name] = texture;
         }
-    };
-    var textureClosure = function (texture) {
-        return function () {
-            gl.bindTexture(gl.TEXTURE_2D, texture.glTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-            // mipmap when scaling down
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-            // linear when scaling up
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.generateMipmap(gl.TEXTURE_2D);
-            done();
+    }
+    // TODO: modify this to annotate the original data structure with buffer and image object
+    load(gl, callback) {
+        var toLoad = this.textureArray.length;
+        // skip null (empty block) texture
+        var done = function () {
+            toLoad--;
+            if (toLoad === 0) {
+                callback();
+            }
         };
-    };
-    // Pre-multiply so opacity works correctly
-    // http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    // PNGs require this
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    for (var i = 0; i < this.textureArray.length; i++) {
-        var texture = this.textureArray[i];
-        // Is this a cube of different textures?
-        if ('sides' in texture) {
-            // all the sides must be loaded independently
-            done();
-        }
-        else {
-            texture.glTexture = gl.createTexture();
-            texture.image = new Image();
-            // Need closure here, to wrap texture
-            texture.image.onload = textureClosure(texture);
-            texture.image.crossOrigin = 'Anonymous';
-            texture.image.src = texture.src;
+        var textureClosure = function (texture) {
+            return function () {
+                gl.bindTexture(gl.TEXTURE_2D, texture.glTexture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                // mipmap when scaling down
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+                // linear when scaling up
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.generateMipmap(gl.TEXTURE_2D);
+                done();
+            };
+        };
+        // Pre-multiply so opacity works correctly
+        // http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+        // PNGs require this
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        for (var i = 0; i < this.textureArray.length; i++) {
+            var texture = this.textureArray[i];
+            // Is this a cube of different textures?
+            if ('sides' in texture) {
+                // all the sides must be loaded independently
+                done();
+            }
+            else {
+                texture.glTexture = gl.createTexture();
+                texture.image = new Image();
+                // Need closure here, to wrap texture
+                texture.image.onload = textureClosure(texture);
+                texture.image.crossOrigin = 'Anonymous';
+                texture.image.src = texture.src;
+            }
         }
     }
-};
-module.exports = Textures;
+}
+exports.Textures = Textures;
 
-},{}],17:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var items = {};
 module.exports = {
     log: function (name, time) {
@@ -6372,117 +6026,123 @@ module.exports = {
     }
 };
 
-},{}],18:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var distances = require('./distances');
-module.exports = function (opts) {
+/*module.exports = function(opts) {
     return new Coordinates(opts);
 };
+*/
 //module.exports.Coordinates = Coordinates;
-function Coordinates(chunkSize) {
-    this.chunkSize = chunkSize || 32;
-    if (this.chunkSize & this.chunkSize - 1 !== 0) {
-        throw new Error('chunkSize must be a power of 2');
+class Coordinates {
+    constructor(chunkSize) {
+        this.chunkSize = chunkSize || 32;
+        if (this.chunkSize & this.chunkSize - 1 !== 0) {
+            throw new Error('chunkSize must be a power of 2');
+        }
+        this.voxelMask = this.chunkSize - 1;
+        this.chunkMask = ~this.voxelMask;
     }
-    this.voxelMask = this.chunkSize - 1;
-    this.chunkMask = ~this.voxelMask;
-}
-;
-Coordinates.prototype.nearbyChunkIDsEach = function (position, maxDistance, callback) {
-    var current = this.positionToChunk(position);
-    var x = current[0];
-    var y = current[1];
-    var z = current[2];
-    for (var distanceAway = 0; distanceAway <= maxDistance; distanceAway++) {
-        var chunks = distances[distanceAway];
-        for (var j = 0; j < chunks.length; j++) {
-            // Create a copy so we can modity
-            var chunk = chunks[j].slice();
-            chunk[0] += x;
-            chunk[1] += y;
-            chunk[2] += z;
-            callback(chunk.join('|'), chunk, distanceAway);
-        }
-    }
-};
-// Use lower boundary as the chunk position/ID
-Coordinates.prototype.coordinatesToChunkID = function (x, y, z) {
-    var mask = this.chunkMask;
-    var cx = x & mask;
-    var cy = y & mask;
-    var cz = z & mask;
-    return cx + '|' + cy + '|' + cz;
-};
-Coordinates.prototype.positionToChunk = function (position) {
-    return this.coordinatesToChunk(position[0], position[1], position[2]);
-};
-Coordinates.prototype.coordinatesToChunk = function (x, y, z) {
-    var mask = this.chunkMask;
-    var cx = x & mask;
-    var cy = y & mask;
-    var cz = z & mask;
-    return [cx, cy, cz];
-};
-Coordinates.prototype.positionToChunkID = function (position) {
-    return this.coordinatesToChunkID(position[0], position[1], position[2]);
-};
-Coordinates.prototype.coordinatesToVoxelIndex = function (x, y, z, touching) {
-    var voxelMask = this.voxelMask;
-    var vx = x & voxelMask;
-    var vy = y & voxelMask;
-    var vz = z & voxelMask;
-    var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
-    return index;
-};
-Coordinates.prototype.coordinatesToChunkAndVoxelIndex = function (x, y, z, touching) {
-    var chunkMask = this.chunkMask;
-    var voxelMask = this.voxelMask;
-    var cx = x & chunkMask;
-    var cy = y & chunkMask;
-    var cz = z & chunkMask;
-    var chunkId = cx + '|' + cy + '|' + cz;
-    var vx = x & voxelMask;
-    var vy = y & voxelMask;
-    var vz = z & voxelMask;
-    //var val = chunk.voxels.get(mx, my, mz)
-    var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
-    // Fill touching with chunk ids that this voxel touches
-    if (!!touching) {
-        if (vx == 0) {
-            touching[(cx - 32) + '|' + cy + '|' + cz] = true;
-        }
-        else if (vx == 31) {
-            touching[(cx + 32) + '|' + cy + '|' + cz] = true;
-        }
-        if (vy == 0) {
-            touching[cx + '|' + (cy - 32) + '|' + cz] = true;
-        }
-        else if (vy == 31) {
-            touching[cx + '|' + (cy + 32) + '|' + cz] = true;
-        }
-        if (vz == 0) {
-            touching[cx + '|' + cy + '|' + (cz - 32)] = true;
-        }
-        else if (vz == 31) {
-            touching[cx + '|' + cy + '|' + (cz + 32)] = true;
-        }
-    }
-    return [chunkId, index];
-};
-Coordinates.prototype.positionToVoxelIndex = function (pos) {
-    return this.coordinatesToVoxelIndex(pos[0], pos[1], pos[2]);
-};
-Coordinates.prototype.lowToHighEach = function (low, high, callback) {
-    for (var i = low[0]; i <= high[0]; i++) {
-        for (var j = low[1]; j <= high[1]; j++) {
-            for (var k = low[2]; k <= high[2]; k++) {
-                callback(i, j, k);
+    nearbyChunkIDsEach(position, maxDistance, callback) {
+        var current = this.positionToChunk(position);
+        var x = current[0];
+        var y = current[1];
+        var z = current[2];
+        for (var distanceAway = 0; distanceAway <= maxDistance; distanceAway++) {
+            var chunks = distances[distanceAway];
+            for (var j = 0; j < chunks.length; j++) {
+                // Create a copy so we can modity
+                var chunk = chunks[j].slice();
+                chunk[0] += x;
+                chunk[1] += y;
+                chunk[2] += z;
+                callback(chunk.join('|'), chunk, distanceAway);
             }
         }
     }
-};
+    // Use lower boundary as the chunk position/ID
+    coordinatesToChunkID(x, y, z) {
+        var mask = this.chunkMask;
+        var cx = x & mask;
+        var cy = y & mask;
+        var cz = z & mask;
+        return cx + '|' + cy + '|' + cz;
+    }
+    positionToChunk(position) {
+        return this.coordinatesToChunk(position[0], position[1], position[2]);
+    }
+    coordinatesToChunk(x, y, z) {
+        var mask = this.chunkMask;
+        var cx = x & mask;
+        var cy = y & mask;
+        var cz = z & mask;
+        return [cx, cy, cz];
+    }
+    positionToChunkID(position) {
+        return this.coordinatesToChunkID(position[0], position[1], position[2]);
+    }
+    coordinatesToVoxelIndex(x, y, z, touching) {
+        var voxelMask = this.voxelMask;
+        var vx = x & voxelMask;
+        var vy = y & voxelMask;
+        var vz = z & voxelMask;
+        var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
+        return index;
+    }
+    coordinatesToChunkAndVoxelIndex(x, y, z, touching) {
+        var chunkMask = this.chunkMask;
+        var voxelMask = this.voxelMask;
+        var cx = x & chunkMask;
+        var cy = y & chunkMask;
+        var cz = z & chunkMask;
+        var chunkId = cx + '|' + cy + '|' + cz;
+        var vx = x & voxelMask;
+        var vy = y & voxelMask;
+        var vz = z & voxelMask;
+        //var val = chunk.voxels.get(mx, my, mz)
+        var index = vx + (vy * this.chunkSize) + (vz * this.chunkSize * this.chunkSize);
+        // Fill touching with chunk ids that this voxel touches
+        if (!!touching) {
+            if (vx === 0) {
+                touching[(cx - 32) + '|' + cy + '|' + cz] = true;
+            }
+            else if (vx === 31) {
+                touching[(cx + 32) + '|' + cy + '|' + cz] = true;
+            }
+            if (vy === 0) {
+                touching[cx + '|' + (cy - 32) + '|' + cz] = true;
+            }
+            else if (vy === 31) {
+                touching[cx + '|' + (cy + 32) + '|' + cz] = true;
+            }
+            if (vz === 0) {
+                touching[cx + '|' + cy + '|' + (cz - 32)] = true;
+            }
+            else if (vz === 31) {
+                touching[cx + '|' + cy + '|' + (cz + 32)] = true;
+            }
+        }
+        return [chunkId, index];
+    }
+    positionToVoxelIndex(pos) {
+        return this.coordinatesToVoxelIndex(pos[0], pos[1], pos[2]);
+    }
+    lowToHighEach(low, high, callback) {
+        for (var i = low[0]; i <= high[0]; i++) {
+            for (var j = low[1]; j <= high[1]; j++) {
+                for (var k = low[2]; k <= high[2]; k++) {
+                    callback(i, j, k);
+                }
+            }
+        }
+    }
+}
+exports.Coordinates = Coordinates;
 
-},{"./distances":19}],19:[function(require,module,exports){
-module.exports = { '0': [[0, 0, 0], [0, 0, 0]],
+},{"./distances":15}],15:[function(require,module,exports){
+module.exports = {
+    '0': [[0, 0, 0], [0, 0, 0]],
     '1': [[-32, -32, -32],
         [-32, -32, 32],
         [-32, 0, -32],
@@ -75402,94 +75062,99 @@ module.exports = { '0': [[0, 0, 0], [0, 0, 0]],
         [-640, 576, 608],
         [640, 576, 608],
         [-640, 608, 608],
-        [640, 608, 608]] };
+        [640, 608, 608]]
+};
 
-},{}],20:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 //var stats = require('voxeling-stats')
 var debug = false;
-// Default is a flat world
-var generateVoxel = function (x, y, z, chunkSize) {
-    if (y < 1) {
-        return 1; // grass and dirt
+class Generator {
+    constructor(chunkSize) {
+        if (!chunkSize) {
+            throw new Exception('voxel-generator: chunkSize is required');
+        }
+        this.chunkSize = chunkSize;
+        this.chunkArraySize = this.chunkSize * this.chunkSize * this.chunkSize;
     }
-    return 0;
-};
-var Generator = function (chunkSize) {
-    if (!chunkSize) {
-        throw new Exception('voxel-generator: chunkSize is required');
-        return;
+    // Default is a flat world
+    generateVoxel(x, y, z, chunkSize) {
+        if (y < 1) {
+            return 1; // grass and dirt
+        }
+        return 0;
     }
-    this.chunkSize = chunkSize;
-    this.chunkArraySize = this.chunkSize * this.chunkSize * this.chunkSize;
-    this.generateVoxel = generateVoxel;
-};
-module.exports = Generator;
-Generator.prototype.get = function (chunkID) {
-    if (debug) {
-        console.log('Generator:generateChunk ' + chunkID);
+    get(chunkID) {
+        if (debug) {
+            console.log('Generator:generateChunk ' + chunkID);
+        }
+        var started = Date.now();
+        var chunk = this.makeChunkStruct(chunkID);
+        this.fillChunkVoxels(chunk, this.generateVoxel, this.chunkSize);
+        //stats('generateChunk', started);
+        return chunk;
     }
-    var started = Date.now();
-    var chunk = this.makeChunkStruct(chunkID);
-    this.fillChunkVoxels(chunk, this.generateVoxel, this.chunkSize);
-    //stats('generateChunk', started);
-    return chunk;
-};
-// TODO: this needs to be accessible outside an instance, right?
-Generator.prototype.fillChunkVoxels = function (chunk, fn, chunkSize) {
-    var lo = chunk.position;
-    var ii = lo[0] + chunkSize;
-    var jj = lo[1] + chunkSize;
-    var kk = lo[2] + chunkSize;
-    var index = 0;
-    for (var k = lo[2]; k < kk; k++) {
-        for (var j = lo[1]; j < jj; j++) {
-            for (var i = lo[0]; i < ii; i++, index++) {
-                chunk.voxels[index] = fn(i, j, k, chunkSize);
+    // TODO: this needs to be accessible outside an instance, right?
+    fillChunkVoxels(chunk, fn, chunkSize) {
+        var lo = chunk.position;
+        var ii = lo[0] + chunkSize;
+        var jj = lo[1] + chunkSize;
+        var kk = lo[2] + chunkSize;
+        var index = 0;
+        for (var k = lo[2]; k < kk; k++) {
+            for (var j = lo[1]; j < jj; j++) {
+                for (var i = lo[0]; i < ii; i++, index++) {
+                    chunk.voxels[index] = fn(i, j, k, chunkSize);
+                }
             }
         }
     }
-};
-Generator.prototype.makeChunkStruct = function (chunkID) {
-    var position = chunkID.split('|').map(function (value) {
-        return Number(value);
-    });
-    return {
-        position: position,
-        chunkID: chunkID,
-        voxels: new Uint8Array(this.chunkArraySize)
-    };
-};
-
-},{}],21:[function(require,module,exports){
-var Generator = require('../generator');
-var inherits = require('util').inherits;
-module.exports = ClientGenerator;
-var debug = false;
-function ClientGenerator(cache, chunkSize) {
-    Generator.call(this, cache, chunkSize);
-    this.chunksToRequest = {};
-    this.chunksToGeneratePerPass = 500;
+    makeChunkStruct(chunkID) {
+        var position = chunkID.split('|').map(function (value) {
+            return Number(value);
+        });
+        return {
+            position: position,
+            chunkID: chunkID,
+            voxels: new Uint8Array(this.chunkArraySize)
+        };
+    }
 }
-inherits(ClientGenerator, Generator);
-ClientGenerator.prototype.setEmitter = function (emitter) {
-    this.emitter = emitter;
-};
-ClientGenerator.prototype.requestChunk = function (chunkID) {
-    this.chunksToRequest[chunkID] = true;
-};
-ClientGenerator.prototype.generateChunks = function () {
-    var chunkIDs = Object.keys(this.chunksToRequest);
-    if (chunkIDs.length == 0) {
-        return;
-    }
-    if (debug) {
-        console.log('generateChunks');
-    }
-    this.emitter.emit('needChunks', chunkIDs);
-    this.chunksToRequest = {};
-};
+exports.Generator = Generator;
 
-},{"../generator":20,"util":6}],22:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const generator_1 = require("../generator");
+var debug = false;
+class ClientGenerator extends generator_1.Generator {
+    constructor(cache, chunkSize) {
+        super(chunkSize);
+        this.chunksToRequest = {};
+        this.chunksToGeneratePerPass = 500;
+    }
+    setEmitter(emitter) {
+        this.emitter = emitter;
+    }
+    requestChunk(chunkID) {
+        this.chunksToRequest[chunkID] = true;
+    }
+    generateChunks() {
+        var chunkIDs = Object.keys(this.chunksToRequest);
+        if (chunkIDs.length === 0) {
+            return;
+        }
+        if (debug) {
+            console.log('generateChunks');
+        }
+        this.emitter.emit('needChunks', chunkIDs);
+        this.chunksToRequest = {};
+    }
+}
+exports.ClientGenerator = ClientGenerator;
+
+},{"../generator":16}],18:[function(require,module,exports){
 // From: https://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9
 var log = Function.prototype.bind.call(console.log, console);
 var stub = function () {
@@ -75510,7 +75175,9 @@ module.exports = function (moduleName, enabled) {
     };
 };
 
-},{}],23:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var WebSocket = require('ws');
 var EventEmitter = require('events').EventEmitter;
 var slice = Array.prototype.slice;
@@ -75521,179 +75188,187 @@ TODO
 * Outline events on the client and server sides. Can remap node events to something that makes more sense given the context
 
 */
-function WebSocketEmitter(webSocket, emitter) {
-    this.webSocket = webSocket;
-    this.emitter = emitter;
-    var self = this;
-    // NOTE: I don't want to expose access to the socket
-    var browserify = 'binaryType' in webSocket;
-    var onOpen = function () {
-        log('onOpen');
-        emitter.emit('open');
-    };
-    var onMessage = function (data, flags) {
-        log('onMessage');
-        var decoded;
-        // flags.binary will be set if a binary data is received.
-        // flags.masked will be set if the data was masked.
-        if (!data) {
-            log('WebSocketEmitter received empty data');
-            return;
-        }
-        try {
-            decoded = JSON.parse(data);
-        }
-        catch (err) {
-            log('WebSocketEmitter error while decoding JSON');
-            //console.log(data)
-            return;
-        }
-        emitter.emit.apply(emitter, decoded);
-    };
-    var onError = function (message) {
-        log('onError');
-        emitter.emit('error', message);
-    };
-    var onClose = function () {
-        log('onClose');
-        self.webSocket = null;
-        emitter.emit('close');
-    };
-    log(browserify ? 'WSE is browserified' : 'WSE is not browserified');
-    if (browserify) {
-        // handle browserify WebSocket version
-        webSocket.onerror = onError;
-        // Yes, this will only get used for client connections, but setting this for an incoming server connection shouldn't hurt
-        webSocket.onopen = onOpen;
-        webSocket.onclose = onClose;
-        webSocket.onmessage = function (event, flags) {
-            log('onmessage');
-            if (event.data instanceof Blob) {
-                var reader = new FileReader();
-                reader.addEventListener('loadend', function () {
-                    onMessage.call(null, reader.result, flags);
-                });
-                reader.readAsText(event.data);
-            }
-            else {
-                log('Unexpected data type');
-            }
+class WebSocketEmitter {
+    constructor(webSocket, emitter) {
+        this.webSocket = webSocket;
+        this.emitter = emitter;
+        var self = this;
+        // NOTE: I don't want to expose access to the socket
+        var browserify = 'binaryType' in webSocket;
+        var onOpen = function () {
+            log('onOpen');
+            emitter.emit('open');
         };
+        var onMessage = function (data, flags) {
+            log('onMessage');
+            var decoded;
+            // flags.binary will be set if a binary data is received.
+            // flags.masked will be set if the data was masked.
+            if (!data) {
+                log('WebSocketEmitter received empty data');
+                return;
+            }
+            try {
+                decoded = JSON.parse(data);
+            }
+            catch (err) {
+                log('WebSocketEmitter error while decoding JSON');
+                //console.log(data)
+                return;
+            }
+            emitter.emit.apply(emitter, decoded);
+        };
+        var onError = function (message) {
+            log('onError');
+            emitter.emit('error', message);
+        };
+        var onClose = function () {
+            log('onClose');
+            self.webSocket = null;
+            emitter.emit('close');
+        };
+        log(browserify ? 'WSE is browserified' : 'WSE is not browserified');
+        if (browserify) {
+            // handle browserify WebSocket version
+            webSocket.onerror = onError;
+            // Yes, this will only get used for client connections, but setting this for an incoming server connection shouldn't hurt
+            webSocket.onopen = onOpen;
+            webSocket.onclose = onClose;
+            webSocket.onmessage = function (event, flags) {
+                log('onmessage');
+                if (event.data instanceof Blob) {
+                    var reader = new FileReader();
+                    reader.addEventListener('loadend', function () {
+                        onMessage.call(null, reader.result, flags);
+                    });
+                    reader.readAsText(event.data);
+                }
+                else {
+                    log('Unexpected data type');
+                }
+            };
+        }
+        else {
+            webSocket.on('error', onError);
+            // Yes, this will only get used for client connections, but setting this for an incoming server connection shouldn't hurt
+            webSocket.on('open', onOpen);
+            webSocket.on('close', onClose);
+            webSocket.on('message', onMessage);
+        }
     }
-    else {
-        webSocket.on('error', onError);
-        // Yes, this will only get used for client connections, but setting this for an incoming server connection shouldn't hurt
-        webSocket.on('open', onOpen);
-        webSocket.on('close', onClose);
-        webSocket.on('message', onMessage);
-    }
-}
-WebSocketEmitter.prototype.emit = function (name, callback) {
-    var self = this;
-    log('emit');
-    if (!name) {
-        throw new Exception('name required');
-    }
-    if (!this.webSocket) {
-        self.emitter.emit('error', 'Cannot emit, connection is not open');
-        return;
-    }
-    // hah, right! http needs newline to terminate data
-    var len = arguments.length;
-    var args = new Array(len);
-    var str;
-    for (var i = 0; i < len; i++) {
-        args[i] = arguments[i];
-    }
-    str = JSON.stringify(args) + "\n";
-    this.webSocket.send(str, {
-        binary: true,
-        mask: false
-    }, function (error) {
-        if (error) {
-            self.emitter.emit('error', 'Emit error: ' + error);
+    emit(name, callback) {
+        var self = this;
+        log('emit');
+        if (!name) {
+            throw new Exception('name required');
+        }
+        if (!this.webSocket) {
+            self.emitter.emit('error', 'Cannot emit, connection is not open');
             return;
         }
-        log('WebSocketEmitter sent data: ' + str);
-    });
-};
-WebSocketEmitter.prototype.on = function (name, callback) {
-    this.emitter.on(name, callback);
-};
-WebSocketEmitter.prototype.close = function () {
-    this.webSocket.close();
-};
-function Client() {
-    this.emitter = new EventEmitter();
-    this.wse = null;
+        // hah, right! http needs newline to terminate data
+        var len = arguments.length;
+        var args = new Array(len);
+        var str;
+        for (var i = 0; i < len; i++) {
+            args[i] = arguments[i];
+        }
+        str = JSON.stringify(args) + "\n";
+        this.webSocket.send(str, {
+            binary: true,
+            mask: false
+        }, function (error) {
+            if (error) {
+                self.emitter.emit('error', 'Emit error: ' + error);
+                return;
+            }
+            log('WebSocketEmitter sent data: ' + str);
+        });
+    }
+    on(name, callback) {
+        this.emitter.on(name, callback);
+    }
+    close() {
+        this.webSocket.close();
+    }
 }
-// TODO: hoist onError, onMessage helper methods up so server can use them too
-Client.prototype.connect = function (url) {
-    var self = this;
-    // Don't need to specify URL if we did previously
-    this.url = url || this.url;
-    var ws = new WebSocket(this.url);
-    this.wse = new WebSocketEmitter(ws, this.emitter);
-};
-Client.prototype.on = function (name, callback) {
-    this.emitter.on(name, callback);
-};
-Client.prototype.emit = function () {
-    var len = arguments.length;
-    var args = new Array(len);
-    for (var i = 0; i < len; i++) {
-        args[i] = arguments[i];
+class Client {
+    constructor() {
+        this.emitter = new EventEmitter();
+        this.wse = null;
     }
-    if (this.wse) {
-        this.wse.emit.apply(this.wse, args);
+    // TODO: hoist onError, onMessage helper methods up so server can use them too
+    connect(url) {
+        var self = this;
+        // Don't need to specify URL if we did previously
+        this.url = url || this.url;
+        var ws = new WebSocket(this.url);
+        this.wse = new WebSocketEmitter(ws, this.emitter);
     }
-    else {
-        log('Premature emit. Not connected yet');
+    on(name, callback) {
+        this.emitter.on(name, callback);
     }
-};
-Client.prototype.close = function () {
-    if (this.wse) {
-        this.wse.close();
+    emit() {
+        var len = arguments.length;
+        var args = new Array(len);
+        for (var i = 0; i < len; i++) {
+            args[i] = arguments[i];
+        }
+        if (this.wse) {
+            this.wse.emit.apply(this.wse, args);
+        }
+        else {
+            log('Premature emit. Not connected yet');
+        }
     }
-    else {
-        log('Premature close. Not connected yet');
+    close() {
+        if (this.wse) {
+            this.wse.close();
+        }
+        else {
+            log('Premature close. Not connected yet');
+        }
     }
-};
+}
+exports.Client = Client;
 // Same opts you'd pass to ws module
-function Server(opts) {
-    var self = this;
-    var wss = this.ws = new WebSocket.Server(opts || {
-        port: 10005
-    });
-    var browserify = 'onconnection' in wss;
-    this.emitter = new EventEmitter();
-    var onError = function (message) {
-        log('onError');
-        self.emitter.emit('error', message);
-    };
-    var onConnection = function (ws) {
-        log('onConnection');
-        //var location = url.parse(ws.upgradeReq.url, true);
-        var emitter = new EventEmitter();
-        var wse = new WebSocketEmitter(ws, emitter);
-        self.emitter.emit('connection', wse);
-    };
-    log(browserify ? 'WSE Server is browserified' : 'WSE Server is not browserified');
-    if (browserify) {
-        wss.onconnection = onConnection;
-        wss.onerror = onError;
+class Server {
+    constructor(opts) {
+        var self = this;
+        var wss = this.ws = new WebSocket.Server(opts || {
+            port: 10005
+        });
+        var browserify = 'onconnection' in wss;
+        this.emitter = new EventEmitter();
+        var onError = function (message) {
+            log('onError');
+            self.emitter.emit('error', message);
+        };
+        var onConnection = function (ws) {
+            log('onConnection');
+            //var location = url.parse(ws.upgradeReq.url, true);
+            var emitter = new EventEmitter();
+            var wse = new WebSocketEmitter(ws, emitter);
+            self.emitter.emit('connection', wse);
+        };
+        log(browserify ? 'WSE Server is browserified' : 'WSE Server is not browserified');
+        if (browserify) {
+            wss.onconnection = onConnection;
+            wss.onerror = onError;
+        }
+        else {
+            wss.on('connection', onConnection);
+            wss.on('error', onError);
+        }
     }
-    else {
-        wss.on('connection', onConnection);
-        wss.on('error', onError);
+    on(name, callback) {
+        this.emitter.on(name, callback);
     }
 }
-Server.prototype.on = function (name, callback) {
-    this.emitter.on(name, callback);
-};
+exports.Server = Server;
 module.exports = {
     client: Client,
     server: Server
 };
 
-},{"./log":22,"events":2,"ws":7}]},{},[8]);
+},{"./log":18,"events":2,"ws":3}]},{},[4]);

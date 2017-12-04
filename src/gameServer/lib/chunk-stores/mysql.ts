@@ -14,7 +14,7 @@ export class MysqlChunkStore extends ChunkStore {
 	mysqlPool: any;
 	changes: {};
 	toSave: {};
-	constructor(generator, config) {
+	constructor(generator: any, config: any) {
 		super(generator);
 		var self = this;
 		// ChunkID -> chunk data structure
@@ -24,7 +24,7 @@ export class MysqlChunkStore extends ChunkStore {
 		this.mysqlPool = mysql.createPool(config);
 
 		// We just loaded a chunk
-		this.emitter.on('got', function(chunk) {
+		this.emitter.on('got', function(chunk: any) {
 			if (chunk.chunkID in self.requested) {
 				delete self.requested[chunk.chunkID];
 			}
@@ -39,7 +39,7 @@ export class MysqlChunkStore extends ChunkStore {
 		);
 	}
 
-	public get(chunkID) {
+	public get(chunkID: any) {
 		var self = this;
 		var chunk = cache.get(chunkID);
 		if (chunk) {
@@ -51,12 +51,12 @@ export class MysqlChunkStore extends ChunkStore {
 		log('get', chunkID);
 
 		// Very bad things happen when position doesn't hold numbers
-		var position = chunkID.split('|').map(function(value) {
+		var position = chunkID.split('|').map(function(value: any) {
 			return Number(value);
 		});
 		//position.unshift( Number(worldId) );
 		var sql = 'select voxels from chunk where x=? and y=? and z=?';
-		this.mysqlPool.query(sql, position, function(error, results) {
+		this.mysqlPool.query(sql, position, function(error: any, results: any) {
 			if (error) {
 				log('get', 'Error in chunk select query');
 				return;
@@ -78,7 +78,7 @@ export class MysqlChunkStore extends ChunkStore {
 				log('get', 'select returned ' + chunkID);
 
 				// decompress
-				zlib.gunzip(results[0].voxels, function(error, buffer) {
+				zlib.gunzip(results[0].voxels, function(error: any, buffer: any) {
 					if (error) {
 						log('get', 'Error gunzipping voxels: ', error);
 						return;
@@ -96,7 +96,7 @@ export class MysqlChunkStore extends ChunkStore {
 	}
 
 	// Update chunks if we have them in memory
-	public gotChunkChanges(chunks) {
+	public gotChunkChanges(chunks: any) {
 		var self = this;
 		// Merge these changes into our current queue of changes to save
 		for (var chunkID in chunks) {
@@ -165,9 +165,9 @@ export class MysqlChunkStore extends ChunkStore {
 		}
 	}
 
-	public saveVoxels(chunkID, chunk) {
+	public saveVoxels(chunkID: any, chunk: any) {
 		var self = this;
-		zlib.gzip(new Buffer(chunk.voxels), function(error, buffer) {
+		zlib.gzip(new Buffer(chunk.voxels), function(error: any, buffer: any) {
 			if (error) {
 				console.log('Error compressing voxels', error);
 				return;
@@ -181,7 +181,7 @@ export class MysqlChunkStore extends ChunkStore {
 					voxels: buffer,
 					updated_ms: Date.now()
 				},
-				function(error) {
+				function(error: any) {
 					if (error) {
 						console.log('MysqlChunkStore::saveVoxels', error);
 					}

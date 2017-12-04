@@ -44,17 +44,17 @@ export class GameServer {
 
 		var server = new Server(config, chunkStore, serverSettings, this.clientSettings);
 
-		server.on('client.join', function(client) {
+		server.on('client.join', function(client: any) {
 			console.log(client);
 		});
 
-		server.on('client.leave', function(client) {
+		server.on('client.leave', function(client: any) {
 		});
 
-		server.on('client.state', function(state) {
+		server.on('client.state', function(state: any) {
 		});
 
-		server.on('chat', function(message) {
+		server.on('chat', function(message: any) {
 			console.log('chat', message);
 			VoxelStats.count('chat.messages.sent');
 			if (this.mysqlPool) {
@@ -67,7 +67,7 @@ export class GameServer {
 			}
 		});
 
-		server.on('error', function(error) {
+		server.on('error', function(error: any) {
 			console.log(error);
 		});
 
@@ -89,11 +89,11 @@ export class GameServer {
 			port: config.websocketBindPort
 		});
 
-		wseServer.on('error', function(error) {
+		wseServer.on('error', function(error: any) {
 			console.log(error);
 		});
 
-		wseServer.on('connection', function(connection) {
+		wseServer.on('connection', function(connection: any) {
 			VoxelStats.count('connections.incoming');
 			// Have we reached our player max?
 			var ts = new Date();

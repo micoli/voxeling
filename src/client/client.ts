@@ -8,29 +8,29 @@ var glm = require('gl-matrix'),
 var randomName = require('sillyname');
 import {VoxelingClient} from './lib/voxeling-client';
 import {InputHandler} from './lib/client-input';
+import {WebGL} from './lib/webgl';
+import {Textures} from './lib/textures';
+import {Player} from './lib/player';
+import {Weather} from './lib/sky';
+import {Voxels} from './lib/voxels';
+import {Camera} from './lib/camera';
+import {Game} from './lib/game';
+import {Lines} from './lib/lines';
+import {Physics} from './lib/physics';
+import {Coordinates} from '../shared/coordinates';
+
 var raycast = require('voxel-raycast');
-var WebGL = require('./lib/webgl');
-var Camera = require('./lib/camera');
-//var InputHandler = require('./lib/client-input');
-var Lines = require('./lib/lines');
 var Shapes = require('./lib/shapes');
-var Textures = require('./lib/textures');
-var Player = require('./lib/player');
-var Sky = require('./lib/sky');
-
-var Physics = require('./lib/physics');
+//var InputHandler = require('./lib/client-input');
 var Stats = require('./lib/stats');
-var Coordinates = require('../shared/coordinates');
-var Voxels = require('./lib/voxels');
-var Game = require('./lib/game');
 var timer = require('./lib/timer');
-
+var mesher = require('./lib/meshers/horizontal-merge');
+var pool = require('./lib/object-pool');
 
 //var Meshing = require('../lib/meshers/non-blocked')
-var mesher = require('./lib/meshers/horizontal-merge');
 var chunkSize = config.chunkSize;
+console.log('chunkSize', chunkSize);
 var coordinates = new Coordinates(chunkSize);
-var pool = require('./lib/object-pool');
 
 // other
 var trees = require('voxel-trees');
@@ -40,7 +40,7 @@ var client = new VoxelingClient(config);
 console.log(1289);
 
 // UI DIALOG SETUP
-var fillMaterials = function(textures) {
+var fillMaterials = function(textures: any) {
 	var container = document.getElementById('textureContainer');
 	var html = '';
 	for (var i = 0; i < textures.textureArray.length; i++) {
@@ -63,7 +63,7 @@ var fillMaterials = function(textures) {
 	container.innerHTML = html;
 };
 
-var fillSettings = function(textures) {
+var fillSettings = function(textures: any) {
 	var container = document.getElementById('settings');
 	var html = '';
 	for (var i = 0; i < textures.textureArray.length; i++) {
@@ -72,10 +72,12 @@ var fillSettings = function(textures) {
 		if ('sides' in material) {
 			continue;
 		}
-		html += '<input name="' + matrial.name + '" data-id="' + material.value + '" value="' + material.src + '" /> ' + material.name + '<br />';
+		html += '<input name="' + material.name + '" data-id="' + material.value + '" value="' + material.src + '" /> '
+			+ material.name
+			+ '<br />';
 	}
 	container.innerHTML = html;
-	$(container).on('blur', 'input', function(e) {
+	$(container).on('blur', 'input', function(e: any) {
 		var $el = $(this);
 		var id = $el.data('id');
 		textures.byValue[id].src = $el.val();
@@ -91,8 +93,8 @@ client.on('close', function() {
 client.on('ready', function() {
 	var canvas = document.getElementById('herewego');
 	var inputHandler = new InputHandler(document.body, canvas);
-	var webgl;
-	var textures;
+	var webgl: any;
+	var textures: any;
 
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
@@ -103,15 +105,15 @@ client.on('ready', function() {
 	textures.load(webgl.gl, function() {
 		// ready=false stops physics from running early
 		var ready = false;
-		var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[ client.avatar ]);
+		var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
 		var players = {};
-		var sky = new Sky(webgl.gl, webgl.shaders.projectionViewPosition, textures, player);
+		var sky = new Weather(webgl.gl, webgl.shaders.projectionViewPosition, textures, player);
 		var voxels = client.voxels = new Voxels(
 			webgl.gl,
 			webgl.shaders.projectionPosition,
 			textures,
 			// releaseMeshCallback
-			function(mesh) {
+			function(mesh: any) {
 				// Release old mesh
 				var transferList = [];
 				for (var textureValue in mesh) {
@@ -152,8 +154,7 @@ client.on('ready', function() {
 		st.domElement.style.bottom = '0px';
 		document.body.appendChild(st.domElement);
 
-
-		webgl.onRender(function(ts) {
+		webgl.onRender(function(ts: any) {
 			// what's the proper name for this matrix?
 			// get inverse matrix from camera and pass to render() on other objects?
 			if (!ts) {
@@ -196,10 +197,10 @@ client.on('ready', function() {
 		client.regionChange();
 		webgl.start();
 
-		client.on('players', function(others) {
+		client.on('players', function(others: any) {
 			var id;
 			var ticksPerHalfSecond = 30;
-			var calculateAdjustments = function(output, current, wanted) {
+			var calculateAdjustments = function(output: any, current: any, wanted: any) {
 				for (var i = 0; i < output.length; i++) {
 					output[i] = (wanted[i] - current[i]) / ticksPerHalfSecond;
 				}
@@ -235,7 +236,7 @@ client.on('ready', function() {
 						updatedPlayerInfo.positions[5]
 					);
 				}
-				player.model.setTexture( textures.byName[updatedPlayerInfo.avatar] );
+				player.model.setTexture(textures.byName[updatedPlayerInfo.avatar]);
 			}
 			// Compare players to others, remove old players
 			var playerIds = Object.keys(players);
@@ -248,9 +249,9 @@ client.on('ready', function() {
 		});
 
 		// Material to build with. The material picker dialog changes this value
-		var currentMaterial = 1;
+		var currentMaterial: number = 1;
 		// Holds coordinates of the voxel being looked at
-		var currentVoxel = null;
+		var currentVoxel: any = null;
 		var currentNormalVoxel = pool.malloc('array', 3);
 
 		// When doing bulk create/destroy, holds the coordinates of the start of the selected region
@@ -268,7 +269,7 @@ client.on('ready', function() {
 
 
 		// INPUT HANDLER SETUP
-		inputHandler.mouseDeltaCallback(function(deltaX, deltaY) {
+		inputHandler.mouseDeltaCallback(function(deltaX: any, deltaY: any) {
 			// Can I do these at the same time? Maybe a new quat, rotated by vector, multiplied into existing?
 			player.rotateY(-(deltaX / 200.0));
 			// Don't pitch player, just the camera
@@ -283,7 +284,7 @@ client.on('ready', function() {
 			// nickname
 			element = document.getElementById('username');
 			value = localStorage.getItem('name');
-			if (!value || value.length == 0 || value.trim().length == 0) {
+			if (!value || value.length === 0 || value.trim().length === 0) {
 				value = randomName();
 				localStorage.setItem('name', value);
 			}
@@ -294,28 +295,28 @@ client.on('ready', function() {
 			value = parseInt(localStorage.getItem('drawDistance'));
 			if (!value) {
 				value = 2;
-				localStorage.setItem('drawDistance', value);
+				localStorage.setItem('drawDistance', '' + value);
 			}
 			element.value = value;
 			config.drawDistance = value;
 			config.removeDistance = value + 1;
 		});
 
-		inputHandler.on('drawDistance', function(drawDistance) {
+		inputHandler.on('drawDistance', function(drawDistance: any) {
 			var value = parseInt(drawDistance);
 			if (value < 0) {
 				value = 1;
 			}
-			localStorage.setItem('drawDistance', value);
+			localStorage.setItem('drawDistance', '' + value);
 
 			config.drawDistance = value;
 			config.removeDistance = value + 1;
 
 			client.regionChange();
 		});
-		inputHandler.on('avatar', function(avatar) {
+		inputHandler.on('avatar', function(avatar: any) {
 			client.avatar = avatar;
-			player.setTexture( textures.byName[avatar] );
+			player.setTexture(textures.byName[avatar]);
 		});
 
 		inputHandler.on('from.start', function() {
@@ -388,7 +389,7 @@ client.on('ready', function() {
 					coordinates.lowToHighEach(
 						low,
 						high,
-						function(i, j, k) {
+						function(i: number, j: number, k: any) {
 							game.setBlock(i, j, k, currentMaterial, chunkVoxelIndexValue);
 						}
 					);
@@ -396,7 +397,7 @@ client.on('ready', function() {
 					coordinates.lowToHighEach(
 						low,
 						high,
-						function(i, j, k) {
+						function(i: number, j: number, k: any) {
 							game.setBlock(i, j, k, 0, chunkVoxelIndexValue, touching);
 						}
 					);
@@ -427,13 +428,13 @@ client.on('ready', function() {
 				high[1] = Math.max(selectStart[1], currentNormalVoxel[1]);
 				high[2] = Math.max(selectStart[2], currentNormalVoxel[2]);
 				if (currentMaterial === 305) {
-					var getRandomInt = function (min, max) {
+					var getRandomInt = function(min: number, max: number) {
 						return Math.floor(Math.random() * (max - min)) + min;
 					};
 					coordinates.lowToHighEach(
 						low,
 						high,
-						function(i, j, k) {
+						function(i: number, j: number, k: any) {
 							var treeTypes = ['subspace', 'guybrush'];
 							var treeType = getRandomInt(0, 2);
 							trees({
@@ -442,7 +443,7 @@ client.on('ready', function() {
 									y: j,
 									z: k
 								},
-								setBlock: function(position, material) {
+								setBlock: function(position: any, material: any) {
 									game.setBlock(position.x, position.y, position.z, material, chunkVoxelIndexValue);
 								},
 								treeType: treeTypes[treeType],
@@ -456,7 +457,7 @@ client.on('ready', function() {
 					coordinates.lowToHighEach(
 						low,
 						high,
-						function(i, j, k) {
+						function(i: number, j: number, k: any) {
 							game.setBlock(i, j, k, currentMaterial, chunkVoxelIndexValue);
 						}
 					);
@@ -467,11 +468,11 @@ client.on('ready', function() {
 			selecting = false;
 		});
 
-		inputHandler.on('currentMaterial', function(c) {
+		inputHandler.on('currentMaterial', function(c: any) {
 			currentMaterial = c;
 		});
 
-		inputHandler.on('chat', function(message) {
+		inputHandler.on('chat', function(message: any) {
 			var out = {
 				user: localStorage.getItem('name'),
 				text: message
@@ -578,7 +579,7 @@ client.on('ready', function() {
 
 			// TODO: calculate delta in webgl render callback and move sky.tick there
 			sky.tick(6);
-		// What if we call this 30 times a second instead?
+			// What if we call this 30 times a second instead?
 		}, 1000 / 60);
 	});
 });

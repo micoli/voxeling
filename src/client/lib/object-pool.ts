@@ -12,25 +12,25 @@ var frees = 0;
 var create = function(type, size) {
 	news++;
 	switch (type) {
-		case 'float32':
-			return new Float32Array(size);
+	case 'float32':
+		return new Float32Array(size);
 
-		case 'uint8':
-			return new Uint8Array(size);
+	case 'uint8':
+		return new Uint8Array(size);
 
-		// Generic array of 3 elements
-		case 'array':
-			return new Array(size);
+	// Generic array of 3 elements
+	case 'array':
+		return new Array(size);
 	}
 	throw new Exception('Unexpected type: ' + type);
 };
 
 var getSize = function(type, o) {
 	switch (type) {
-		case 'float32':
-		case 'uint8':
-		case 'array':
-			return o.length;
+	case 'float32':
+	case 'uint8':
+	case 'array':
+		return o.length;
 	}
 	// unknown
 	return 0;

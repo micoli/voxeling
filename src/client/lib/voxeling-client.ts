@@ -16,7 +16,7 @@ export class VoxelingClient {
 	server: any;
 	settings: any;
 	worker: any;
-	constructor(settings) {
+	constructor(settings: any) {
 		var self = this;
 		this.settings = settings;
 		this.server = settings.server;
@@ -54,10 +54,10 @@ export class VoxelingClient {
 				log('Client.bindEvents: connection closed');
 				self.emitter.emit('close');
 			},
-			error: function(message) {
+			error: function(message: any) {
 				log('Client.bindEvents.error: ' + message);
 			},
-			settings: function(settings, id) {
+			settings: function(settings: any, id: any) {
 				// merge settings from server into those from the client side
 				// TODO: fix this for new engine setup
 				//self.settings = extend(self.settings, settings) // server settings squash client settings
@@ -72,27 +72,27 @@ export class VoxelingClient {
 				self.emitter.emit('ready');
 			},
 
-			chunkVoxels: function(chunk) {
+			chunkVoxels: function(chunk: any) {
 				self.game.storeVoxels(chunk);
 			},
 			// Game no longer needs to hold this voxel data
-			nearbyChunks: function(chunks) {
+			nearbyChunks: function(chunks: any) {
 				self.game.nearbyChunks(chunks);
 			},
 			// Chunk was re-meshed
-			chunkMesh: function(chunkID, mesh) {
+			chunkMesh: function(chunkID: any, mesh: any) {
 				self.voxels.showMesh(chunkID, mesh);
 			},
-			meshesToShow: function(meshDistances) {
+			meshesToShow: function(meshDistances: any) {
 				self.voxels.meshesToShow(meshDistances);
 			},
 
 			// Worker relays voxel changes from the server to us
-			chunkVoxelIndexValue: function(changes) {
+			chunkVoxelIndexValue: function(changes: any) {
 				self.game.updateVoxelCache(changes);
 			},
 
-			chat: function(message) {
+			chat: function(message: any) {
 				var messages = document.getElementById('messages');
 				var el = document.createElement('dt');
 				el.innerText = message.user;
@@ -104,13 +104,13 @@ export class VoxelingClient {
 			},
 
 			// Got batch of player position updates
-			players: function(players) {
+			players: function(players: any) {
 				delete players[self.id];
 				self.emitter.emit('players', players);
 			}
 		};
 
-		this.worker.onmessage = function(e) {
+		this.worker.onmessage = function(e: any) {
 			var message = e.data;
 			var type = message.shift();
 			messageHandlers[type].apply(self, message);
@@ -141,8 +141,7 @@ export class VoxelingClient {
 		}, 1000 / 10);
 	}
 
-	on(name, callback) {
+	on(name: any, callback: any) {
 		this.emitter.on(name, callback);
 	}
-
 }

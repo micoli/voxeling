@@ -8,7 +8,7 @@ var encoder = require('./rle-encoder');
 var lru = require('./lru');
 var debug = false;
 
-function getRandomInt(min, max) {
+function getRandomInt(min:number, max:number) {
 	return Math.floor(Math.random() * (max - min)) + min;
 }
 
@@ -25,7 +25,7 @@ export class Server {
 	chunkStore: any;
 	config: any;
 
-	constructor(config, chunkStore, serverSettings, clientSettings) {
+	constructor(config: any, chunkStore: any, serverSettings: any, clientSettings: any) {
 		// force instantiation via `new` keyword
 		//if(!(this instanceof Server)) { return new Server(serverSettings || {}, clientSettings || {}) }
 		this.config = config;
@@ -64,7 +64,7 @@ export class Server {
 		// chunkId -> {clientIdA: true, clientIdB: true}
 		this.chunksForClients = {};
 
-		this.chunkStore.emitter.on('got', function(chunk) {
+		this.chunkStore.emitter.on('got', function(chunk: any) {
 			if (debug) {
 				console.log('got chunk ' + chunk.chunkID);
 			}
@@ -110,8 +110,9 @@ export class Server {
 
 
 	// Setup the client connection - register events, etc
-	public connectClient (wseSocket) {
+	public connectClient (wseSocket: any) {
 		var self = this;
+		var tnull: any = null;
 		var id = wseSocket.id = uuid();
 		var client = self.clients[id] = {
 			id: id,
@@ -121,7 +122,7 @@ export class Server {
 			connected: true,
 			connection: wseSocket,
 			avatar: 'player',
-			position: null,
+			position: tnull,
 			yaw: 0,
 			pitch: 0,
 
@@ -135,12 +136,12 @@ export class Server {
 		wseSocket.emit('settings', self.clientSettings, id);
 	}
 
-	public bindClientEvents (client) {
+	public bindClientEvents (client: any) {
 		var self = this;
 		var id = client.id;
 		var connection = client.connection;
 
-		connection.on('error', function(message) {
+		connection.on('error', function(message: any) {
 			console.log('Client connection error: ' + message);
 		});
 
@@ -148,13 +149,13 @@ export class Server {
 			client.connected = false;
 		});
 
-		connection.on('close', function(error) {
+		connection.on('close', function(error: any) {
 			client.connected = false;
 			delete self.clients[client.id];
 		});
 
 		// forward chat message
-		connection.on('chat', function(message) {
+		connection.on('chat', function(message: any) {
 			// ignore if no message provided
 			if (!message.text) { return; }
 			if (message.text.match(/script/i)) {
@@ -175,7 +176,7 @@ export class Server {
 
 		// client sends new position, rotation
 		// don't need to lerp on the server AND the client, just the client
-		connection.on('myPosition', function(position, yaw, pitch, avatar) {
+		connection.on('myPosition', function(position: any, yaw: any, pitch: any, avatar: any) {
 			client.position = position;
 			client.yaw = yaw;
 			client.pitch = pitch;
@@ -184,7 +185,7 @@ export class Server {
 		});
 
 		// Client sent us voxel changes for one or more chunks
-		connection.on('chunkVoxelIndexValue', function(changes) {
+		connection.on('chunkVoxelIndexValue', function(changes: any) {
 			// Update our chunk store
 			self.chunkStore.gotChunkChanges(changes);
 
@@ -215,7 +216,7 @@ export class Server {
 		});
 
 		// Client tells us which chunks it wants to hear about
-		connection.on('onlyTheseChunks', function(chunks) {
+		connection.on('onlyTheseChunks', function(chunks: any) {
 			if (debug) {
 				console.log('Client only cares about these chunks', chunks);
 			}
@@ -223,7 +224,7 @@ export class Server {
 		});
 
 		// Client wants chunks. Keep track of which client wants chunks
-		connection.on('needChunks', function(chunkIds) {
+		connection.on('needChunks', function(chunkIds: any) {
 			if (debug) {
 				console.log(client.id + ' needs chunks', chunkIds);
 			}
@@ -246,7 +247,7 @@ export class Server {
 	}
 
 	// send message to all clients
-	public broadcast (id, event) {
+	public broadcast (id: any, event: any, data?: any) {
 		var self = this;
 		// normalize arguments
 		var len = arguments.length;
@@ -312,15 +313,15 @@ export class Server {
 	}
 
 
-	public requestNearbyChunks (position) {
+	public requestNearbyChunks (position: any) {
 		var self = this;
-		this.coords.nearbyChunkIDsEach(position, 2, function(chunkID) {
+		this.coords.nearbyChunkIDsEach(position, 2, function(chunkID: any) {
 			self.chunkStore.get(chunkID);
 		});
 	}
 
 
-	public sendChunk (chunk) {
+	public sendChunk (chunk: any) {
 		var self = this;
 		var chunkId = chunk.chunkID;
 		if (!(chunkId in this.chunksForClients)) {
@@ -375,9 +376,9 @@ export class Server {
 		}
 	}
 
-	public isChunkInBounds (chunkID) {
+	public isChunkInBounds (chunkID: any) {
 		var self = this;
-		var position = chunkID.split('|').map(function(value) {
+		var position = chunkID.split('|').map(function(value: any) {
 			return Number(value);
 		});
 		if (
@@ -398,7 +399,7 @@ export class Server {
 		return true;
 	}
 
-	public on (name, callback) {
+	public on (name: any, callback: any) {
 		this.emitter.on(name, callback);
 	}
 }

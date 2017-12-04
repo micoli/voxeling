@@ -1,6 +1,6 @@
-import { IPlugin, IPluginOptions } from "../interfaces";
+import {IPlugin, IPluginOptions} from "../interfaces";
 import * as Hapi from "hapi";
-import { IUser, UserModel } from "../../users/user";
+import {IUser, UserModel} from "../../users/user";
 import * as Boom from "boom";
 
 export default (): IPlugin => {
@@ -9,7 +9,7 @@ export default (): IPlugin => {
 			const database = options.database;
 			const serverConfig = options.serverConfigs;
 
-			const validateUser = (decoded, request, cb) => {
+			const validateUser = (decoded: any, request: any, cb: any) => {
 				database.userModel.findById(decoded.id).lean(true)
 					.then((user: IUser) => {
 						if (!user) {

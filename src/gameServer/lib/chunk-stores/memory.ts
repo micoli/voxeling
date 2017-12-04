@@ -4,12 +4,12 @@ import {ChunkStore} from '../chunk-store';
 // Stores chunks in an object, keyed by chunkID
 export class MemoryChunkStore extends ChunkStore {
 	chunkCache: {};
-	constructor(generator) {
+	constructor(generator: any) {
 		super(generator);
 		this.chunkCache = {};
 	}
 
-	public get(chunkID) {
+	public get(chunkID: any) {
 		var chunk;
 		if (chunkID in this.chunkCache) {
 			this.emitter.emit('got', this.chunkCache[ chunkID ]);
@@ -25,7 +25,7 @@ export class MemoryChunkStore extends ChunkStore {
 	}
 
 	// Update chunks if we have them in memory
-	public gotChunkChanges(chunks) {
+	public gotChunkChanges(chunks: any) {
 		var self = this;
 		// No race conditions here for memory store, but database and file might be a different story
 		for (var chunkID in chunks) {

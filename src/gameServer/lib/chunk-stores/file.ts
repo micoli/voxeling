@@ -7,7 +7,7 @@ var cache = new lru(200);
 var debug = false;
 
 if (debug) {
-	cache.on('evict', function(data) {
+	cache.on('evict', function(data: any) {
 		console.log('evicted: ' + data.value.chunkID);
 	});
 }
@@ -29,7 +29,7 @@ export class FileChunkStore extends ChunkStore {
 	toSave: {};
 	chunkFolder: any;
 
-	constructor(generator, chunkFolder) {
+	constructor(generator: any, chunkFolder: any) {
 		super(generator);
 		var self = this;
 		this.chunkFolder = chunkFolder;
@@ -44,11 +44,11 @@ export class FileChunkStore extends ChunkStore {
 		);
 	}
 
-	public get(chunkID) {
+	public get(chunkID: any) {
 		var self = this;
 		var chunk;
-		var filename;
-		var readCallback;
+		var filename: any;
+		var readCallback: any;
 		chunk = cache.get(chunkID);
 		if (!!chunk) {
 			this.emitter.emit('got', chunk);
@@ -63,7 +63,7 @@ export class FileChunkStore extends ChunkStore {
 		if (debug) {
 			console.log('FileChunkStore:get ' + chunkID);
 		}
-		readCallback = function(err, data) {
+		readCallback = function(err: any, data: any) {
 			if (err) {
 				if (debug) {
 					console.log('FileChunkStore:get chunk not found');
@@ -83,7 +83,7 @@ export class FileChunkStore extends ChunkStore {
 			if (debug) {
 				console.log('Loaded ' + filename);
 			}
-			var position = chunkID.split('|').map(function(value) {
+			var position = chunkID.split('|').map(function(value: any) {
 				return Number(value);
 			});
 			chunk = {
@@ -101,7 +101,7 @@ export class FileChunkStore extends ChunkStore {
 	}
 
 	// Update chunks if we have them in memory
-	public gotChunkChanges(chunks) {
+	public gotChunkChanges(chunks: any) {
 		var self = this;
 		// No race conditions here for memory store, but database and file might be a different story
 		for (var chunkID in chunks) {
@@ -141,14 +141,14 @@ export class FileChunkStore extends ChunkStore {
 		var self = this;
 		// TODO: include saves in the same file handle queue as gets
 		// is there an abstraction (npm module) to help with this?
-		var op = function(filename, chunk, callbackClosure) {
+		var op = function(filename: any, chunk: any, callbackClosure: any) {
 			return function() {
 				console.log(self.chunkFolder , filename);
 				fs.writeFile(self.chunkFolder + filename, new Buffer(chunk.voxels), callbackClosure);
 			};
 		};
-		var callbackClosure = function(chunkID) {
-			return function(err) {
+		var callbackClosure = function(chunkID: any) {
+			return function(err: any) {
 				if (err) {
 					return console.log(err);
 				}

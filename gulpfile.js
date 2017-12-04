@@ -27,7 +27,7 @@ console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.g
 //const notify = require("gulp-notify");
 
 
-var outDir = 'build';
+var outDir = 'build/';
 var tsOptions = {
 	declaration : true,
 	lib : [ "es2015" ],
@@ -49,30 +49,30 @@ gulp.task('lint-ts', () => {
 		.pipe(plugins.tslint.report());
 });
 
-gulp.task('compile-ts', 'typescript compile', function() {
-	var tsResult = gulp.src([ 'src/**/*.ts' ])
+gulp.task('build-server', 'typescript compile', function() {
+	var tsResult = gulp.src([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ])
 		.pipe(tsProject());
 
 	return merge([
-		tsResult.dts.pipe(gulp.dest('build/definitions')),
-		tsResult.js.pipe(gulp.dest('build/src'))
+		tsResult.dts.pipe(gulp.dest(outDir+'definitions')),
+		tsResult.js.pipe(gulp.dest(outDir+'/src'))
 	]);
 });
 
 gulp.task('compile-test', function() {
 	gulp.src([ 'test/**/*.ts' ])
 		.pipe(tsProject())
-		.pipe(gulp.dest('build/test/'))
+		.pipe(gulp.dest(outDir+'test/'))
 });
 
-gulp.task('develop', 'server developement tool', [ 'configurations', 'compile-ts' ], function() {
-	gulp.watch([ 'src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'compile-ts', 'configurations' ]);
+gulp.task('develop', 'server developement tool', [ 'configurations', 'build-clients','build-server' ], function() {
+	//gulp.watch([ 'src/gameServer/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);
 	gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
-		script : 'build/src/server/index.js',
+		script : outDir+'src/server/index.js',
 		ext : 'ts json',
 		ignore : [ 'ignored.js' ],
-		watch : [ 'src' ],
+		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
 		env : {
 			'NODE_ENV' : 'dev'
 		},
@@ -83,25 +83,25 @@ gulp.task('develop', 'server developement tool', [ 'configurations', 'compile-ts
 				return tasks;
 			}
 			changedFiles.forEach(function(file) {
-				if (path.extname(file) === '.ts' && !~tasks.indexOf('compile-ts')) tasks.push('compile-ts')
+				if (path.extname(file) === '.ts' && !~tasks.indexOf('build-server')) tasks.push('build-server')
 				if (path.extname(file) === '.json' && !~tasks.indexOf('configurations')) tasks.push('configurations')
-			//if (path.extname(file) === '.ts' && !~tasks.indexOf('lint-ts')) tasks.push('lint-ts')
-			//if (path.extname(file) === '.css' && !~tasks.indexOf('cssmin')) tasks.push('cssmin')
+				//if (path.extname(file) === '.ts' && !~tasks.indexOf('lint-ts')) tasks.push('lint-ts')
+				//if (path.extname(file) === '.css' && !~tasks.indexOf('cssmin')) tasks.push('cssmin')
 			})
-			console.log('tasks to do', tasks);
+			console.log('Tasks to do', tasks);
 			return tasks
 		}
 	})
-		.once('start', () => {
-			console.log('start')
-		})
-		.on('restart', function() {
-			console.log('Restarted!')
-		})
-		.on('crash', function() {
-			console.error('Application has crashed!\n')
-			stream.emit('restart', 2) // restart the server in 10 seconds
-		});
+	.once('start', () => {
+		console.log('start')
+	})
+	.on('restart', function() {
+		console.log('Restarted!')
+	})
+	.on('crash', function() {
+		console.log('Application has crashed!\n')
+		stream.emit('restart', 2) // restart the server in 10 seconds
+	});
 
 });
 
@@ -119,21 +119,21 @@ gulp.task('configurations', 'copy configurations', (cb) => {
 
 gulp.task('server-production', [ 'build' ], (cb) => {
 	plugins.nodemon({
-		script : 'build/src/index.js',
+		script : outDir+'/src/server/index.js',
 	})
-		.once('start', () => {
-			console.log('start')
-		})
-		.on('restart', function() {
-			console.log('Restarted!')
-		})
-		.on('crash', function() {
-			console.error('Application has crashed!\n')
-			stream.emit('restart', 2)
-		});
+	.once('start', () => {
+		console.log('start')
+	})
+	.on('restart', function() {
+		console.log('Restarted!')
+	})
+	.on('crash', function() {
+		console.log('Application has crashed!\n')
+		stream.emit('restart', 2)
+	});
 });
 
-gulp.task('build', 'typescript compile and copy configurations', [ 'compile-ts', 'configurations' ], () => {
+gulp.task('build', 'typescript compile and copy configurations', [ 'build-server','build-clients', 'configurations' ], () => {
 	console.log('Typescript Project transpiled ...');
 });
 
@@ -146,7 +146,7 @@ gulp.task('test', 'launch tests', [ 'compile-test', 'configurations' ], (cb) => 
 		NODE_ENV : 'test'
 	});
 
-	gulp.src([ 'build/test/**/*.js' ])
+	gulp.src([ outDir+'/test/**/*.js' ])
 		.pipe(envs)
 		.pipe(plugins.mocha())
 		.once('error', (error) => {
@@ -177,14 +177,13 @@ function bundleClient(file){
 		.plugin(tsify, { noImplicitAny: true })
 		.bundle()
 		.on('error', function (error) {
-			console.error(plugins.util.colors.red(error.toString()));
+			console.log(plugins.util.colors.red(error.toString()));
 		})
 		.pipe(sourceStream(file))
 		.pipe(plugins.rename(function(path) {
 			path.dirname = "client";
 			path.basename = file;
 			path.extname = ".js"
-			///console.log(path)
 			console.error(plugins.util.colors.yellow('Generate')+' '+plugins.util.colors.yellow(path.dirname+'/'+path.basename + path.extname));
 		}))
 		.pipe(gulp.dest('public/'));
@@ -201,21 +200,16 @@ gulp.task('build-client-worker', function() {
 
 gulp.task('build-clients', [ 'build-client', 'build-client-worker' ]);
 
+
 gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function() {
 	gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 })
 
-gulp.task('watch-ts', [ /*'lint-ts',*/ 'compile-ts', 'configurations' ], function() {
-	gulp.watch([ 'src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'compile-ts', 'configurations' ]);
+gulp.task('watch-server', [ /*'lint-ts',*/ 'build-server', 'configurations' ], function() {
+	gulp.watch([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);
 });
 
 gulp.task('default', [ 'develop' ]);
-
-
-
-
-
-
 
 
 

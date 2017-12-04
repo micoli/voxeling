@@ -8,10 +8,12 @@ var Stats = function () {
 	var ms = 0, msMin = Infinity, msMax = 0;
 	var fps = 0, fpsMin = Infinity, fpsMax = 0;
 	var frames = 0, mode = 0;
-
+	var bar;
 	var container = document.createElement( 'div' );
 	container.id = 'stats';
-	container.addEventListener( 'mousedown', function ( event ) { event.preventDefault(); setMode( ++ mode % 2 ) }, false );
+	container.addEventListener( 'mousedown', function ( event ) {
+		event.preventDefault(); setMode( ++ mode % 2 );
+	}, false );
 	container.style.cssText = 'width:80px;opacity:0.9;cursor:pointer';
 
 	var fpsDiv = document.createElement( 'div' );
@@ -32,7 +34,7 @@ var Stats = function () {
 
 	while ( fpsGraph.children.length < 74 ) {
 
-		var bar = document.createElement( 'span' );
+		bar = document.createElement( 'span' );
 		bar.style.cssText = 'width:1px;height:30px;float:left;background-color:#113';
 		fpsGraph.appendChild( bar );
 
@@ -56,13 +58,13 @@ var Stats = function () {
 
 	while ( msGraph.children.length < 74 ) {
 
-		var bar = document.createElement( 'span' );
+		bar = document.createElement( 'span' );
 		bar.style.cssText = 'width:1px;height:30px;float:left;background-color:#131';
 		msGraph.appendChild( bar );
 
 	}
 
-	var setMode = function ( value ) {
+	var setMode = function ( value:any ) {
 
 		mode = value;
 
@@ -77,32 +79,23 @@ var Stats = function () {
 				msDiv.style.display = 'block';
 				break;
 		}
+	};
 
-	}
-
-	var updateGraph = function ( dom, value ) {
-
+	var updateGraph = function ( dom:any, value:any ) {
 		var child = dom.appendChild( dom.firstChild );
 		child.style.height = value + 'px';
 
-	}
+	};
 
 	return {
 
 		REVISION: 11,
-
 		domElement: container,
-
 		setMode: setMode,
-
 		begin: function () {
-
 			startTime = Date.now();
-
 		},
-
 		end: function () {
-
 			var time = Date.now();
 
 			ms = time - startTime;
@@ -127,19 +120,14 @@ var Stats = function () {
 				frames = 0;
 
 			}
-
 			return time;
-
 		},
 
 		update: function () {
-
 			startTime = this.end();
-
 		}
 
-	}
-
+	};
 };
 
-module.exports = Stats
+module.exports = Stats;

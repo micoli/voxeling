@@ -5,13 +5,13 @@ export class ChunkStore {
 	generator: any;
 	emitter: any;
 
-	constructor(generator) {
+	constructor(generator: any) {
 		this.emitter = new EventEmitter();
 		this.generator = generator;
 	}
 
 	// Asyncronous
-	public get(chunkID) {
+	public get(chunkID: any) {
 	}
 
 	public tick() {
@@ -25,7 +25,7 @@ export class ChunkStore {
 	and then async flush to disk to avoid race conditions.
 	So file store needs some sort of in-memory, maybe LRU, layer as well.
 	*/
-	public gotChunkChanges(chunks) {
+	public gotChunkChanges(chunks: any) {
 		// Can't do much since this chunk store doesn't store any chunks
 	}
 }

@@ -1,8 +1,8 @@
 var glm = require('gl-matrix'),
-    vec3 = glm.vec3,
-    vec4 = glm.vec4,
-    mat4 = glm.mat4,
-    quat = glm.quat;
+	vec3 = glm.vec3,
+	vec4 = glm.vec4,
+	mat4 = glm.mat4,
+	quat = glm.quat;
 
 var WebGL = require('./lib/webgl');
 var Movable = require('./lib/movable');
@@ -15,7 +15,7 @@ var pool = require('./lib/object-pool');
 //var mesh = require('./lib/player-mesh');
 
 var canvas = document.getElementById('herewego');
-var webgl
+var webgl;
 
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
@@ -28,53 +28,54 @@ var lines = new Lines(webgl.gl);
 
 /*
 var mesh = {
-    vertices: [
-        0, 0, 0,
-        1, 0, 0,
-        1, 1, 0
-    ],
-    faces: [
-        0, 1, 2
-    ]
+	vertices: [
+		0, 0, 0,
+		1, 0, 0,
+		1, 1, 0
+	],
+	faces: [
+		0, 1, 2
+	]
 };
 */
 var parts = [
-    // left leg
-    Shapes.three.rectangle([-0.35, 0, -0.15], 0.2, 0.5, 0.2),
-    // right leg
-    Shapes.three.rectangle([0.15, 0, -0.15], 0.2, 0.5, 0.2),
+	// left leg
+	Shapes.three.rectangle([-0.35, 0, -0.15], 0.2, 0.5, 0.2),
+	// right leg
+	Shapes.three.rectangle([0.15, 0, -0.15], 0.2, 0.5, 0.2),
 
-    // torso
-    Shapes.three.rectangle([-0.2, 0.5, -0.2], 0.4, 0.5, 0.4),
+	// torso
+	Shapes.three.rectangle([-0.2, 0.5, -0.2], 0.4, 0.5, 0.4),
 
-    // left arm
-    Shapes.three.rectangle([-0.5, 0.9, -0.5], 0.2, 0.2, 0.5),
-    // right arm
-    Shapes.three.rectangle([0.3, 0.9, -0.5], 0.2, 0.2, 0.5),
+	// left arm
+	Shapes.three.rectangle([-0.5, 0.9, -0.5], 0.2, 0.2, 0.5),
+	// right arm
+	Shapes.three.rectangle([0.3, 0.9, -0.5], 0.2, 0.2, 0.5),
 
-    // head
-    Shapes.three.rectangle([-0.15, 1.1, -0.15], 0.3, 0.3, 0.3),
+	// head
+	Shapes.three.rectangle([-0.15, 1.1, -0.15], 0.3, 0.3, 0.3),
 ];
+
 var mesh = {
-    vertices: [],
-    faces: [],
-    texcoord: null,
-    rotation: [1, 1, 1],
-    scale: 1.0
+	vertices: [],
+	faces: [],
+	texcoord: null,
+	rotation: [1, 1, 1],
+	scale: 1.0
 };
 
 for (var i = 0; i < parts.length; i++) {
-    mesh.vertices = mesh.vertices.concat(parts[i].vertices);
+	mesh.vertices = mesh.vertices.concat(parts[i].vertices);
 }
-var to = mesh.vertices.length/3;
-for (var i = 0; i < to; i++) {
-    mesh.faces.push(i);
+var to = mesh.vertices.length / 3;
+for (let i = 0; i < to; i++) {
+	mesh.faces.push(i);
 }
 
 var modelPosition = new Movable(webgl.gl);
 var model = new Model(
 	webgl.gl,
-    mesh,
+	mesh,
 	//Shapes.square([0, 0, 0]),
 	modelPosition
 );
@@ -90,7 +91,7 @@ camera.nextView();
 */
 
 // add cube wireframe
-lines.fill( Shapes.wire.mesh([-32,0,-32], 96, 96) )
+lines.fill(Shapes.wire.mesh([-32, 0, -32], 96, 96));
 
 webgl.start();
 webgl.onRender(function() {
@@ -116,36 +117,36 @@ var adjustment = 1;
 var $controls = $('.controls');
 
 $controls.find('.position')
-    .on('change', 'input', function(e) {
-        var translation = [
-            $('#positionX').val(),
-            $('#positionY').val(),
-            $('#positionZ').val()
+	.on('change', 'input', function(e: any) {
+		var translation = [
+			$('#positionX').val(),
+			$('#positionY').val(),
+			$('#positionZ').val()
 
-        ];
-        modelPosition.setTranslation(translation);
-    });
+		];
+		modelPosition.setTranslation(translation);
+	});
 $controls.find('.rotation')
-    .on('change', 'input', function(e) {
-        var rotation = [
-            $('#rotationX').val(),
-            $('#rotationY').val(),
-            $('#rotationZ').val()
+	.on('change', 'input', function(e: any) {
+		var rotation = [
+			$('#rotationX').val(),
+			$('#rotationY').val(),
+			$('#rotationZ').val()
 
-        ];
-        modelPosition.setRotation(rotation);
-    });
+		];
+		modelPosition.setRotation(rotation);
+	});
 $controls.find('.scale')
-    .on('change', 'input', function(e) {
-        var scale = $('#scale').val();
+	.on('change', 'input', function(e: any) {
+		var scale = $('#scale').val();
 
-    });
+	});
 
-$controls.find('#fetch').on('click', function(e) {
-    var url = $('#url').val();
+$controls.find('#fetch').on('click', function(e: any) {
+	var url: string = '' + ($('#url').val());
 
-    $.getJSON(url, function(json) {
+	$.getJSON(url, function(json: any) {
 
-    });
+	});
 
 });

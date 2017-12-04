@@ -34,13 +34,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 var shim = {};
 if (typeof(exports) === 'undefined') {
 	if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-	  shim.exports = {};
-	  define(function() {
+	shim.exports = {};
+	define(function() {
 		return shim.exports;
-	  });
+	});
 	} else {
-	  // gl-matrix lives in a browser, define its namespaces in global
-	  shim.exports = typeof(window) !== 'undefined' ? window : _global;
+	// gl-matrix lives in a browser, define its namespaces in global
+	shim.exports = typeof(window) !== 'undefined' ? window : _global;
 	}
 }
 else {
@@ -2065,6 +2065,7 @@ mat2d.determinant = function (a) {
 	return a[0] * a[3] - a[1] * a[2];
 };
 
+
 /**
  * Multiplies two mat2d's
  *
@@ -4069,9 +4070,9 @@ quat.fromMat3 = (function() {
 			// |w| <= 1/2
 			var i = 0;
 			if ( m[4] > m[0] )
-			  i = 1;
+			i = 1;
 			if ( m[8] > m[i*3+i] )
-			  i = 2;
+			i = 2;
 			var j = s_iNext[i];
 			var k = s_iNext[j];
 
