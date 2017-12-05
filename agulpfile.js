@@ -13,7 +13,6 @@ const sourceStream = require('vinyl-source-stream');
 const plugins = require('gulp-load-plugins')();
 //const notify = require("gulp-notify");
 const notifier = require('node-notifier');
-const gutil = require('gulp-util');
 
 console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.green(Object.keys(plugins)));
 
@@ -179,8 +178,6 @@ function handleErrors(a) {
 }
 
 function bundleClient(file){
-	var d = Date.now() ;
-	console.log(plugins.util.colors.yellow('Generating ')+plugins.util.colors.yellow(file));
 	browserify()
 		.add('src/client/'+file+'.ts')
 		.plugin(tsify, {
@@ -196,82 +193,26 @@ function bundleClient(file){
 			path.dirname = "client";
 			path.basename = file;
 			path.extname = ".js"
+			console.log(plugins.util.colors.yellow('Generate')+' '+plugins.util.colors.yellow(path.dirname+'/'+path.basename + path.extname));
+			notifier.notify('Generated '+path.dirname+'/'+path.basename + path.extname);
 		}))
-		.pipe(gulp.dest('public/'))
-		.on('end', function() {
-			var ti = ((Date.now() - d)/1000);
-			console.log(plugins.util.colors.yellow('Generated ')+plugins.util.colors.yellow(file) +' '+plugins.util.colors.green(' in '+ ti + 's') );
-			notifier.notify('Generated '+file+' in '+ ti + 's');
-		});;
-}
+		.pipe(gulp.dest('public/'));
 
-function bundleClient1(file,watch){
-	var watchedBrowserify = watchify(
-		browserify({
-			basedir: '.',
-			debug: true,
-			entries: ['src/client/'+file+'.ts'],
-			cache: {},
-			packageCache: {}
-		}).plugin(tsify)
-	);
-
-	function bundle() {
-		var d = Date.now() ;
-		console.log(plugins.util.colors.yellow('Generating ')+plugins.util.colors.yellow(file));
-		return watchedBrowserify
-			.bundle()
-			.pipe(source(file + '.js'))
-			.pipe(plugins.rename(function(path) {
-				var ti = ((Date.now() - d)/1000);
-				console.log(plugins.util.colors.yellow('Generate ')+plugins.util.colors.yellow(path.dirname+'/'+path.basename + path.extname) +' '+plugins.util.colors.green(' in '+ ti + 's') );
-			}))
-			.pipe(gulp.dest("public/client"))
-			.on('end', function() {
-				var ti = ((Date.now() - d)/1000);
-				console.log(plugins.util.colors.yellow('Generate ')+plugins.util.colors.yellow(file) +' '+plugins.util.colors.green(' in '+ ti + 's') );
-				notifier.notify('Generated '+file+' in '+ ti + 's');
-			});;
-	}
-	watchedBrowserify.on("log", gutil.log);
-	if(watch){
-		watchedBrowserify.on("update", bundle);
-	}
-	bundle();
 }
 
 gulp.task('build-client', function() {
-	return bundleClient('client',false);
+	return bundleClient('client');
 });
 
 gulp.task('build-client-worker', function() {
-	return bundleClient('client-worker',false);
+	return bundleClient('client-worker');
 });
 
 gulp.task('build-clients', [ 'build-client', 'build-client-worker' ]);
 
 
 gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function() {
-	//bundleClient('client',true);
-	//bundleClient('client-worker',true);
-	gulp.watch([
-		'src/client/**/*.ts',
-		'src/shared/**/*.ts'
-	], [ 'build-client' ]);
-	gulp.watch([
-		'src/client/client-worker.ts',
-		'src/shared/coordinates.ts',
-		'src/client/lib/textures.ts',
-		'src/client/lib/frustum.ts',
-		'src/shared/generators/client.ts',
-		'src/shared/web-socket-emitter.ts',
-		'src/client/lib/rle-decoder.ts',
-		'src/client/lib/object-pool.ts',
-		'src/client/lib/meshers/horizontal-merge.ts',
-		'src/client/lib/timer.ts',
-		'src/shared/log.ts'
-	], [ 'build-client-worker' ]);
-
+	gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 })
 
 gulp.task('watch-server', [ /*'lint-ts',*/ 'build-server', 'configurations' ], function() {

@@ -5,7 +5,6 @@ vec4 = glm.vec4,
 mat4 = glm.mat4,
 quat = glm.quat;
  */
-
 var inherits = require('inherits');
 
 import {Movable} from './movable';

@@ -5,8 +5,7 @@ var glm = require('gl-matrix'),
 	mat4 = glm.mat4,
 	quat = glm.quat;
 var chunkSize = config.chunkSize;
-console.log('ChunkSize', chunkSize);
-
+//console.log('ChunkSize', chunkSize);
 var randomName = require('sillyname');
 import {VoxelingClient} from './lib/voxeling-client';
 import {InputHandler} from './lib/client-input';
@@ -36,9 +35,13 @@ var voxelPlugins = require('voxel-plugins');
 var voxelInventoryHotbar = require('voxel-inventory-hotbar');
 var voxelRegistry = require('voxel-registry');
 var voxelDecals = require('voxel-decals');
-var voxelStitch = require('voxel-stitch');
+var voxelMesher = require('voxel-mesher');
+//var voxelStitch = require('voxel-stitch');
 var voxelReach = require('voxel-reach');
 var voxelMine = require('voxel-mine');
+var voxelCarry = require('voxel-carry');
+var voxelKeys = require('voxel-keys');
+var kbBindings = require('kb-bindings');
 /*
 //var voxelDebris = require('voxel-debris');
 var voxelTrees = require('voxel-trees');
@@ -251,7 +254,6 @@ client.on('ready', function() {
 
 			player.render(camera.inverse, ts);
 			st.update();
-
 
 			for (var id in players) {
 				var pl = players[id];
@@ -612,46 +614,17 @@ client.on('ready', function() {
 		var plugins = voxelPlugins(game, {
 			'require': require
 		});
+		//plugins.add('voxel-carry', {});
+		//plugins.add('voxel-keys', {});
+		//plugins.add('voxel-registry', {});
+		//plugins.add('voxel-inventory-hotbar', {});
+		//plugins.add('voxel-decals', {});
+		//plugins.add('voxel-mesher', {});
+
+		//plugins.add('voxel-stitch', {});
+		plugins.add('voxel-reach', {});
 		plugins.add('voxel-mine', {});
 		plugins.loadAll();
-		/*
-		//voxelDebris
-		voxelMine
-		voxelReach
-		voxelTrees
-		kbBindings
-		voxelkbBindingsUI
-		voxelDebug*/
-
-		//plugins.add('voxel-trees', {});
-		/*plugins.add('reach', {});
-		plugins.add('kb-bindings-ui', {});
-
-		console.log(plugins);*/
-
-		/*var gui = new datGUI.GUI();
-		var debug = voxelDebug({
-			game: game,
-			gui: gui
-		});
-		var toto:any = {
-			x:1,
-			y:1
-		};
-		// Create a folder and add position properties for a fictious item
-		//var folder = gui.addFolder('Item Position');
-		//folder.add(toto, 'x');
-
-		// OR just let this lib create a dat-gui instance for you
-		//voxelDebug(game).gui.addFolder('My Own Thing');
-
-		//plugins.enable('voxel-mine');
-		//plugins.enable('kb-bindings-ui');
-		console.log('plugins list', plugins.list());
-		plugins.get('voxel-mine').on('break', function(target: any) {
-			console.log('target', target);
-		});
-		*/
 	};
 });
 

@@ -7,17 +7,19 @@ var glm = require('gl-matrix'),
 import {EventEmitter} from 'events';
 var pool = require('../lib/object-pool');
 var log = require('../../shared/log')('lib/game', false);
+var interact = require('interact');
 
-// miscellaneous state
 var previousTimeStamp = 0;
 
 export class Game extends EventEmitter {
+	interact: any;
 	regionChangeCallback: any;
 	currentVoxels: any;
 	coordinates: any;
 	config: any;
 	updateNeedsCallback: any;
 	frustum: any;
+	isClient : boolean = true;
 	player: any;
 	lastRegion: number[];
 	currentVoxel: any[];
@@ -37,6 +39,7 @@ export class Game extends EventEmitter {
 
 		// Same as above, but for voxel arrays
 		this.currentVoxels = {};
+		this.interact = new EventEmitter();
 	}
 
 	storeVoxels(chunk: any) {
