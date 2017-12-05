@@ -4,13 +4,14 @@ var glm = require('gl-matrix'),
 	mat4 = glm.mat4,
 	quat = glm.quat;
 
+import {EventEmitter} from 'events';
 var pool = require('../lib/object-pool');
 var log = require('../../shared/log')('lib/game', false);
 
 // miscellaneous state
 var previousTimeStamp = 0;
 
-export class Game {
+export class Game extends EventEmitter {
 	regionChangeCallback: any;
 	currentVoxels: any;
 	coordinates: any;
@@ -22,6 +23,7 @@ export class Game {
 	currentVoxel: any[];
 
 	constructor(config: any, coordinates: any, player: any, regionChangeCallback: any) {
+		super();
 		var self = this;
 		this.currentVoxel = new Array(3);
 		// if this is vec3.create(), floating point messes things up

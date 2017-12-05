@@ -31,12 +31,29 @@ var timer = require('./lib/timer');
 var mesher = require('./lib/meshers/horizontal-merge');
 var pool = require('./lib/object-pool');
 var trees = require('voxel-trees');
+var voxelPlugins = require('voxel-plugins');
 
+var voxelInventoryHotbar = require('voxel-inventory-hotbar');
+var voxelRegistry = require('voxel-registry');
+var voxelDecals = require('voxel-decals');
+var voxelStitch = require('voxel-stitch');
+var voxelReach = require('voxel-reach');
+var voxelMine = require('voxel-mine');
+/*
+//var voxelDebris = require('voxel-debris');
+var voxelTrees = require('voxel-trees');
+var kbBindings = require('kb-bindings');
+var voxelkbBindingsUI = require('kb-bindings-ui');
+var voxelDebug = require('voxel-debug');
+var datGUI = require('dat-gui');
+ * */
 
 var coordinates = new Coordinates(chunkSize);
 var client = new VoxelingClient(config);
+var webgl: WebGL;
+var textures: Textures;
 
-
+var players: any = {};
 console.log(1289);
 
 // UI DIALOG SETUP
@@ -91,11 +108,59 @@ client.on('close', function() {
 	document.getElementById('overlay').className = 'disconnected';
 });
 
+client.on('players', function(others: any) {
+	var id;
+	var ticksPerHalfSecond = 30;
+	var calculateAdjustments = function(output: any, current: any, wanted: any) {
+		for (var i = 0; i < output.length; i++) {
+			output[i] = (wanted[i] - current[i]) / ticksPerHalfSecond;
+		}
+	};
+	for (id in others) {
+		var updatedPlayerInfo = others[id];
+		var player;
+		if (!('positions' in updatedPlayerInfo)) {
+			continue;
+		}
+		if (id in players) {
+			player = players[id];
+			calculateAdjustments(player.adjustments, player.latest, updatedPlayerInfo.positions);
+			player.current = player.latest;
+			player.latest = updatedPlayerInfo.positions;
+		} else {
+			player = players[id] = {
+				latest: updatedPlayerInfo.positions,
+				current: updatedPlayerInfo.positions,
+				adjustments: [0, 0, 0, 0, 0, 0],
+
+				model: new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName['player'])
+			};
+
+			player.model.setTranslation(
+				updatedPlayerInfo.positions[0],
+				updatedPlayerInfo.positions[1],
+				updatedPlayerInfo.positions[2]
+			);
+			player.model.setRotation(
+				updatedPlayerInfo.positions[3],
+				updatedPlayerInfo.positions[4],
+				updatedPlayerInfo.positions[5]
+			);
+		}
+		player.model.setTexture(textures.byName[updatedPlayerInfo.avatar]);
+	}
+	// Compare players to others, remove old players
+	var playerIds = Object.keys(players);
+	for (var i = 0; i < playerIds.length; i++) {
+		id = playerIds[i];
+		if (!(id in others)) {
+			delete players[id];
+		}
+	}
+});
 client.on('ready', function() {
 	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
 	var inputHandler = new InputHandler(document.body, canvas);
-	var webgl: any;
-	var textures: any;
 
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
@@ -108,7 +173,6 @@ client.on('ready', function() {
 		// ready=false stops physics from running early
 		var ready = false;
 		var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
-		var players:any = {};
 		var sky = new Weather(webgl.gl, webgl.shaders.projectionViewPosition, textures, player);
 		var voxels = client.voxels = new Voxels(
 			webgl.gl,
@@ -142,6 +206,9 @@ client.on('ready', function() {
 				client.regionChange();
 			}
 		);
+
+		initPlugins(game);
+
 		var physics = new Physics(player, inputHandler.state, game);
 		var lines = new Lines(webgl.gl);
 		var highlightOn = true;
@@ -199,56 +266,6 @@ client.on('ready', function() {
 		client.regionChange();
 		webgl.start();
 
-		client.on('players', function(others: any) {
-			var id;
-			var ticksPerHalfSecond = 30;
-			var calculateAdjustments = function(output: any, current: any, wanted: any) {
-				for (var i = 0; i < output.length; i++) {
-					output[i] = (wanted[i] - current[i]) / ticksPerHalfSecond;
-				}
-			};
-			for (id in others) {
-				var updatedPlayerInfo = others[id];
-				var player;
-				if (!('positions' in updatedPlayerInfo)) {
-					continue;
-				}
-				if (id in players) {
-					player = players[id];
-					calculateAdjustments(player.adjustments, player.latest, updatedPlayerInfo.positions);
-					player.current = player.latest;
-					player.latest = updatedPlayerInfo.positions;
-				} else {
-					player = players[id] = {
-						latest: updatedPlayerInfo.positions,
-						current: updatedPlayerInfo.positions,
-						adjustments: [0, 0, 0, 0, 0, 0],
-
-						model: new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName['player'])
-					};
-
-					player.model.setTranslation(
-						updatedPlayerInfo.positions[0],
-						updatedPlayerInfo.positions[1],
-						updatedPlayerInfo.positions[2]
-					);
-					player.model.setRotation(
-						updatedPlayerInfo.positions[3],
-						updatedPlayerInfo.positions[4],
-						updatedPlayerInfo.positions[5]
-					);
-				}
-				player.model.setTexture(textures.byName[updatedPlayerInfo.avatar]);
-			}
-			// Compare players to others, remove old players
-			var playerIds = Object.keys(players);
-			for (var i = 0; i < playerIds.length; i++) {
-				id = playerIds[i];
-				if (!(id in others)) {
-					delete players[id];
-				}
-			}
-		});
 
 		// Material to build with. The material picker dialog changes this value
 		var currentMaterial: number = 1;
@@ -584,6 +601,58 @@ client.on('ready', function() {
 			// What if we call this 30 times a second instead?
 		}, 1000 / 60);
 	});
+
+	var initPlugins = function(game: Game) {
+		/*var mine = voxelMine(game, {});
+
+		mine.on('break', function(target: any) {
+			console.log(target);
+		});*/
+
+		var plugins = voxelPlugins(game, {
+			'require': require
+		});
+		plugins.add('voxel-mine', {});
+		plugins.loadAll();
+		/*
+		//voxelDebris
+		voxelMine
+		voxelReach
+		voxelTrees
+		kbBindings
+		voxelkbBindingsUI
+		voxelDebug*/
+
+		//plugins.add('voxel-trees', {});
+		/*plugins.add('reach', {});
+		plugins.add('kb-bindings-ui', {});
+
+		console.log(plugins);*/
+
+		/*var gui = new datGUI.GUI();
+		var debug = voxelDebug({
+			game: game,
+			gui: gui
+		});
+		var toto:any = {
+			x:1,
+			y:1
+		};
+		// Create a folder and add position properties for a fictious item
+		//var folder = gui.addFolder('Item Position');
+		//folder.add(toto, 'x');
+
+		// OR just let this lib create a dat-gui instance for you
+		//voxelDebug(game).gui.addFolder('My Own Thing');
+
+		//plugins.enable('voxel-mine');
+		//plugins.enable('kb-bindings-ui');
+		console.log('plugins list', plugins.list());
+		plugins.get('voxel-mine').on('break', function(target: any) {
+			console.log('target', target);
+		});
+		*/
+	};
 });
 
 

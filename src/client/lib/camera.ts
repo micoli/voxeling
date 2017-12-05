@@ -9,6 +9,8 @@ quat = glm.quat;
 var inherits = require('inherits');
 
 import {Movable} from './movable';
+import {Player} from './player';
+
 var scratch = require('./scratch');
 
 export class Camera extends Movable {
@@ -16,7 +18,7 @@ export class Camera extends Movable {
 	shoulderOffset: number[];
 	thirdPersonOffset: number[];
 	ratio: any;
-	follow: any;
+	protected _follow: Player;
 	projection: any;
 	farDistance: number;
 	verticalFieldOfView: number;
@@ -44,6 +46,13 @@ export class Camera extends Movable {
 		this.canvasResized();
 	}
 
+	get follow() {
+		return this._follow;
+	}
+
+	set follow(_follow: Player) {
+		this._follow = _follow;
+	}
 
 	canvasResized() {
 		this.ratio = this.canvas.clientWidth / this.canvas.clientHeight;

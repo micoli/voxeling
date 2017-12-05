@@ -1,21 +1,25 @@
 var EventEmitter = require('events').EventEmitter;
 var pool = require('./object-pool');
 var log = require('../../shared/log')('lib/client', false);
+import {Camera} from './camera';
+import {Game} from './game';
+import {Voxels} from './voxels';
 
 export class VoxelingClient {
+	_camera: Camera;
+	_game: Game;
+	_voxels: Voxels;
 	receivedChunks: any[];
-	camera: any;
-	game: any;
 	connected: boolean;
 	emitter: any;
 	players: any;
 	avatar: string;
-	voxels: any;
 	player: any;
 	id: any;
 	server: any;
 	settings: any;
 	worker: any;
+
 	constructor(settings: any) {
 		var self = this;
 		this.settings = settings;
@@ -29,8 +33,8 @@ export class VoxelingClient {
 		this.camera = null;
 		this.game = null;
 		this.connected = false;
-		this.emitter = new EventEmitter();
 		this.receivedChunks = [];
+		this.emitter = new EventEmitter();
 
 		this.worker = new Worker('/client/client-worker.js');
 
@@ -38,6 +42,30 @@ export class VoxelingClient {
 		this.otherSetup();
 
 		this.worker.postMessage(['connect']);
+	}
+
+	get camera(): Camera {
+		return this._camera;
+	}
+
+	set camera(_camera: Camera) {
+		this._camera = _camera;
+	}
+
+	get game(): Game {
+		return this._game;
+	}
+
+	set game(_game: Game) {
+		this._game = _game;
+	}
+
+	get voxels(): Voxels {
+		return this._voxels;
+	}
+
+	set voxels(_voxels: Voxels) {
+		this._voxels = _voxels;
 	}
 
 	// Listen for certain events/data from the server
