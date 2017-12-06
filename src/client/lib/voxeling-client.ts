@@ -2,7 +2,7 @@ var EventEmitter = require('events').EventEmitter;
 var pool = require('./object-pool');
 var log = require('../../shared/log')('lib/client', true);
 import {Camera} from './camera';
-import {Game} from './game3';
+import {Game} from './game';
 import {Voxels} from './voxels';
 
 export class VoxelingClient {
@@ -108,9 +108,9 @@ export class VoxelingClient {
 			// Game no longer needs to hold this voxel data
 			'nearbyChunks': function(chunks: any) {
 				//if (self.game.nearbyChunks) {
-				//	self.game.nearbyChunks(chunks);
+					self.game.nearbyChunks(chunks);
 				//} else {
-					self.game.removeFarChunks();
+				//	self.game.removeFarChunks();
 				//}
 			},
 

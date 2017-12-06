@@ -8,7 +8,7 @@ var chunkSize = config.chunkSize;
 //console.log('ChunkSize', chunkSize);
 var randomName = require('sillyname');
 
-import {Game} from './lib/game3';
+import {Game} from './lib/game';
 import {VoxelingClient} from './lib/voxeling-client';
 import {InputHandler} from './lib/client-input';
 import {WebGL} from './lib/webgl';
@@ -176,7 +176,7 @@ client.on('ready', function() {
 
 	// Wait until textures have fully loaded
 
-	var initGame = function() {
+	/*var initGame3 = function() {
 		new Game({
 			pluginLoaders: {
 				'voxel-bedrock': require('voxel-bedrock'),
@@ -199,8 +199,8 @@ client.on('ready', function() {
 				},
 			}
 		});
-	};
-	var initGame1 = function() {
+	};*/
+	var initGame = function() {
 		// ready=false stops physics from running early
 		var ready = false;
 		var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
@@ -228,14 +228,14 @@ client.on('ready', function() {
 			}
 		);
 		var camera = client.camera = new Camera(canvas, player);
-		var game = client.game = new Game({}/*
+		var game = client.game = new Game(
 			config,
 			coordinates,
 			player,
 			function() {// regionChangeCallback
 				client.regionChange();
 			}
-		*/);
+		);
 
 		initPlugins(game);
 
@@ -438,7 +438,7 @@ client.on('ready', function() {
 						low,
 						high,
 						function(i: number, j: number, k: any) {
-							game.setBlock([i, j, k], currentMaterial/*, chunkVoxelIndexValue*/);
+							game.setBlock([i, j, k], currentMaterial, chunkVoxelIndexValue);
 						}
 					);
 				} else {
@@ -446,7 +446,7 @@ client.on('ready', function() {
 						low,
 						high,
 						function(i: number, j: number, k: any) {
-							game.setBlock([i, j, k], 0/*, chunkVoxelIndexValue, touching*/);
+							game.setBlock([i, j, k], 0, chunkVoxelIndexValue, touching);
 						}
 					);
 				}
@@ -492,7 +492,7 @@ client.on('ready', function() {
 									z: k
 								},
 								setBlock: function(position: any, material: any) {
-									game.setBlock([position.x, position.y, position.z], material/*, chunkVoxelIndexValue*/);
+									game.setBlock([position.x, position.y, position.z], material, chunkVoxelIndexValue);
 								},
 								treeType: treeTypes[treeType],
 								bark: 24,
@@ -506,7 +506,7 @@ client.on('ready', function() {
 						low,
 						high,
 						function(i: number, j: number, k: any) {
-							game.setBlock([i, j, k], currentMaterial/*, chunkVoxelIndexValue*/);
+							game.setBlock([i, j, k], currentMaterial, chunkVoxelIndexValue);
 						}
 					);
 				}
@@ -641,6 +641,7 @@ client.on('ready', function() {
 			console.log(target);
 		});*/
 
+		/*
 		var plugins = voxelPlugins(game, {
 			'require': require
 		});
@@ -656,6 +657,7 @@ client.on('ready', function() {
 		plugins.add('voxel-reach', {});
 		plugins.add('voxel-mine', {});
 		plugins.loadAll();
+		 * */
 	};
 });
 
