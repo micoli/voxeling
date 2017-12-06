@@ -1,8 +1,8 @@
 var EventEmitter = require('events').EventEmitter;
 var pool = require('./object-pool');
-var log = require('../../shared/log')('lib/client', false);
+var log = require('../../shared/log')('lib/client', true);
 import {Camera} from './camera';
-import {Game} from './game';
+import {Game} from './game3';
 import {Voxels} from './voxels';
 
 export class VoxelingClient {
@@ -35,7 +35,7 @@ export class VoxelingClient {
 		this.connected = false;
 		this.receivedChunks = [];
 		this.emitter = new EventEmitter();
-
+		//console.log('Worker', Worker);
 		this.worker = new Worker('/client/client-worker.js');
 
 		this.bindEvents();
@@ -101,15 +101,22 @@ export class VoxelingClient {
 			},
 
 			'chunkVoxels': function(chunk: any) {
-				//console.log(chunk);
+				log('chunkVoxels ' + chunk.chunkID + ' ' + chunk.position);
 				self.game.storeVoxels(chunk);
 			},
+
 			// Game no longer needs to hold this voxel data
 			'nearbyChunks': function(chunks: any) {
-				self.game.nearbyChunks(chunks);
+				//if (self.game.nearbyChunks) {
+				//	self.game.nearbyChunks(chunks);
+				//} else {
+					self.game.removeFarChunks();
+				//}
 			},
+
 			// Chunk was re-meshed
 			'chunkMesh': function(chunkID: any, mesh: any) {
+				log('chunkMesh ' + JSON.stringify(chunkID));
 				self.voxels.showMesh(chunkID, mesh);
 			},
 			'meshesToShow': function(meshDistances: any) {

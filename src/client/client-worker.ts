@@ -13,7 +13,7 @@ var log = require('../shared/log')('client-worker');
 
 var chunkArrayLength = config.chunkSize * config.chunkSize * config.chunkSize;
 var chunkCache:any = {};
-var debug = false;
+var debug = true;
 
 /*
 INCOMING WEBWORKER MESSAGES
@@ -186,9 +186,9 @@ var worker:any = {
 		var self = this;
 
 		// TODO update the frustum
+		log('regionChange: playerPosition is', playerPosition);
 		this.frustum.update(playerPosition, rotationQuat, drawDistance);
 
-		log('regionChange: playerPosition is', playerPosition);
 
 		// These help us remove voxels and meshes we no longer need
 		var nearbyVoxels:any = {};

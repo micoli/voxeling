@@ -7,6 +7,8 @@ var glm = require('gl-matrix'),
 var chunkSize = config.chunkSize;
 //console.log('ChunkSize', chunkSize);
 var randomName = require('sillyname');
+
+import {Game} from './lib/game3';
 import {VoxelingClient} from './lib/voxeling-client';
 import {InputHandler} from './lib/client-input';
 import {WebGL} from './lib/webgl';
@@ -14,15 +16,12 @@ import {Textures} from './lib/textures';
 import {Player} from './lib/player';
 import {Weather} from './lib/sky';
 import {Voxels} from './lib/voxels';
-//var Voxels = require('./lib/voxels');
+
 import {Camera} from './lib/camera';
-import {Game} from './lib/game';
 import {Lines} from './lib/lines';
 import {Physics} from './lib/physics';
 import {Coordinates} from '../shared/coordinates';
-//var InputHandler = require('./lib/client-input');
 //var Meshing = require('../lib/meshers/non-blocked')
-
 var raycast = require('voxel-raycast');
 var Shapes = require('./lib/shapes');
 var Stats = require('./lib/stats');
@@ -36,12 +35,15 @@ var voxelInventoryHotbar = require('voxel-inventory-hotbar');
 var voxelRegistry = require('voxel-registry');
 var voxelDecals = require('voxel-decals');
 var voxelMesher = require('voxel-mesher');
-//var voxelStitch = require('voxel-stitch');
+var voxelStitch = require('voxel-stitch');
 var voxelReach = require('voxel-reach');
 var voxelMine = require('voxel-mine');
 var voxelCarry = require('voxel-carry');
 var voxelKeys = require('voxel-keys');
+var voxelShader = require('voxel-shader');
 var kbBindings = require('kb-bindings');
+var gameShellFPSCamera = require('game-shell-fps-camera');
+
 /*
 //var voxelDebris = require('voxel-debris');
 var voxelTrees = require('voxel-trees');
@@ -161,6 +163,7 @@ client.on('players', function(others: any) {
 		}
 	}
 });
+
 client.on('ready', function() {
 	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
 	var inputHandler = new InputHandler(document.body, canvas);
@@ -172,7 +175,32 @@ client.on('ready', function() {
 	textures = new Textures(config.textures);
 
 	// Wait until textures have fully loaded
-	textures.load(webgl.gl, function() {
+
+	var initGame = function() {
+		new Game({
+			pluginLoaders: {
+				'voxel-bedrock': require('voxel-bedrock'),
+				'voxel-server': require('./lib/voxel-server'),
+				'voxel-stitch': require('voxel-stitch'),
+				'game-shell-fps-camera': require('game-shell-fps-camera'),
+			},
+			pluginOpts: {
+				'voxel-engine-stackgl': {
+					generateChunks: false
+				},
+				'game-shell-fps-camera': {position: [0, -100, 0]},
+				'voxel-bedrock': {},
+				'voxel-server': {
+					block : 'bedrock',
+					voxelingClient : client
+				},
+				'voxel-stitch':{
+					artpacks : ['/ProgrammerArt-ResourcePack.zip']
+				},
+			}
+		});
+	};
+	var initGame1 = function() {
 		// ready=false stops physics from running early
 		var ready = false;
 		var player = client.player = new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName[client.avatar]);
@@ -200,15 +228,14 @@ client.on('ready', function() {
 			}
 		);
 		var camera = client.camera = new Camera(canvas, player);
-		var game = client.game = new Game(
+		var game = client.game = new Game({}/*
 			config,
 			coordinates,
 			player,
-			// regionChangeCallback
-			function() {
+			function() {// regionChangeCallback
 				client.regionChange();
 			}
-		);
+		*/);
 
 		initPlugins(game);
 
@@ -411,7 +438,7 @@ client.on('ready', function() {
 						low,
 						high,
 						function(i: number, j: number, k: any) {
-							game.setBlock(i, j, k, currentMaterial, chunkVoxelIndexValue);
+							game.setBlock([i, j, k], currentMaterial/*, chunkVoxelIndexValue*/);
 						}
 					);
 				} else {
@@ -419,7 +446,7 @@ client.on('ready', function() {
 						low,
 						high,
 						function(i: number, j: number, k: any) {
-							game.setBlock(i, j, k, 0, chunkVoxelIndexValue, touching);
+							game.setBlock([i, j, k], 0/*, chunkVoxelIndexValue, touching*/);
 						}
 					);
 				}
@@ -465,7 +492,7 @@ client.on('ready', function() {
 									z: k
 								},
 								setBlock: function(position: any, material: any) {
-									game.setBlock(position.x, position.y, position.z, material, chunkVoxelIndexValue);
+									game.setBlock([position.x, position.y, position.z], material/*, chunkVoxelIndexValue*/);
 								},
 								treeType: treeTypes[treeType],
 								bark: 24,
@@ -479,7 +506,7 @@ client.on('ready', function() {
 						low,
 						high,
 						function(i: number, j: number, k: any) {
-							game.setBlock(i, j, k, currentMaterial, chunkVoxelIndexValue);
+							game.setBlock([i, j, k], currentMaterial/*, chunkVoxelIndexValue*/);
 						}
 					);
 				}
@@ -602,9 +629,12 @@ client.on('ready', function() {
 			sky.tick(6);
 			// What if we call this 30 times a second instead?
 		}, 1000 / 60);
-	});
+	};
+	//Game3
+	textures.load(webgl.gl, initGame);
 
 	var initPlugins = function(game: Game) {
+		return;
 		/*var mine = voxelMine(game, {});
 
 		mine.on('break', function(target: any) {
@@ -614,14 +644,15 @@ client.on('ready', function() {
 		var plugins = voxelPlugins(game, {
 			'require': require
 		});
-		//plugins.add('voxel-carry', {});
-		//plugins.add('voxel-keys', {});
-		//plugins.add('voxel-registry', {});
-		//plugins.add('voxel-inventory-hotbar', {});
-		//plugins.add('voxel-decals', {});
-		//plugins.add('voxel-mesher', {});
-
-		//plugins.add('voxel-stitch', {});
+		plugins.add('voxel-carry', {});
+		plugins.add('voxel-shader', {});
+		plugins.add('voxel-keys', {});
+		plugins.add('voxel-registry', {});
+		plugins.add('game-shell-fps-camera', {});
+		plugins.add('voxel-inventory-hotbar', {});
+		plugins.add('voxel-decals', {});
+		plugins.add('voxel-mesher', {});
+		plugins.add('voxel-stitch', {});
 		plugins.add('voxel-reach', {});
 		plugins.add('voxel-mine', {});
 		plugins.loadAll();

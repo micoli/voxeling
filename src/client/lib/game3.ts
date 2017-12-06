@@ -1,9 +1,8 @@
 var voxel = require('voxel');
 var ray = require('voxel-raycast');
 var control = require('voxel-controls');
-var Detector = require('./lib/detector');
 var inherits = require('inherits');
-var path = require('path');
+//var path = require('path');
 import {EventEmitter} from 'events';
 var collisions = require('collide-3d-tilemap');
 var aabb = require('aabb-3d');
@@ -14,10 +13,9 @@ var physical = require('voxel-physicals');
 var tic = require('tic')();
 var ndarray = require('ndarray');
 var isndarray = require('isndarray');
-var obsolete = require('obsolete');
+//var obsolete = require('obsolete');
 var createPlugins = require('voxel-plugins');
 var extend = require('extend');
-
 
 var BUILTIN_PLUGIN_OPTS:any = {
 	'voxel-registry': {},
@@ -51,7 +49,7 @@ export class Game extends EventEmitter {
 	shell: any;
 	isClient: any;
 	playerHeight: any;
-	voxels: any;
+	voxels:any;
 	items: any[];
 	meshType: any;
 	antialias: any;
@@ -95,9 +93,9 @@ export class Game extends EventEmitter {
 		this.setConfigurablePositions(opts);
 		this.configureChunkLoading(opts);
 		this.setDimensions(opts);
-		obsolete(this, 'THREE');
+		//obsolete(this, 'THREE');
 		this.vector = vector;
-		obsolete(this, 'glMatrix', 'use your own gl-matrix, gl-vec3, or gl-vec4');
+		//obsolete(this, 'glMatrix', 'use your own gl-matrix, gl-vec3, or gl-vec4');
 		this.arrayType = opts.arrayType || {
 			'1': Uint8Array,
 			'2': Uint16Array,
@@ -118,21 +116,21 @@ export class Game extends EventEmitter {
 		this.meshType = opts.meshType || 'surfaceMesh';
 
 		// was a 'voxel' module meshers object, now using voxel-mesher(ao-mesher);
-		obsolete(this, 'mesher', 'replaced by voxel-mesher');
+		//obsolete(this, 'mesher', 'replaced by voxel-mesher');
 
 		this.items = [];
 		this.voxels = voxel(this);
 
 		// was a three.js Scene instance, mainly used for scene.add(), objects, lights TODO: scene graph replacement? or can do without?
-		obsolete(this, 'scene');
+		//obsolete(this, 'scene');
 
 		// hooked up three.js Scene, created three.js PerspectiveCamera, added to element
 		// TODO: add this.view.cameraPosition(), this.view.cameraVector()? -> [x,y,z]  to game-shell-fps-camera, very useful
-		obsolete(this, 'view');
+		//obsolete(this, 'view');
 
 		// used to be a three.js PerspectiveCamera set by voxel-view;
 		//see also basic-camera but API not likely compatible (TODO: make it compatible?);
-		obsolete(this, 'camera');
+		//obsolete(this, 'camera');
 
 		// the game-shell
 		if (this.isClient) /*GZ: Do not load on server, as document element is missing*/ {
@@ -160,7 +158,7 @@ export class Game extends EventEmitter {
 		// setup plugins
 		var pluginLoaders = opts.pluginLoaders || {};
 		extend(pluginLoaders, {
-			'voxel-engine-stackgl': require('./'),
+			'voxel-engine-stackgl': Game, //require('./'),
 			'voxel-registry': require('voxel-registry'),
 			'voxel-stitch': require('voxel-stitch'),
 			'voxel-shader': require('voxel-shader'),
@@ -187,6 +185,11 @@ export class Game extends EventEmitter {
 		this.region = regionChange(this.spatial, aabb([0, 0, 0], [1, 1, 1]), this.chunkSize);
 		this.voxelRegion = regionChange(this.spatial, 1);
 		this.chunkRegion = regionChange(this.spatial, this.chunkSize);
+
+		this.voxelRegion.on('change', function(pos: any) {
+		console.log('VoxelRegion change', pos);
+		});
+
 		this.asyncChunkGeneration = false;
 
 		// contains chunks that has had an update this tick. Will be generated right before redrawing the frame
@@ -540,13 +543,13 @@ export class Game extends EventEmitter {
 
 	notCapable(opts:any) {
 		var self = this;
-		if (!Detector().webgl) {
+		/*if (!Detector().webgl) {
 			if (!this.reportedNotCapable) {
 				document.body.appendChild(self.notCapableMessage());
 			}
 			this.reportedNotCapable = true; // only once;
 			return true;
-		}
+		}*/
 		return false;
 	}
 
@@ -905,7 +908,7 @@ export class Game extends EventEmitter {
 		// player control - game-shell handles most controls now;
 
 		// initial keybindings passed in from options;
-		obsolete(this, 'keybindings');
+		//obsolete(this, 'keybindings');
 		var keybindings = opts.keybindings || this.defaultButtons;
 		for (var key in keybindings) {
 			var name = keybindings[key];
@@ -916,7 +919,7 @@ export class Game extends EventEmitter {
 			this.shell.bind(name, key);
 		}
 
-		obsolete(this, 'interact');
+		//obsolete(this, 'interact');
 
 		this.proxyButtons(); // sets this.buttons TODO: refresh when shell.bindings changes (bind/unbind);
 		this.hookupControls(this.buttons, opts);

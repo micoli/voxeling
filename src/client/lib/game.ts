@@ -83,8 +83,8 @@ export class Game extends EventEmitter {
 	/*
 	Modifies the chunkVoxelIndexValue data structure
 	*/
-	setBlock(x: number, y: number, z: number, value:any, chunkVoxelIndexValue:any, touching?:any) {
-		var parts = this.coordinates.coordinatesToChunkAndVoxelIndex(x, y, z, touching);
+	setBlock(pos: number[], value:any, chunkVoxelIndexValue:any, touching?:any) {
+		var parts = this.coordinates.coordinatesToChunkAndVoxelIndex(pos[0], pos[1], pos[2], touching);
 		var chunkID = parts[0];
 		var voxelIndex = parts[1];
 		this.currentVoxels[chunkID].voxels[voxelIndex] = value;
