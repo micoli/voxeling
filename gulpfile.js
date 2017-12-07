@@ -72,7 +72,7 @@ gulp.task('compile-test', function() {
 });
 
 gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'configurations','build-server' ], function() {
-	gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
+	//gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
 		script : outDir+'src/server/index.js',
