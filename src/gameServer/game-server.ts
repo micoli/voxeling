@@ -14,7 +14,7 @@ var glm = require('gl-matrix');
 var vec3 = glm.vec3;
 // voxel dependencies
 var crunch = require('voxel-crunch');
-var createEngine = require('../shared/voxel-engine-stackgl');
+import {Game} from '../shared/voxel-engine-stackgl';
 
 process.on('uncaughtException', function (err:any) {
 	console.error((new Date).toUTCString() + ' uncaughtException:', err.message);
@@ -96,7 +96,7 @@ export class GameServer extends EventEmitter {
 
 	createGame() {
 		try {
-			this.game =  createEngine({
+			this.game =  new Game({
 				exposeGlobal: false,
 				pluginLoaders: {
 					//'voxel-land': require('voxel-land'),
@@ -171,11 +171,11 @@ export class GameServer extends EventEmitter {
 		var game = self.game;
 		var id = client.id;
 		var connection = client.connection;
-
-		self.game.voxels.on('chunk', function(chunk: any) {
+		console.log('Events binding')
+		/*self.game.voxels.on('chunk', function(chunk: any) {
 			console.log('missingChunk 2');
 			connection.emit('chunk', chunk);
-		});
+		});*/
 		// forward chat message
 		connection.on('chat', self.handleErrors(function(message: any) {
 			// ignore if no message provided
@@ -216,8 +216,7 @@ export class GameServer extends EventEmitter {
 		var chunkCache = self.chunkCache;
 		connection.on('set', self.handleErrors(function(pos: any, val: any) {
 			game.setBlock(pos, val);
-			var chunkPos = game.voxels.chunkAtPosition(pos);
-			var chunkID = chunkPos.join('|');
+			var chunkID = self.getChunkId(pos);
 			if (chunkCache[chunkID]) {
 				delete chunkCache[chunkID];
 			}
@@ -228,15 +227,16 @@ export class GameServer extends EventEmitter {
 		connection.on('missingChunk', self.handleErrors(function(pos: any) {
 
 			var chunk = self.game.getChunkAtPosition(pos);
-				console.log('missingChunk', pos, (chunk ? 'chunk' : 'nochunk'));
+			console.log('missingChunk', pos, (chunk ? 'chunk' : 'nochunk'));
 			if (!chunk) {
 				//var plugin = self.game.plugins.get('voxel-flatland');
 				//console.log('plugin', plugin, self.game.plugins);
 				//chunk = plugin.missingChunk(pos);
-				self.game.voxels.requestMissingChunks(pos);
+				chunk = self.game.voxels.generateChunk(pos[0] | 0, pos[1] | 0, pos[2] | 0)
+				//console.log(chunk);//process.exit(1);
+				//self.game.voxels.requestMissingChunks(pos);
 			}
-			//console.log('missingChunk answer', chunk);
-			//connection.emit('chunk', chunk);
+			self.emitChunk(connection, chunk);
 		}));
 
 		// forward custom events
@@ -309,22 +309,38 @@ export class GameServer extends EventEmitter {
 	sendInitialChunks(connection: any) {
 		var self = this;
 		var chunks = self.game.voxels.chunks;
-		var chunkCache = self.chunkCache;
 		console.log('sendInitialChunks', connection.id);
 		Object.keys(chunks).map(function(chunkID) {
 			var chunk = chunks[chunkID];
-			var encoded = chunkCache[chunkID];
-			if (!encoded) {
-				encoded = crunch.encode(chunk.voxels);
-				chunkCache[chunkID] = encoded;
-			}
-			connection.emit('chunk', encoded, {
-				position: chunk.position,
-				dims: chunk.dims,
-				length: chunk.voxels.length
-			});
+			self.emitChunk(connection, chunk);
 		});
 		connection.emit('noMoreChunks', true);
+	}
+
+	getCachedChunk(chunk){
+		var self = this;
+		var chunkID = self.getChunkId(chunk.position);
+		var encoded = self.chunkCache[chunkID];
+		if (!encoded) {
+			encoded = crunch.encode(chunk.voxels);
+			self.chunkCache[chunkID] = encoded;
+		}
+		return encoded;
+	}
+
+	getChunkId(pos : any){
+		return this.game.voxels.chunkAtPosition(pos).join('|');
+	}
+
+	emitChunk(connection: any, chunk: any){
+		chunk.voxels = chunk.data||[];
+		let encoded = this.getCachedChunk(chunk);
+		connection.emit('chunk', encoded, chunk/*{
+			position: chunk.position,
+			dims: chunk.dims,
+			length: chunk.voxels.length
+		}*/);
+
 	}
 
 	// utility function

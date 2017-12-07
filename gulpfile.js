@@ -269,7 +269,8 @@ gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function()
 		'src/client/lib/object-pool.ts',
 		'src/client/lib/meshers/horizontal-merge.ts',
 		'src/client/lib/timer.ts',
-		'src/shared/log.ts'
+		'src/shared/log.ts',
+		'src/shared/voxel-engine-stackgl.ts'
 	], [ 'build-client-worker' ]);
 
 })

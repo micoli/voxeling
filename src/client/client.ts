@@ -10,7 +10,7 @@ var randomName = require('sillyname');
 var WebSocketEmitter = require('../shared/web-socket-emitter');
 
 //import {Game} from './lib/game3';
-var createEngine = require('../shared/voxel-engine-stackgl');//require('voxel-engine-stackgl');
+import {Game} from '../shared/voxel-engine-stackgl';//require('voxel-engine-stackgl');
 var WebSocketStream = require('websocket-stream');
 //import {VoxelingClient} from './lib/voxeling-client';
 //import {InputHandler} from './lib/client-input';
@@ -145,7 +145,7 @@ var initGame = function() {
 	// Wait until textures have fully loaded
 
 	console.log(4);
-	return createEngine({
+	return new Game({
 		exposeGlobal: true,
 		pluginLoaders: {
 			'voxel-client' : require('./lib/voxel-client'),
