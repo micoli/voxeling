@@ -12,11 +12,11 @@ var path = require('path');
 var uuid = require('hat');
 var glm = require('gl-matrix');
 var vec3 = glm.vec3;
-// voxel dependencies
+
 var crunch = require('voxel-crunch');
 import {Game} from '../shared/voxel-engine-stackgl';
 
-process.on('uncaughtException', function (err:any) {
+process.on('uncaughtException', function(err: any) {
 	console.error((new Date).toUTCString() + ' uncaughtException:', err.message);
 	console.error(err.stack);
 	//process.exit(1);
@@ -31,33 +31,33 @@ export class GameServer extends EventEmitter {
 	settings: any;
 	chunkCache: any;
 	forwardEvents: any;
-	game: any;
+	game: Game;
 	clients: any;
-	connections:number;
+	connections: number;
 	constructor(opts: any) {
 		super();
 		this.connections = 0;
 		var self = this;
 
-		var settings = self.settings = extend({},  opts);
+		var settings = self.settings = extend({}, opts);
 		// prepare a server object to return
 		self.forwardEvents = settings.forwardEvents || [];
-		this.createGame();
+		var clients = self.clients = {};
+		var chunkCache = self.chunkCache = {};
 		/*if (self.game.notCapable()) {
 			return;
 		}*/
 
-		var clients = self.clients = {};
-		var chunkCache = self.chunkCache = {};
 
 		// send player position/rotation updates
 		////////setInterval(self.sendUpdate.bind(self), 1000 / 22); // every 45ms
 
 		// forward some events to module consumer
-		console.log(112);
 		this.initWSServer();
-		console.log(111);
 
+		setTimeout(function () {
+			self.createGame.call(self);
+		}, 2000);
 	}
 
 	initWSServer() {
@@ -96,11 +96,12 @@ export class GameServer extends EventEmitter {
 
 	createGame() {
 		try {
-			this.game =  new Game({
+			this.game = new Game({
 				exposeGlobal: false,
+				//chunkPad:2,
 				pluginLoaders: {
-					//'voxel-land': require('voxel-land'),
-					'voxel-flatland': require('voxel-flatland'),
+					'voxel-land': require('voxel-land'),
+					//'voxel-flatland': require('voxel-flatland'),
 					'voxel-bedrock': require('voxel-bedrock'),
 				},
 				pluginOpts: {
@@ -110,19 +111,19 @@ export class GameServer extends EventEmitter {
 						lightsDisabled: true,
 						arrayTypeSize: 2,  // arrayType: Uint16Array
 						useAtlas: true,
-						generateChunks: false,
+						generateChunks: true,
 						chunkDistance: 2,
 						worldOrigin: [0, 0, 0],
 						controls: {
 						},
-						keybindings: {				}
+						keybindings: {}
 					},
 					// built-in plugins
 					'voxel-registry': {},
-					//'voxel-land': {populateTrees: true},
-					'voxel-flatland': {
+					'voxel-land': {populateTrees: true},
+					/*'voxel-flatland': {
 						block: 'bedrock', onDemand: false
-					},
+					},*/
 					'voxel-mesher': {},
 					'voxel-bedrock': {},
 				}
@@ -171,7 +172,7 @@ export class GameServer extends EventEmitter {
 		var game = self.game;
 		var id = client.id;
 		var connection = client.connection;
-		console.log('Events binding')
+		console.log('Events binding');
 		/*self.game.voxels.on('chunk', function(chunk: any) {
 			console.log('missingChunk 2');
 			connection.emit('chunk', chunk);
@@ -184,9 +185,9 @@ export class GameServer extends EventEmitter {
 			}
 			// limit chat message length
 			if (message.text.length > 140) {
-				message.text = message.text.substr(0, 140)
+				message.text = message.text.substr(0, 140);
 			}
-			self.broadcast(null, 'chat', message)
+			self.broadcast(null, 'chat', message);
 		}));
 
 		// when user ready ( game created, etc )
@@ -195,7 +196,7 @@ export class GameServer extends EventEmitter {
 			self.sendInitialChunks(connection);
 			// emit client.created for module consumers
 			self.emit('client.created', client);
-		}))
+		}));
 
 		// client sends new position, rotation
 		connection.on('state', self.handleErrors(function(state: any) {
@@ -205,7 +206,7 @@ export class GameServer extends EventEmitter {
 			var distance = vec3.distance(pos, state.position);
 			if (distance > 20) {
 				var before = pos.clone();
-				vec3.lerp(state.position, pos, state.position, 0.1)
+				vec3.lerp(state.position, pos, state.position, 0.1);
 				return;
 			}
 			vec3.copy(pos, state.position);
@@ -232,7 +233,7 @@ export class GameServer extends EventEmitter {
 				//var plugin = self.game.plugins.get('voxel-flatland');
 				//console.log('plugin', plugin, self.game.plugins);
 				//chunk = plugin.missingChunk(pos);
-				chunk = self.game.voxels.generateChunk(pos[0] | 0, pos[1] | 0, pos[2] | 0)
+				chunk = self.game.voxels.generateChunk(pos[0] | 0, pos[1] | 0, pos[2] | 0);
 				//console.log(chunk);//process.exit(1);
 				//self.game.voxels.requestMissingChunks(pos);
 			}
@@ -253,7 +254,7 @@ export class GameServer extends EventEmitter {
 	}
 
 	// send message to all clients
-	broadcast(id: any, event: any) {
+	broadcast(id: any, ...event: any[]) {
 		return;
 		var self = this;
 		// normalize arguments
@@ -287,7 +288,7 @@ export class GameServer extends EventEmitter {
 		if (clientIds.length === 0) {
 			return;
 		}
-		var update = {
+		var update: any = {
 			positions: {},
 			date: +new Date()
 		};
@@ -317,29 +318,33 @@ export class GameServer extends EventEmitter {
 		connection.emit('noMoreChunks', true);
 	}
 
-	getCachedChunk(chunk){
+	getCachedChunk(chunk: any) {
 		var self = this;
 		var chunkID = self.getChunkId(chunk.position);
 		var encoded = self.chunkCache[chunkID];
 		if (!encoded) {
-			encoded = crunch.encode(chunk.voxels);
+			encoded = crunch.encode(chunk.data);
 			self.chunkCache[chunkID] = encoded;
 		}
 		return encoded;
 	}
 
-	getChunkId(pos : any){
+	getChunkId(pos: any) {
 		return this.game.voxels.chunkAtPosition(pos).join('|');
 	}
 
-	emitChunk(connection: any, chunk: any){
-		chunk.voxels = chunk.data||[];
+	emitChunk(connection: any, chunk: any) {
 		let encoded = this.getCachedChunk(chunk);
-		connection.emit('chunk', encoded, chunk/*{
+		console.log({
 			position: chunk.position,
-			dims: chunk.dims,
-			length: chunk.voxels.length
-		}*/);
+			dims: chunk.shape,
+			length: chunk.data.length
+		});
+		connection.emit('chunk', encoded, {
+			position: chunk.position,
+			dims: chunk.shape,
+			length: chunk.data.length
+		});
 
 	}
 

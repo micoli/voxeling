@@ -12,13 +12,14 @@ var WebSocketEmitter = require('../shared/web-socket-emitter');
 //import {Game} from './lib/game3';
 import {Game} from '../shared/voxel-engine-stackgl';//require('voxel-engine-stackgl');
 var WebSocketStream = require('websocket-stream');
-//import {VoxelingClient} from './lib/voxeling-client';
-//import {InputHandler} from './lib/client-input';
 import {Player} from './lib/player';
 import {Textures} from './lib/textures';
 import {WebGL} from './lib/webgl';
 import {VoxelClient} from './lib/voxel-client';
+
 /*
+//import {VoxelingClient} from './lib/voxeling-client';
+//import {InputHandler} from './lib/client-input';
 import {Weather} from './lib/sky';
 import {Voxels} from './lib/voxels';
 
@@ -147,6 +148,7 @@ var initGame = function() {
 	console.log(4);
 	return new Game({
 		exposeGlobal: true,
+		//chunkPad : 2,
 		pluginLoaders: {
 			'voxel-client' : require('./lib/voxel-client'),
 			'voxel-artpacks': require('voxel-artpacks'),

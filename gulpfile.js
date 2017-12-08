@@ -75,6 +75,7 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 	//gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
+		exec: 'node --inspect ',
 		script : outDir+'src/server/index.js',
 		ext : 'ts json',
 		ignore : [ 'ignored.js' ],
@@ -245,7 +246,7 @@ gulp.task('build-client', function() {
 });
 
 gulp.task('build-client-worker', function() {
-	return bundleClient('client-worker',false);
+	//return bundleClient('client-worker',false);
 });
 
 gulp.task('build-clients', [ 'build-client', 'build-client-worker' ]);
@@ -258,6 +259,7 @@ gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function()
 		'src/client/**/*.ts',
 		'src/shared/**/*.ts'
 	], [ 'build-client' ]);
+	return;
 	gulp.watch([
 		'src/client/client-worker.ts',
 		'src/shared/coordinates.ts',

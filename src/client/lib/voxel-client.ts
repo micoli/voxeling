@@ -2,11 +2,11 @@
 import {EventEmitter} from 'events';
 var DuplexEmitter = require('duplex-emitter');
 var extend = require('extend');
-
+import {Game} from '../../shared/voxel-engine-stackgl';
 var skin = require('minecraft-skin');
 var crunch = require('voxel-crunch');
 var voxelPlayer = require('voxel-player');
-var engine = require('voxel-engine');
+var ndarray = require('ndarray');
 
 function scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
 	return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
@@ -19,7 +19,7 @@ module.exports.pluginInfo = {
 export class VoxelClient extends EventEmitter {
 	opts: any;
 	playerID: any;
-	game: any;
+	game: Game;
 	texturePath: any;
 	playerTexture: any;
 	lerpPercent: any;
@@ -29,7 +29,7 @@ export class VoxelClient extends EventEmitter {
 	serverSettingBlock : any;
 	avatar:any;
 	name:any;
-	constructor(game: any, opts:any) {
+	constructor(game: Game, opts:any) {
 		super();
 		var self = this;
 		// allow module consumers to listen to ee2 events;
@@ -84,7 +84,7 @@ export class VoxelClient extends EventEmitter {
 				encoded.length = lastIndex + 1;
 			}
 			var voxels = crunch.decode(encoded, chunk.length);
-			chunk.voxels = voxels;
+			chunk.voxels = ndarray(voxels);
 			self.game.showChunk(chunk);
 		});
 
