@@ -686,6 +686,7 @@ export class Game extends EventEmitter {
 			this.generateVoxelChunk = opts.generateVoxelChunk;
 		} else {
 			this.generateVoxelChunk = function(low: any, high: any) {
+				console.log(low, high);
 				return voxel.generate(low, high, self.generate, self);
 			};
 		}
@@ -833,7 +834,7 @@ export class Game extends EventEmitter {
 	// # Debugging methods
 
 	addMarker(position: any) {
-		throw new Error('voxel-engine-stackgl addMarker not yet implemented TODO: figure out how to fit this into the rendering pipeline');
+		throw 'voxel-engine-stackgl addMarker not yet implemented TODO: figure out how to fit this into the rendering pipeline';
 	}
 
 	addAABBMarker(aabb: any, color: any) {
