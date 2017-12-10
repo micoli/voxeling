@@ -1,156 +1,24 @@
 var config = require('../config');
-var glm = require('gl-matrix'),
-	vec3 = glm.vec3,
-	vec4 = glm.vec4,
-	mat4 = glm.mat4,
-	quat = glm.quat;
-var chunkSize = config.chunkSize;
-//console.log('ChunkSize', chunkSize);
 var randomName = require('sillyname');
 var WebSocketEmitter = require('../shared/web-socket-emitter');
-
-//import {Game} from './lib/game3';
-import {Game} from '../shared/voxel-engine-stackgl';//require('voxel-engine-stackgl');
-var WebSocketStream = require('websocket-stream');
+import {Game} from '../shared/voxel-engine-stackgl';
 import {Player} from './lib/player';
-import {Textures} from './lib/textures';
-import {WebGL} from './lib/webgl';
 import {VoxelClient} from './lib/voxel-client';
 
-/*
-//import {VoxelingClient} from './lib/voxeling-client';
-//import {InputHandler} from './lib/client-input';
-import {Weather} from './lib/sky';
-import {Voxels} from './lib/voxels';
-
-import {Camera} from './lib/camera';
-import {Lines} from './lib/lines';
-import {Physics} from './lib/physics';
-import {Coordinates} from '../shared/coordinates';
-//var Meshing = require('../lib/meshers/non-blocked')
-var raycast = require('voxel-raycast');
-var Shapes = require('./lib/shapes');
-var Stats = require('./lib/stats');
-var timer = require('./lib/timer');
-var mesher = require('./lib/meshers/horizontal-merge');
-var pool = require('./lib/object-pool');
-var trees = require('voxel-trees');
-var voxelPlugins = require('voxel-plugins');
-*/
-//var voxelInventoryHotbar = require('voxel-inventory-hotbar');
-//var voxelRegistry = require('voxel-registry');
-//var voxelDecals = require('voxel-decals');
-//var voxelMesher = require('voxel-mesher');
-//var voxelStitch = require('voxel-stitch');
-//var voxelReach = require('voxel-reach');
-//var voxelMine = require('voxel-mine');
-//var voxelCarry = require('voxel-carry');
-//var voxelKeys = require('voxel-keys');
-//var voxelShader = require('voxel-shader');
-//var kbBindings = require('kb-bindings');
-//var gameShellFPSCamera = require('game-shell-fps-camera');
-
-/*
-//var voxelDebris = require('voxel-debris');
-var voxelTrees = require('voxel-trees');
-var kbBindings = require('kb-bindings');
-var voxelkbBindingsUI = require('kb-bindings-ui');
-var voxelDebug = require('voxel-debug');
-var datGUI = require('dat-gui');
- * */
-
-//var coordinates = new Coordinates(chunkSize);
-//var client = new VoxelingClient(config);
-var textures: Textures;
-
-var players: any = {};
-console.log(1289);
 
 
-/*wsclient.on('close', function() {
-	document.getElementById('overlay').className = 'disconnected';
-});
-
-wsclient.on('players', function(others: any) {
-	var id;
-	var ticksPerHalfSecond = 30;
-	var calculateAdjustments = function(output: any, current: any, wanted: any) {
-		for (var i = 0; i < output.length; i++) {
-			output[i] = (wanted[i] - current[i]) / ticksPerHalfSecond;
-		}
-	};
-	for (id in others) {
-		var updatedPlayerInfo = others[id];
-		var player;
-		if (!('positions' in updatedPlayerInfo)) {
-			continue;
-		}
-		if (id in players) {
-			player = players[id];
-			calculateAdjustments(player.adjustments, player.latest, updatedPlayerInfo.positions);
-			player.current = player.latest;
-			player.latest = updatedPlayerInfo.positions;
-		} else {
-			player = players[id] = {
-				latest: updatedPlayerInfo.positions,
-				current: updatedPlayerInfo.positions,
-				adjustments: [0, 0, 0, 0, 0, 0],
-
-				model: new Player(webgl.gl, webgl.shaders.projectionViewPosition, textures.byName['player'])
-			};
-
-			player.model.setTranslation(
-				updatedPlayerInfo.positions[0],
-				updatedPlayerInfo.positions[1],
-				updatedPlayerInfo.positions[2]
-			);
-			player.model.setRotation(
-				updatedPlayerInfo.positions[3],
-				updatedPlayerInfo.positions[4],
-				updatedPlayerInfo.positions[5]
-			);
-		}
-		player.model.setTexture(textures.byName[updatedPlayerInfo.avatar]);
-	}
-	// Compare players to others, remove old players
-	var playerIds = Object.keys(players);
-	for (var i = 0; i < playerIds.length; i++) {
-		id = playerIds[i];
-		if (!(id in others)) {
-			delete players[id];
-		}
-	}
-});
-
-wsclient.on('settings', function (a: any) {
-*/
 var initGame = function() {
-	console.log(1);
-	var wsclient = new WebSocketEmitter.client();
-	wsclient.connect(config.server);
-	//var duplexStream = new WebSocketStream(wsclient);
-	var duplexStream = wsclient;
-
-	console.log(2);
-
 	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
 	//var inputHandler = new InputHandler(document.body, canvas);
 
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
 
-	// or emit your own events back to the server!
-	// Note: to have the server forward the event to all players,
-	// add the event name to `server.forwardEvents`
-	//client.connection.emit('attack', attackDetails);
-	// Wait until textures have fully loaded
-
-	console.log(4);
-	return new Game({
+	window.voxelGame = new Game({
 		exposeGlobal: true,
-		//chunkPad : 2,
+		chunkPad: 2,
 		pluginLoaders: {
-			'voxel-client' : require('./lib/voxel-client'),
+			//'voxel-client' : require('./lib/voxel-client'),
 			'voxel-artpacks': require('voxel-artpacks'),
 			'voxel-wireframe': require('voxel-wireframe'),
 			'voxel-chunkborder': require('voxel-chunkborder'),
@@ -191,8 +59,8 @@ var initGame = function() {
 			'voxel-pumpkin': require('voxel-pumpkin'),
 			'voxel-blockdata': require('voxel-blockdata'),
 			'voxel-glass': require('voxel-glass'),
-			//'voxel-land': require('voxel-land'),
-			//'voxel-flatland': require('voxel-flatland'),
+			'voxel-land': require('voxel-land'),
+			'voxel-flatland': require('voxel-flatland'),
 			'voxel-decorative': require('voxel-decorative'),
 			'voxel-inventory-creative': require('voxel-inventory-creative'),
 			'voxel-console': require('voxel-console'),
@@ -206,15 +74,12 @@ var initGame = function() {
 			'kb-bindings-ui': require('kb-bindings-ui')
 		},
 		pluginOpts: {
-			'voxel-client':{
-				serverStream: duplexStream
-			},
 			'voxel-engine-stackgl': {
 				appendDocument: true,
 				exposeGlobal: true,  // for debugging
 
 				lightsDisabled: true,
-				arrayTypeSize: 2,  // arrayType: Uint16Array
+				arrayTypeSize: 2,// Uint16Array,  // arrayType: Uint16Array
 				useAtlas: true,
 				generateChunks: false,
 				chunkDistance: 2,
@@ -260,7 +125,7 @@ var initGame = function() {
 			'voxel-registry': {},
 			'voxel-stitch': {
 				artpacks: ['ProgrammerArt-ResourcePack.zip'],
-				verbose:false
+				verbose: false
 			},
 			'voxel-shader': {
 				//cameraFOV: 45,
@@ -271,7 +136,7 @@ var initGame = function() {
 
 			'voxel-mesher': {},
 			'game-shell-fps-camera': {
-				position: [0, -100, 0]
+				position: [0, -50, 0]
 			},
 
 			'voxel-artpacks': {},
@@ -282,9 +147,9 @@ var initGame = function() {
 			'voxel-quarry': {},
 			'voxel-measure': {},
 			'voxel-webview': {},
-			'voxel-vr': {onDemand: true}, // has to be enabled after gl-init to replace renderer
+			'voxel-vr': { onDemand: true }, // has to be enabled after gl-init to replace renderer
 			'voxel-carry': {},
-			'voxel-bucket': {fluids: ['water', 'lava']},
+			'voxel-bucket': { fluids: ['water', 'lava'] },
 			'voxel-fluid': {},
 			//'voxel-virus': {materialSource: 'water', material: 'waterFlow', isWater: true}, // requires this.game.materials TODO: water
 			'voxel-skyhook': {},
@@ -299,8 +164,8 @@ var initGame = function() {
 			'voxel-pumpkin': {},
 
 			'voxel-glass': {},
-			//'voxel-land': {populateTrees: true},
-			//'voxel-flatland': { block: 'bedrock', onDemand: false},
+			'voxel-land': { populateTrees: true },
+			'voxel-flatland': { block: 'bedrock', onDemand: false},
 			'voxel-decorative': {},
 			'voxel-inventory-creative': {},
 			//'voxel-clientmc': {url: 'ws://localhost:1234', onDemand: true}, // TODO
@@ -317,12 +182,12 @@ var initGame = function() {
 			'voxel-food': {},
 			'voxel-scriptblock': {},
 			'voxel-sfx': {},
-			'voxel-flight': {flySpeed: 0.8, onDemand: true},
+			'voxel-flight': { flySpeed: 0.8, onDemand: true },
 			'voxel-gamemode': {},
 			'voxel-sprint': {},
-			'voxel-inventory-hotbar': {inventorySize: 10, wheelEnable: true},
+			'voxel-inventory-hotbar': { inventorySize: 10, wheelEnable: true },
 			'voxel-inventory-crafting': {},
-			'voxel-reach': {reachDistance: 8},
+			'voxel-reach': { reachDistance: 8 },
 			'voxel-decals': {},
 			// left-click hold to mine
 			'voxel-mine': {
@@ -345,12 +210,45 @@ var initGame = function() {
 			'kb-bindings-ui': {}
 		}
 	});
-};
-initGame();
 
-setInterval(
-	function() {
-		//timer.print();
-	},
-	10000
-);
+	//var wsclient = new WebSocketEmitter.client();
+	//var sock = wsclient.connect('ws://127.0.0.1:5000');
+	//var sock = WebsocketStream('ws://127.0.0.1:5000');
+	//var sock = WebsocketStream('ws://127.0.0.1:5000', { binary: true });
+	//var sock = new WebSocket('ws://127.0.0.1:10005');
+	/*
+	var sock = new Socket('ws://127.0.0.1:10005')
+	sock.on('connect', function () {
+		console.log(21,"ev");
+		window.voxelClient = new VoxelClient(game, {
+			serverStream : sock
+		});
+	});
+	console.log(2);
+	*/
+	var init = function() {
+		var connection = new WebSocketEmitter.client();
+
+		connection.on('open', function() {
+			console.log('websocket open', connection);
+			setTimeout(function() {
+				window.voxelClient = new VoxelClient(window.voxelGame, {
+					serverStream: connection
+				});
+				console.log('websocket opened');
+			}, 2000);
+		});
+
+		connection.on('close', function() {
+			console.log('websocket close');
+		});
+
+		connection.on('error', function(message) {
+			console.log('websocket error');
+		});
+		connection.connect(config.server);
+	}
+	//init()
+};
+
+initGame();

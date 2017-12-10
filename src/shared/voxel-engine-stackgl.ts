@@ -588,7 +588,7 @@ export class Game extends EventEmitter {
 		}
 	}
 
-	notCapable(opts: any) {
+	notCapable() {
 		var self = this;
 		if (!Detector().webgl) {
 			if (!this.reportedNotCapable) {

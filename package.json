@@ -45,6 +45,7 @@
 		"path": "^0.12.7",
 		"perlin": "~1.0.0",
 		"sillyname": "0.0.3",
+		"simple-websocket": "^5.1.0",
 		"spatial-events": "^1.1.0",
 		"tic": "^0.2.1",
 		"vision": "^4.1.1",
@@ -85,6 +86,7 @@
 		"voxel-land": "^0.2.3",
 		"voxel-level": "^2.1.0",
 		"voxel-measure": "^0.1.2",
+		"voxel-mesher": "^0.14.4",
 		"voxel-mine": "^1.0.0",
 		"voxel-outline": "^0.4.3",
 		"voxel-physicals": "^0.2.0",
@@ -115,6 +117,7 @@
 		"voxel-workbench": "^1.0.0",
 		"voxel-zen": "^1.0.0",
 		"websocket-stream": "^5.1.1",
+		"websocketstream": "^2.0.2",
 		"ws": "0.8.1"
 	},
 	"devDependencies": {
@@ -168,7 +171,6 @@
 		"vinyl-source-stream": "^1.1.0",
 		"voxel-carry": "^1.0.0",
 		"voxel-keys": "^0.5.0",
-		"voxel-mesher": "^0.14.4",
 		"watchify": "^3.9.0"
 	}
 }

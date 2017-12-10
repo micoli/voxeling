@@ -1,6 +1,6 @@
 // dependencies;
 import {EventEmitter} from 'events';
-var DuplexEmitter = require('duplex-emitter');
+var duplexEmitter = require('duplex-emitter');
 var extend = require('extend');
 import {Game} from '../../shared/voxel-engine-stackgl';
 var skin = require('minecraft-skin');
@@ -11,7 +11,7 @@ var ndarray = require('ndarray');
 function scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
 	return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
 }
-module.exports = (game:any, opts:any) => new VoxelClient(game, opts);
+//module.exports = (game:any, opts:any) => new VoxelClient(game, opts);
 module.exports.pluginInfo = {
 	loadAfter: ['voxel-console']
 };
@@ -41,14 +41,16 @@ export class VoxelClient extends EventEmitter {
 		self.lerpPercent = 0.1;
 		self.remoteClients = {};
 		self.serverStream = opts.serverStream;
+
 		// expose emitter methods on client;
 		//extend(self, new EventEmitter());
 
 		// create 'connection' remote event emitter from duplex stream;
-		//self.connection = DuplexEmitter(opts.serverStream);
+		//self.connection = duplexEmitter(opts.serverStream);
 		self.connection = opts.serverStream;
 		// setup server event handlers;
 		self.bindEvents(self.connection);
+		self.connection.emit('created');
 	}
 
 	bindEvents(connection: any) {
@@ -58,6 +60,12 @@ export class VoxelClient extends EventEmitter {
 		connection.on('id', function(id: any) {
 			console.log('Id', id);
 			self.playerID = id;
+		});
+		connection.emitter.on('data', function(settings: any) {
+			console.log('data',arguments);
+		});
+		connection.emitter.on('settings', function(settings: any) {
+			console.log('settings',arguments);
 		});
 
 		// receive initial game settings;
@@ -71,7 +79,7 @@ export class VoxelClient extends EventEmitter {
 			// tell server we're ready;
 			self.initGame(settings);
 
-			connection.emit('created');
+			////connection.emit('created');
 		});
 
 		// load in chunks from the server;
@@ -84,7 +92,7 @@ export class VoxelClient extends EventEmitter {
 				encoded.length = lastIndex + 1;
 			}
 			var voxels = crunch.decode(encoded, chunk.length);
-			chunk.voxels = ndarray(voxels);
+			chunk.voxels = voxels; // ndarray();
 			self.game.showChunk(chunk);
 		});
 
@@ -156,7 +164,7 @@ export class VoxelClient extends EventEmitter {
 		});
 		console.log('registered');
 		self.game.voxels.on('missingChunk', function(pos: any) {
-			console.log('missingChunk', pos, connection.readyState === connection.CLOSED);
+			console.log('missingChunk ask', pos, connection.readyState === connection.CLOSED);
 			if (connection.readyState === connection.CLOSED ) {
 			//	return;
 			}
