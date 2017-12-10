@@ -38,7 +38,7 @@ class WebSocketEmitter {
 			}
 			try {
 				decoded = JSON.parse(browserify?data.data:data);
-				console.log('onMessage',decoded);
+				//console.log('onMessage',decoded);
 			} catch (err) {
 				console.log('WebSocketEmitter error while decoding JSON',data,err);
 				//console.log(data)

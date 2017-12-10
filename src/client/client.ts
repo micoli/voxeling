@@ -16,7 +16,8 @@ var initGame = function() {
 
 	window.voxelGame = new Game({
 		exposeGlobal: true,
-		chunkPad: 2,
+		//chunkPad: 2,
+		//chunkSize: 32,
 		pluginLoaders: {
 			//'voxel-client' : require('./lib/voxel-client'),
 			'voxel-artpacks': require('voxel-artpacks'),
@@ -59,9 +60,6 @@ var initGame = function() {
 			'voxel-pumpkin': require('voxel-pumpkin'),
 			'voxel-blockdata': require('voxel-blockdata'),
 			'voxel-glass': require('voxel-glass'),
-			'voxel-land': require('voxel-land'),
-			'voxel-flatland': require('voxel-flatland'),
-			'voxel-decorative': require('voxel-decorative'),
 			'voxel-inventory-creative': require('voxel-inventory-creative'),
 			'voxel-console': require('voxel-console'),
 			'voxel-commands': require('voxel-commands'),
@@ -71,7 +69,10 @@ var initGame = function() {
 			'voxel-plugins-ui': require('voxel-plugins-ui'),
 			'voxel-fullscreen': require('voxel-fullscreen'),
 			'voxel-keys': require('voxel-keys'),
-			'kb-bindings-ui': require('kb-bindings-ui')
+			'kb-bindings-ui': require('kb-bindings-ui'),
+			'voxel-decorative': require('voxel-decorative'),
+			//'voxel-land': require('voxel-land'),
+			//'voxel-flatland': require('voxel-flatland'),
 		},
 		pluginOpts: {
 			'voxel-engine-stackgl': {
@@ -79,7 +80,7 @@ var initGame = function() {
 				exposeGlobal: true,  // for debugging
 
 				lightsDisabled: true,
-				arrayTypeSize: 2,// Uint16Array,  // arrayType: Uint16Array
+				arrayTypeSize: Uint8Array.BYTES_PER_ELEMENT,// Uint16Array,  // arrayType: Uint8Array
 				useAtlas: true,
 				generateChunks: false,
 				chunkDistance: 2,
@@ -164,8 +165,6 @@ var initGame = function() {
 			'voxel-pumpkin': {},
 
 			'voxel-glass': {},
-			'voxel-land': { populateTrees: true },
-			'voxel-flatland': { block: 'bedrock', onDemand: false},
 			'voxel-decorative': {},
 			'voxel-inventory-creative': {},
 			//'voxel-clientmc': {url: 'ws://localhost:1234', onDemand: true}, // TODO
@@ -207,7 +206,9 @@ var initGame = function() {
 			//'voxel-debug': {}, // heavily three.js dependent TODO: more debugging options for stackgl-based engine besides camera?
 			'camera-debug': {}, // TODO: port from game-shell-fps-camera
 			'voxel-plugins-ui': {},
-			'kb-bindings-ui': {}
+			'kb-bindings-ui': {},
+			//'voxel-land': { populateTrees: true },
+			//'voxel-flatland': { block: 'bedrock', onDemand: false},
 		}
 	});
 
@@ -248,7 +249,7 @@ var initGame = function() {
 		});
 		connection.connect(config.server);
 	}
-	//init()
+	init();
 };
 
 initGame();

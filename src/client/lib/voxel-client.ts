@@ -79,20 +79,91 @@ export class VoxelClient extends EventEmitter {
 			// tell server we're ready;
 			self.initGame(settings);
 
-			////connection.emit('created');
+			connection.emit('created');
 		});
+		var getFlatChunkVoxels= function (position: any) {
+				if (position[1] > 0) return; // everything above y=0 is air
+
+				var blockIndex = 74;
+
+				var width = self.game.chunkSize;
+				var pad = self.game.chunkPad;
+				var arrayType = self.game.arrayType;
+
+				var buffer = new ArrayBuffer((width+pad) * (width+pad) * (width+pad) * arrayType.BYTES_PER_ELEMENT);
+				var voxelsPadded = ndarray(new arrayType(buffer), [width+pad, width+pad, width+pad]);
+				var h = pad >> 1;
+				var voxels = voxelsPadded.lo(h,h,h).hi(width,width,width);
+
+				for (var x = 0; x < self.game.chunkSize; ++x) {
+					for (var z = 0; z < self.game.chunkSize; ++z) {
+					for (var y = 0; y < self.game.chunkSize; ++y) {
+						voxels.set(x,y,z, blockIndex);
+					}
+					}
+				}
+
+				var chunk = voxelsPadded;
+				chunk.position = position;
+			return chunk;
+		}
+
+		var getFlatChunkVoxels2= function (position: any) {
+			console.log('missingChunk11', position);
+			var material = 30;
+			if (position[1] > 0) {
+				material=0;
+			}
+
+			var chunkSize = 32;
+			var width = self.game.chunkSize;
+			var pad = self.game.chunkPad;
+			var arrayType = self.game.arrayType;
+			var chunkSizem=width-1;
+
+			//var buffer = new ArrayBuffer((width) * (width) * (width) * arrayType.BYTES_PER_ELEMENT);
+			var buffer = new ArrayBuffer((width+pad) * (width+pad) * (width+pad) * arrayType.BYTES_PER_ELEMENT);
+			var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
+			var h = pad >> 1;
+			var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
+			var b=0;
+			for (var x = 0; x < width; ++x) {
+				for (var z = 0; z < width; ++z) {
+					for (var y = 0; y < width; ++y) {
+						b++;
+						//voxels.set(x, y, z, (b%3==0)?0:material);
+						if( (x==0 || x==chunkSizem ||z==0 || z==chunkSizem ) && (y==0 || y==chunkSizem)) {
+							voxels.set(x, y, z, 74);
+						}else if(position[1]==0 && y==0) {
+							voxels.set(x, y, z,material);
+						}else{
+						voxels.set(x, y, z,0);
+						}
+					}
+				}
+			}
+			voxelsPadded.position = position;
+			return voxelsPadded;
+		}
 
 		// load in chunks from the server;
-		connection.on('chunk', function(encoded: any, chunk: any) {
-			console.log('encoded', encoded);
+		connection.on('chunk', function(encoded: any, meta: any) {
+			//console.log('encoded', encoded);
 			// ensure `encoded` survived transmission as an array;
 			// JSON stringifies Uint8Arrays as objects;
 			if (encoded.length === undefined) {
 				var lastIndex = Math.max.apply(null, Object.keys(encoded).map(Number));
 				encoded.length = lastIndex + 1;
 			}
-			var voxels = crunch.decode(encoded, chunk.length);
-			chunk.voxels = voxels; // ndarray();
+			var chunk = ndarray(
+				crunch.decode(encoded),
+				meta.voxels.shape
+				//meta.voxels.stride,
+				//meta.voxels.offset
+			);
+
+			chunk.position = meta.position;
+			chunk.dims = meta.dims;
 			self.game.showChunk(chunk);
 		});
 
