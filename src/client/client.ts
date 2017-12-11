@@ -1,11 +1,6 @@
 var config = require('../config');
-var randomName = require('sillyname');
-var WebSocketEmitter = require('../shared/web-socket-emitter');
 import {Game} from '../shared/voxel-engine-stackgl';
-import {Player} from './lib/player';
-import {VoxelClient} from './lib/voxel-client';
-
-
+import {client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
 
 var initGame = function() {
 	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
@@ -16,10 +11,8 @@ var initGame = function() {
 
 	window.voxelGame = new Game({
 		exposeGlobal: true,
-		//chunkPad: 2,
-		//chunkSize: 32,
 		pluginLoaders: {
-			//'voxel-client' : require('./lib/voxel-client'),
+			'voxel-client' : require('./voxel-client'),
 			'voxel-artpacks': require('voxel-artpacks'),
 			'voxel-wireframe': require('voxel-wireframe'),
 			'voxel-chunkborder': require('voxel-chunkborder'),
@@ -75,6 +68,25 @@ var initGame = function() {
 			//'voxel-flatland': require('voxel-flatland'),
 		},
 		pluginOpts: {
+			'voxel-client' : {
+				getConnection : function(initConnection){
+					var connection = new WebSocketEmitterClient();
+						connection.on('open', function() {
+						setTimeout(function() {
+							initConnection(connection);
+						}, 2000);
+					});
+
+					connection.on('close', function() {
+						console.log('websocket close');
+					});
+
+					connection.on('error', function(message) {
+						console.log('websocket error');
+					});
+					connection.connect(config.server);
+				}
+			},
 			'voxel-engine-stackgl': {
 				appendDocument: true,
 				exposeGlobal: true,  // for debugging
@@ -211,45 +223,6 @@ var initGame = function() {
 			//'voxel-flatland': { block: 'bedrock', onDemand: false},
 		}
 	});
-
-	//var wsclient = new WebSocketEmitter.client();
-	//var sock = wsclient.connect('ws://127.0.0.1:5000');
-	//var sock = WebsocketStream('ws://127.0.0.1:5000');
-	//var sock = WebsocketStream('ws://127.0.0.1:5000', { binary: true });
-	//var sock = new WebSocket('ws://127.0.0.1:10005');
-	/*
-	var sock = new Socket('ws://127.0.0.1:10005')
-	sock.on('connect', function () {
-		console.log(21,"ev");
-		window.voxelClient = new VoxelClient(game, {
-			serverStream : sock
-		});
-	});
-	console.log(2);
-	*/
-	var init = function() {
-		var connection = new WebSocketEmitter.client();
-
-		connection.on('open', function() {
-			console.log('websocket open', connection);
-			setTimeout(function() {
-				window.voxelClient = new VoxelClient(window.voxelGame, {
-					serverStream: connection
-				});
-				console.log('websocket opened');
-			}, 2000);
-		});
-
-		connection.on('close', function() {
-			console.log('websocket close');
-		});
-
-		connection.on('error', function(message) {
-			console.log('websocket error');
-		});
-		connection.connect(config.server);
-	}
-	init();
 };
 
 initGame();

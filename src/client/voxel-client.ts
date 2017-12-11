@@ -2,16 +2,17 @@
 import {EventEmitter} from 'events';
 var duplexEmitter = require('duplex-emitter');
 var extend = require('extend');
-import {Game} from '../../shared/voxel-engine-stackgl';
-var skin = require('minecraft-skin');
+import {Game} from '../shared/voxel-engine-stackgl';
+//var skin = require('minecraft-skin');
 var crunch = require('voxel-crunch');
 var voxelPlayer = require('voxel-player');
 var ndarray = require('ndarray');
+var glm = require('gl-matrix');
 
 function scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
 	return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
 }
-//module.exports = (game:any, opts:any) => new VoxelClient(game, opts);
+module.exports = (game: any, opts: any) => new VoxelClient(game, opts);
 module.exports.pluginInfo = {
 	loadAfter: ['voxel-console']
 };
@@ -26,48 +27,36 @@ export class VoxelClient extends EventEmitter {
 	remoteClients: any;
 	serverStream: any;
 	connection: any;
-	serverSettingBlock : any;
-	avatar:any;
-	name:any;
-	constructor(game: Game, opts:any) {
+	serverSettingBlock: any;
+	avatar: any;
+	name: any;
+	constructor(game: Game, opts: any) {
 		super();
 		var self = this;
-		// allow module consumers to listen to ee2 events;
-		// set initial values;
 		self.opts = opts;
 		self.game = game;
 		self.texturePath = opts.texturePath || '/textures/';
 		self.playerTexture = opts.playerTexture || 'player.png';
 		self.lerpPercent = 0.1;
 		self.remoteClients = {};
-		self.serverStream = opts.serverStream;
 
-		// expose emitter methods on client;
-		//extend(self, new EventEmitter());
+		//todo deal with proper connection a startup for other plugins
+		self.connection = new EventEmitter();
 
-		// create 'connection' remote event emitter from duplex stream;
-		//self.connection = duplexEmitter(opts.serverStream);
-		self.connection = opts.serverStream;
-		// setup server event handlers;
-		self.bindEvents(self.connection);
-		self.connection.emit('created');
+		opts.getConnection(function(connection: EventEmitter) {
+			self.connection = connection;
+			self.bindEvents(self.connection);
+			self.connection.emit('created');
+		})
 	}
 
 	bindEvents(connection: any) {
 		var self = this;
-		console.log('bind');
 		// receive id from server;
 		connection.on('id', function(id: any) {
 			console.log('Id', id);
 			self.playerID = id;
 		});
-		connection.emitter.on('data', function(settings: any) {
-			console.log('data',arguments);
-		});
-		connection.emitter.on('settings', function(settings: any) {
-			console.log('settings',arguments);
-		});
-
 		// receive initial game settings;
 		connection.on('settings', function(settings: any) {
 			console.log('settings', settings);
@@ -81,63 +70,63 @@ export class VoxelClient extends EventEmitter {
 
 			connection.emit('created');
 		});
-		var getFlatChunkVoxels= function (position: any) {
-				if (position[1] > 0) return; // everything above y=0 is air
+		var getFlatChunkVoxels = function(position: any) {
+			if (position[1] > 0) return; // everything above y=0 is air
 
-				var blockIndex = 74;
+			var blockIndex = 74;
 
-				var width = self.game.chunkSize;
-				var pad = self.game.chunkPad;
-				var arrayType = self.game.arrayType;
+			var width = self.game.chunkSize;
+			var pad = self.game.chunkPad;
+			var arrayType = self.game.arrayType;
 
-				var buffer = new ArrayBuffer((width+pad) * (width+pad) * (width+pad) * arrayType.BYTES_PER_ELEMENT);
-				var voxelsPadded = ndarray(new arrayType(buffer), [width+pad, width+pad, width+pad]);
-				var h = pad >> 1;
-				var voxels = voxelsPadded.lo(h,h,h).hi(width,width,width);
+			var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
+			var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
+			var h = pad >> 1;
+			var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
 
-				for (var x = 0; x < self.game.chunkSize; ++x) {
-					for (var z = 0; z < self.game.chunkSize; ++z) {
+			for (var x = 0; x < self.game.chunkSize; ++x) {
+				for (var z = 0; z < self.game.chunkSize; ++z) {
 					for (var y = 0; y < self.game.chunkSize; ++y) {
-						voxels.set(x,y,z, blockIndex);
-					}
+						voxels.set(x, y, z, blockIndex);
 					}
 				}
+			}
 
-				var chunk = voxelsPadded;
-				chunk.position = position;
+			var chunk = voxelsPadded;
+			chunk.position = position;
 			return chunk;
 		}
 
-		var getFlatChunkVoxels2= function (position: any) {
+		var getFlatChunkVoxels2 = function(position: any) {
 			console.log('missingChunk11', position);
 			var material = 30;
 			if (position[1] > 0) {
-				material=0;
+				material = 0;
 			}
 
 			var chunkSize = 32;
 			var width = self.game.chunkSize;
 			var pad = self.game.chunkPad;
 			var arrayType = self.game.arrayType;
-			var chunkSizem=width-1;
+			var chunkSizem = width - 1;
 
 			//var buffer = new ArrayBuffer((width) * (width) * (width) * arrayType.BYTES_PER_ELEMENT);
-			var buffer = new ArrayBuffer((width+pad) * (width+pad) * (width+pad) * arrayType.BYTES_PER_ELEMENT);
+			var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
 			var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
 			var h = pad >> 1;
 			var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
-			var b=0;
+			var b = 0;
 			for (var x = 0; x < width; ++x) {
 				for (var z = 0; z < width; ++z) {
 					for (var y = 0; y < width; ++y) {
 						b++;
 						//voxels.set(x, y, z, (b%3==0)?0:material);
-						if( (x==0 || x==chunkSizem ||z==0 || z==chunkSizem ) && (y==0 || y==chunkSizem)) {
+						if ((x == 0 || x == chunkSizem || z == 0 || z == chunkSizem) && (y == 0 || y == chunkSizem)) {
 							voxels.set(x, y, z, 74);
-						}else if(position[1]==0 && y==0) {
-							voxels.set(x, y, z,material);
-						}else{
-						voxels.set(x, y, z,0);
+						} else if (position[1] == 0 && y == 0) {
+							voxels.set(x, y, z, material);
+						} else {
+							voxels.set(x, y, z, 0);
 						}
 					}
 				}
@@ -236,8 +225,8 @@ export class VoxelClient extends EventEmitter {
 		console.log('registered');
 		self.game.voxels.on('missingChunk', function(pos: any) {
 			console.log('missingChunk ask', pos, connection.readyState === connection.CLOSED);
-			if (connection.readyState === connection.CLOSED ) {
-			//	return;
+			if (connection.readyState === connection.CLOSED) {
+				//	return;
 			}
 			connection.emit('missingChunk', pos);
 		});
@@ -306,7 +295,7 @@ export class VoxelClient extends EventEmitter {
 
 	lerpMe(position: any) {
 		var self = this;
-		var to = new this.game.THREE.Vector3();
+		var to = new glm.vec3();
 		to.copy(position);
 		var from = this.game.controls.target().yaw.position;
 		from.copy(from.lerp(to, this.lerpPercent));
@@ -318,7 +307,7 @@ export class VoxelClient extends EventEmitter {
 		var player = self.remoteClients[id];
 		if (!player) {
 			let playerSkin = skin(self.game.THREE, self.playerTexture, {
-				scale: new self.game.THREE.Vector3(0.04, 0.04, 0.04)
+				scale: new glm.vec3(0.04, 0.04, 0.04)
 			});
 			let playerMesh = playerSkin.mesh;
 			self.remoteClients[id] = playerSkin;

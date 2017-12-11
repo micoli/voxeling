@@ -1,25 +1,26 @@
 {
-  "compilerOptions": {
-    "outDir": "build",
-    "target": "ES2015",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2015",
-      "DOM"
-    ],
-    "noImplicitAny": true,
-    "alwaysStrict": true
-  },
-  "include": [
-    "src/**/**.ts",
-    "test/**/**.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+"compilerOptions": {
+	"outDir": "build",
+	"target": "ES2015",
+	"module": "CommonJS",
+	"moduleResolution": "node",
+	"sourceMap": true,
+	"typeRoots": [
+	  "node_modules/@types"
+	],
+	"lib": [
+	  "es2015",
+	  "DOM"
+	],
+	"noImplicitAny": true,
+	"alwaysStrict": true
+},
+"include": [
+	"src/**/**.ts",
+	"test/**/**.ts"
+],
+"exclude": [
+	"node_modules",
+	"src/spare"
+]
 }

@@ -19,8 +19,6 @@ export class voxelServer extends EventEmitter {
 
 	constructor(opts) {
 		super();
-		// force instantiation via `new` keyword
-		//if (!(this instanceof Server)) { return new Server(opts) }
 		this.initialize(opts)
 	}
 
@@ -50,15 +48,9 @@ export class voxelServer extends EventEmitter {
 		var clients = self.clients = {}
 		var chunkCache = self.chunkCache = {}
 
-		// send player position/rotation updates
-		/*
-
-
-
 		setInterval(self.handleErrors(function() {
 			self.sendUpdate()
 		}), 1000 / 22) // every 45ms
-		*/
 
 		// forward some events to module consumer
 		game.voxels.on('missingChunk', function(chunk) { self.emit('missingChunk', chunk) })
@@ -170,12 +162,12 @@ export class voxelServer extends EventEmitter {
 	}
 
 	// send message to all clients
-	broadcast(id, event) {
+	broadcast(id, ...args) {
 		var self = this
 		// normalize arguments
-		var args = [].slice.apply(arguments)
+		//var args = [].slice.apply(arguments)
 		// remove client `id` argument
-		args.shift()
+		//args.shift()
 		// emit on self for module consumers, unless specified not to
 		if (id !== 'server') self.emit.apply(self, args)
 		Object.keys(self.clients).map(function(clientId) {
@@ -189,11 +181,14 @@ export class voxelServer extends EventEmitter {
 	// broadcast position, rotation updates for each player
 	sendUpdate() {
 		var self = this
-		var clientIds = Object.keys(self.clients)
-		if (clientIds.length === 0) return
-		var update = { positions: {}, date: +new Date() }
+		var clientIds = Object.keys(self.clients);
+		if (clientIds.length === 0) return;
+		var update = {
+			positions: {},
+			date: +new Date()
+		};
 		clientIds.map(function(id) {
-			var client = self.clients[id]
+			var client = self.clients[id];
 			update.positions[id] = {
 				position: client.player.position,
 				rotation: {
@@ -212,9 +207,9 @@ export class voxelServer extends EventEmitter {
 		var chunkCache = self.chunkCache
 		Object.keys(chunks).map(function(chunkID) {
 			var chunk;
-			if (chunks.hasOwnProperty(chunkID)){
-				chunk = chunks[ chunkID ];
-			}else{
+			if (chunks.hasOwnProperty(chunkID)) {
+				chunk = chunks[chunkID];
+			} else {
 				console.log('no chunk');
 				//chunk=self.getFlatChunkVoxels(chunk.position);
 			}
@@ -223,9 +218,9 @@ export class voxelServer extends EventEmitter {
 			chunk.dims = [34, 34, 34];
 			var encoded = chunkCache[chunkID]
 			if (!encoded) {
-				try{
+				try {
 					encoded = crunch.encode(chunk.voxels.data);
-				}catch(e){
+				} catch (e) {
 					console.log(e);
 				}
 				chunkCache[chunkID] = encoded;
@@ -233,11 +228,11 @@ export class voxelServer extends EventEmitter {
 			connection.emit('chunk', encoded, {
 				position: chunk.position,
 				dims: chunk.dims,
-				voxels:{
+				voxels: {
 					length: chunk.voxels.data.length,
-					shape : chunk.voxels.shape,
-					stride : chunk.voxels.stride,
-					offset : chunk.voxels.offset
+					shape: chunk.voxels.shape,
+					stride: chunk.voxels.stride,
+					offset: chunk.voxels.offset
 				}
 			})
 		})
@@ -247,32 +242,32 @@ export class voxelServer extends EventEmitter {
 	getFlatChunkVoxels(position: any) {
 		var material = 37;
 		if (position[1] > 0) {
-			material=0;
+			material = 0;
 		}
 
 		var chunkSize = 32;
 		var width = chunkSize;
 		var pad = 4;
 		var arrayType = Uint8Array;
-		var chunkSizem=width-1;
+		var chunkSizem = width - 1;
 
 		//var buffer = new ArrayBuffer((width) * (width) * (width) * arrayType.BYTES_PER_ELEMENT);
-		var buffer = new ArrayBuffer((width+pad) * (width+pad) * (width+pad) * arrayType.BYTES_PER_ELEMENT);
+		var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
 		var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
 		var h = pad >> 1;
 		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
-		var b=0;
+		var b = 0;
 		for (var x = 0; x < width; ++x) {
 			for (var z = 0; z < width; ++z) {
 				for (var y = 0; y < width; ++y) {
 					b++;
 					//voxels.set(x, y, z, (b%3==0)?0:material);
-					if( (x==0 || x==chunkSizem ||z==0 || z==chunkSizem ) && (y==0 || y==chunkSizem)) {
+					if ((x == 0 || x == chunkSizem || z == 0 || z == chunkSizem) && (y == 0 || y == chunkSizem)) {
 						voxels.set(x, y, z, 74);
-					}else if(position[1]==0 && y==0) {
-						voxels.set(x, y, z,material);
-					}else{
-					voxels.set(x, y, z,0);
+					} else if (position[1] == 0 && y == 0) {
+						voxels.set(x, y, z, material);
+					} else {
+						voxels.set(x, y, z, 0);
 					}
 				}
 			}

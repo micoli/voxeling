@@ -2,15 +2,13 @@
 var config = require('../config');
 var path = require('path');
 var extend = require('extend');
-var ndarray = require('ndarray');
+//var ndarray = require('ndarray');
 import {EventEmitter} from 'events';
 import {WebSocketStream} from 'websocket-stream';
-// voxel depenencies
-import {voxelServer} from './voxel-main-server';
+import {voxelServer} from './voxel-server';
 // internal dependencies
 //var modvox = require('./features/modvox/server.js');
 //var entity = require('./features/entity/server.js');
-//var WebSocketEmitter = require('../shared/web-socket-emitter');
 
 
 export class GameServer extends EventEmitter {
@@ -157,7 +155,7 @@ export class GameServer extends EventEmitter {
 		}*/
 	}
 
-	getFlatChunkVoxels(position: any) {
+	getFlatChunkVoxelsaaaaaa(position: any) {
 		console.log('missingChunk generation', position);
 
 		if (position[1] > 0) {

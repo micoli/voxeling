@@ -48,14 +48,14 @@ var chunkDensity = function(chunk: any) {
 	return densities;
 };
 
-var BUILTIN_PLUGIN_OPTS = {
+var BUILTIN_PLUGIN_OPTS:any = {
 	'voxel-registry': {},
 	'voxel-stitch': {},
 	'voxel-shader': {},
 	'voxel-mesher': {},
 	'game-shell-fps-camera': {},
 };
-var SERVER_BUILTIN_PLUGIN_OPTS = {
+var SERVER_BUILTIN_PLUGIN_OPTS:any = {
 	'voxel-registry': {}
 };
 export class Game extends EventEmitter {
@@ -124,6 +124,7 @@ export class Game extends EventEmitter {
 		'<control>': 'alt',
 		'<tab>': 'sprint'
 	};
+	settings : any={};
 	constructor(opts: any) {
 		super();
 		var self = this;
@@ -136,7 +137,7 @@ export class Game extends EventEmitter {
 		if (opts.pluginOpts && opts.pluginOpts['voxel-engine-stackgl']) {
 			opts = extend(opts, opts.pluginOpts['voxel-engine-stackgl']);
 		}
-		if (process.hasOwnProperty('browser') && this.notCapable(opts)) {
+		if (process.hasOwnProperty('browser') && this.notCapable()) {
 			return;
 		}
 
@@ -154,11 +155,7 @@ export class Game extends EventEmitter {
 		obsolete(this, 'THREE');
 		this.vector = vector;
 		obsolete(this, 'glMatrix', 'use your own gl-matrix, gl-vec3, or gl-vec4');
-		this.arrayType = opts.arrayType || {
-			1: Uint8Array,
-			2: Uint16Array,
-			4: Uint32Array
-		}[opts.arrayTypeSize] || Uint8Array;
+		this.arrayType = opts.arrayType || this.getArrayType(opts.arrayTypeSize) || Uint8Array;
 		this.cubeSize = 1; // backwards compat
 		this.chunkSize = opts.chunkSize || 32;
 		this.chunkPad = opts.chunkPad === undefined ? 4 : opts.chunkPad;
@@ -260,10 +257,9 @@ export class Game extends EventEmitter {
 
 		if (this.isClient) {
 			if (opts.exposeGlobal) {
-				window.game = window.g = this;
+				window['game'] = window['g'] = this;
 			}
 		}
-
 
 		self.chunkRegion.on('change', function(newChunk: any) {
 			self.removeFarChunks();
@@ -316,6 +312,14 @@ export class Game extends EventEmitter {
 		this.emit('engine-init', this);
 	}
 
+	getArrayType(arrayTypeSize:any){
+		var types:any = {
+			'1': Uint8Array,
+			'2': Uint16Array,
+			'4': Uint32Array
+		};
+		return arrayTypeSize[arrayTypeSize]
+	}
 	toString() {
 		return 'voxel-engine-stackgl';
 	}
