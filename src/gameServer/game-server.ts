@@ -2,14 +2,13 @@
 var config = require('../config');
 var path = require('path');
 var extend = require('extend');
-//var ndarray = require('ndarray');
+var ndarray = require('ndarray');
 import {EventEmitter} from 'events';
-import {WebSocketStream} from 'websocket-stream';
 import {voxelServer} from './voxel-server';
+
 // internal dependencies
 //var modvox = require('./features/modvox/server.js');
 //var entity = require('./features/entity/server.js');
-
 
 export class GameServer extends EventEmitter {
 	baseServer: any;
@@ -18,20 +17,19 @@ export class GameServer extends EventEmitter {
 	spatialTriggers: any[];
 	connections: number;
 	connectionLimit: number = 10;
-	voxelDb: any;
 	constructor(opts: any) {
 		super();
 		// force instantiation via `new` keyword
 		this.initialize(opts);
 	}
 
-	connectClient(duplexStream: any) {
+	public connectClient(duplexStream: any) {
 		var self = this;
 		self.baseServer.connectClient(duplexStream);
 		console.log(duplexStream.id, 'join');
 	}
 
-	removeClient(duplexStream: any) {
+	public removeClient(duplexStream: any) {
 		var self = this;
 		self.baseServer.removeClient(duplexStream);
 		console.log(duplexStream.id, 'left');
@@ -41,7 +39,7 @@ export class GameServer extends EventEmitter {
 	// Private
 	//
 
-	initialize(opts: any) {
+	private initialize(opts: any) {
 		var self = this;
 
 		// for debugging
@@ -69,10 +67,6 @@ export class GameServer extends EventEmitter {
 		var settings = self.settings = extend({}, defaults, opts);
 
 		// get database
-		//self.voxelDb = settings.voxelDb;
-		// remove db from settings hash so we dont send it over the connection
-		//delete settings.voxelDb;
-
 		// enable event forwarding for features
 		//settings.forwardEvents.push('modvox');
 		//settings.forwardEvents.push('entity');
@@ -90,7 +84,7 @@ export class GameServer extends EventEmitter {
 		self.bindEvents();
 	}
 
-	bindEvents() {
+	private bindEvents() {
 		var self = this;
 		var settings = self.settings;
 		var baseServer = self.baseServer;
@@ -101,19 +95,16 @@ export class GameServer extends EventEmitter {
 
 		// setup world CRUD handlers
 		baseServer.on('missingChunk', function (position: any, complete: any) {
-			var game = self.game;
-			var cs = game.chunkSize;
+			var cs = self.game.chunkSize;
 			var dimensions: any[] = [cs, cs, cs];
 
 			var chunk: any = {
 				position : position,
-				voxels: self.baseServer.getFlatChunkVoxels(position), //new Uint8Array(chunk.voxels.buffer),
+				voxels: self.getFlatChunkVoxels(position),
 				dims : dimensions,
 			};
-			chunk.length=chunk.voxels.length;
-			game.showChunk(chunk);
-			console.log('dimensions', dimensions);
-			// report this chunk load as complete
+			chunk.length = chunk.voxels.length;
+			self.game.showChunk(chunk);
 			self.emit('chunkLoaded', chunk);
 		});
 
@@ -155,35 +146,7 @@ export class GameServer extends EventEmitter {
 		}*/
 	}
 
-	getFlatChunkVoxelsaaaaaa(position: any) {
-		console.log('missingChunk generation', position);
-
-		if (position[1] > 0) {
-			return 0;
-		} // everything above y=0 is air
-
-		var chunkSize = 32;
-		var width = 32;
-		var pad = 2;
-		var arrayType = Uint16Array;
-
-		var buffer = new ArrayBuffer((width) * (width) * (width) * arrayType.BYTES_PER_ELEMENT);
-		var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
-		var h = pad >> 1;
-		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
-
-		for (var x = 0; x < chunkSize; ++x) {
-			for (var z = 0; z < chunkSize; ++z) {
-				for (var y = 0; y < chunkSize; ++y) {
-					voxels.set(x, y, z, 1);
-				}
-			}
-		}
-
-		return voxelsPadded;
-	}
-
-	setupSpatialTriggers() {
+	private setupSpatialTriggers() {
 		var self = this;
 		var baseServer = self.baseServer;
 
@@ -198,6 +161,7 @@ export class GameServer extends EventEmitter {
 			self.spatialTriggers.push(spatialTrigger);
 			updateSpatialTriggerStore();
 		});
+
 		// send spatialTriggers on join
 		baseServer.on('client.join', function(client: any) {
 			console.log('client.join');
@@ -209,5 +173,40 @@ export class GameServer extends EventEmitter {
 		function updateSpatialTriggerStore() {
 			//self.voxelDb.db.put('spatialTriggers', JSON.stringify(self.spatialTriggers));
 		}
+	}
+
+	getFlatChunkVoxels(position: any) {
+		var material = 11;
+		if (position[1] > 0) {
+			material = 0;
+		}
+
+		var chunkSize = 32;
+		var width = chunkSize;
+		var pad = 4;
+		var arrayType = Uint8Array;
+		var chunkSizem = width - 1;
+
+		var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
+		var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
+		var h = pad >> 1;
+		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
+		var b = 0;
+		for (var x = 0; x < width; ++x) {
+			for (var z = 0; z < width; ++z) {
+				for (var y = 0; y < width; ++y) {
+					b++;
+					if ((x == 0 || x == chunkSizem || z == 0 || z == chunkSizem) && (y == 0 || y == chunkSizem)) {
+						voxels.set(x, y, z, 37);
+					} else if (position[1] == 0 && y == 0) {
+						voxels.set(x, y, z, material);
+					} else {
+						voxels.set(x, y, z, 0);
+					}
+				}
+			}
+		}
+		voxelsPadded.position = position;
+		return voxelsPadded;
 	}
 }

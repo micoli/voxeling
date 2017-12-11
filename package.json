@@ -36,8 +36,6 @@
 		"jsonwebtoken": "^7.4.1",
 		"kb-bindings": "^0.2.0",
 		"kb-bindings-ui": "^0.3.3",
-		"level": "^2.1.0",
-		"level-sublevel": "^6.6.1",
 		"mongoose": "^4.10.0",
 		"mysql": "^2.15.0",
 		"nconf": "^0.8.5",
@@ -115,10 +113,7 @@
 		"voxel-wireframe": "^0.6.0",
 		"voxel-wool": "^1.0.0",
 		"voxel-workbench": "^1.0.0",
-		"voxel-zen": "^1.0.0",
-		"websocket-stream": "^5.1.1",
-		"websocketstream": "^2.0.2",
-		"ws": "0.8.1"
+		"voxel-zen": "^1.0.0"
 	},
 	"devDependencies": {
 		"@types/bcryptjs": "^2.4.0",

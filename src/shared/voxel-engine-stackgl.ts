@@ -1,7 +1,6 @@
 var voxel = require('voxel');
 var ray = require('voxel-raycast');
 var control = require('voxel-controls');
-var Detector = require('./lib/detector');
 var inherits = require('inherits');
 var path = require('path');
 import {EventEmitter} from 'events';
@@ -591,10 +590,16 @@ export class Game extends EventEmitter {
 			this.width = typeof window === "undefined" ? 1 : window.innerWidth;
 		}
 	}
-
+	webGlCapable(){
+		try {
+			return !!window.WebGLRenderingContext && !!document.createElement( 'canvas' ).getContext( 'experimental-webgl' );
+		} catch ( e ) {
+			return false;
+		}
+	}
 	notCapable() {
 		var self = this;
-		if (!Detector().webgl) {
+		if (!this.webGlCapable()) {
 			if (!this.reportedNotCapable) {
 				document.body.appendChild(self.notCapableMessage());
 			}

@@ -17,12 +17,12 @@ export class voxelServer extends EventEmitter {
 	forwardEvents: any[] = [];
 	clients: any = {};
 
-	constructor(opts) {
+	constructor(opts: any) {
 		super();
 		this.initialize(opts)
 	}
 
-	initialize(opts) {
+	initialize(opts: any) {
 		var self = this
 		// server game settings are sent to all
 		// new clients when they connect
@@ -53,12 +53,13 @@ export class voxelServer extends EventEmitter {
 		}), 1000 / 22) // every 45ms
 
 		// forward some events to module consumer
-		game.voxels.on('missingChunk', function(chunk) { self.emit('missingChunk', chunk) })
-
+		game.voxels.on('missingChunk', function(chunk: any) {
+			self.emit('missingChunk', chunk);
+		});
 	}
 
 	// Setup the client connection - register events, etc
-	connectClient(duplexStream) {
+	connectClient(duplexStream: any) {
 		var self = this
 		var settings = self.settings
 		var game = self.game
@@ -86,7 +87,7 @@ export class voxelServer extends EventEmitter {
 		console.log('id and settings emmited')
 	}
 
-	removeClient(duplexStream) {
+	removeClient(duplexStream: any) {
 		var self = this
 		var id = duplexStream.id
 		var client = self.clients[id]
@@ -94,17 +95,17 @@ export class voxelServer extends EventEmitter {
 		self.broadcast(id, 'leave', id)
 	}
 
-	bindClientEvents(client) {
+	bindClientEvents(client: any) {
 		var self = this
 		var game = self.game
 		var id = client.id
 		var connection = client.connection
 
 		// forward chat message
-		connection.on('data', function(message) {
+		connection.on('data', function(message: any) {
 			//console.log('ici data', message);
 		});
-		connection.on('chat', self.handleErrors(function(message) {
+		connection.on('chat', self.handleErrors(function(message: any) {
 			console.log('ici chat');
 			// ignore if no message provided
 			if (!message.text) return
@@ -122,7 +123,7 @@ export class voxelServer extends EventEmitter {
 		}))
 
 		// client sends new position, rotation
-		connection.on('state', self.handleErrors(function(state) {
+		connection.on('state', self.handleErrors(function(state: any) {
 			client.player.rotation.x = state.rotation.x
 			client.player.rotation.y = state.rotation.y
 			var pos = client.player.position
@@ -138,7 +139,7 @@ export class voxelServer extends EventEmitter {
 
 		// client modifies a block
 		var chunkCache = self.chunkCache
-		connection.on('set', self.handleErrors(function(pos, val) {
+		connection.on('set', self.handleErrors(function(pos: any, val: any) {
 			game.setBlock(pos, val)
 			var chunkPos = game.voxels.chunkAtPosition(pos)
 			var chunkID = chunkPos.join('|')
@@ -162,7 +163,7 @@ export class voxelServer extends EventEmitter {
 	}
 
 	// send message to all clients
-	broadcast(id, ...args) {
+	broadcast(id: any, ...args: any[]) {
 		var self = this
 		// normalize arguments
 		//var args = [].slice.apply(arguments)
@@ -183,7 +184,7 @@ export class voxelServer extends EventEmitter {
 		var self = this
 		var clientIds = Object.keys(self.clients);
 		if (clientIds.length === 0) return;
-		var update = {
+		var update: any = {
 			positions: {},
 			date: +new Date()
 		};
@@ -201,28 +202,17 @@ export class voxelServer extends EventEmitter {
 	}
 
 	// send all the game chunks
-	sendInitialChunks(connection) {
+	sendInitialChunks(connection: any) {
 		var self = this
 		var chunks = self.game.voxels.chunks
 		var chunkCache = self.chunkCache
 		Object.keys(chunks).map(function(chunkID) {
-			var chunk;
-			if (chunks.hasOwnProperty(chunkID)) {
-				chunk = chunks[chunkID];
-			} else {
-				console.log('no chunk');
-				//chunk=self.getFlatChunkVoxels(chunk.position);
-			}
+			var chunk = chunks[chunkID];
 
-			//chunk.voxels = self.getFlatChunkVoxels(chunk.position);
 			chunk.dims = [34, 34, 34];
 			var encoded = chunkCache[chunkID]
 			if (!encoded) {
-				try {
-					encoded = crunch.encode(chunk.voxels.data);
-				} catch (e) {
-					console.log(e);
-				}
+				encoded = crunch.encode(chunk.voxels.data);
 				chunkCache[chunkID] = encoded;
 			}
 			connection.emit('chunk', encoded, {
@@ -239,47 +229,10 @@ export class voxelServer extends EventEmitter {
 		connection.emit('noMoreChunks', true)
 	}
 
-	getFlatChunkVoxels(position: any) {
-		var material = 37;
-		if (position[1] > 0) {
-			material = 0;
-		}
-
-		var chunkSize = 32;
-		var width = chunkSize;
-		var pad = 4;
-		var arrayType = Uint8Array;
-		var chunkSizem = width - 1;
-
-		//var buffer = new ArrayBuffer((width) * (width) * (width) * arrayType.BYTES_PER_ELEMENT);
-		var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
-		var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
-		var h = pad >> 1;
-		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
-		var b = 0;
-		for (var x = 0; x < width; ++x) {
-			for (var z = 0; z < width; ++z) {
-				for (var y = 0; y < width; ++y) {
-					b++;
-					//voxels.set(x, y, z, (b%3==0)?0:material);
-					if ((x == 0 || x == chunkSizem || z == 0 || z == chunkSizem) && (y == 0 || y == chunkSizem)) {
-						voxels.set(x, y, z, 74);
-					} else if (position[1] == 0 && y == 0) {
-						voxels.set(x, y, z, material);
-					} else {
-						voxels.set(x, y, z, 0);
-					}
-				}
-			}
-		}
-		voxelsPadded.position = position;
-		return voxelsPadded;
-	}
-
 	// utility function
 	// returns the provided function wrapped in a try-catch
 	// emits errors to module consumer
-	handleErrors(func) {
+	handleErrors(func: any) {
 		var self = this
 		return function() {
 			try {

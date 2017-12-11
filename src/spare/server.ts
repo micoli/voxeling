@@ -3,7 +3,7 @@ var WebSocketEmitter = require('../../shared/web-socket-emitter');
 var uuid = require('hat');
 
 // voxel dependencies
-import {Coordinates} from '../../shared/coordinates';
+import {Coordinates} from './coordinates';
 import {LRU} from './lru';
 var encoder = require('./rle-encoder');
 var debug = false;

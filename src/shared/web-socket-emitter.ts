@@ -238,7 +238,7 @@ export class Server {
 		});
 		this.emitter = new EventEmitter();
 
-		self.ws.on('connection', function (socket) {
+		self.ws.on('connection', function (socket: any) {
 			var emitter = new EventEmitter();
 			var wse = new WebSocketEmitter(socket, emitter, function(){
 				return !!socket._ws;
