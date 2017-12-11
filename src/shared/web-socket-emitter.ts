@@ -1,7 +1,7 @@
-var WebSocket = require('ws');
 var EventEmitter = require('events').EventEmitter;
 var slice = Array.prototype.slice;
-var SimpleWebsocketServer = require('simple-websocket/server')
+var SimpleWebsocketServer = require('simple-websocket/server');
+var SimpleWebsocketClient = require('simple-websocket');
 
 var log = require('./log')('lib/web-socket-emitter', false );
 
@@ -151,9 +151,9 @@ export class Client {
 		var self = this;
 		// Don't need to specify URL if we did previously
 		this.url = url || this.url;
-		var ws = new WebSocket(this.url);
-		this.wse = new WebSocketEmitter(ws, this.emitter, function(){
-			return !!ws && ws.readyState == 1;
+		var ws = new SimpleWebsocketClient(this.url);
+		this.wse = new WebSocketEmitter(ws._ws, this.emitter, function(){
+			return !!ws._ws && ws._ws.readyState == 1;
 		});
 		return ws;
 	}
@@ -194,7 +194,6 @@ export class Server2 {
 			port: 10005
 		});
 		var browserify = 'onconnection' in wss;
-
 		this.emitter = new EventEmitter();
 
 		var onError = function(message:any) {

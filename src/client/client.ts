@@ -69,9 +69,9 @@ var initGame = function() {
 		},
 		pluginOpts: {
 			'voxel-client' : {
-				getConnection : function(initConnection){
+				getConnection : function(initConnection:any){
 					var connection = new WebSocketEmitterClient();
-						connection.on('open', function() {
+					connection.on('open', function() {
 						setTimeout(function() {
 							initConnection(connection);
 						}, 2000);
@@ -81,7 +81,7 @@ var initGame = function() {
 						console.log('websocket close');
 					});
 
-					connection.on('error', function(message) {
+					connection.on('error', function(message:any) {
 						console.log('websocket error');
 					});
 					connection.connect(config.server);

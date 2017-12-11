@@ -14,7 +14,6 @@
 		"collide-3d-tilemap": "^0.0.1",
 		"dat-gui": "^0.5.0",
 		"duplex-emitter": "^2.1.2",
-		"ecstatic": "^3.0.0",
 		"ever": "0.0.3",
 		"fs": "0.0.1-security",
 		"game-shell-fps-camera": "^0.7.0",
@@ -113,7 +112,8 @@
 		"voxel-wireframe": "^0.6.0",
 		"voxel-wool": "^1.0.0",
 		"voxel-workbench": "^1.0.0",
-		"voxel-zen": "^1.0.0"
+		"voxel-zen": "^1.0.0",
+		"ws": "^3.3.2"
 	},
 	"devDependencies": {
 		"@types/bcryptjs": "^2.4.0",

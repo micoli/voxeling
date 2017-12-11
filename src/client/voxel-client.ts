@@ -137,7 +137,7 @@ export class VoxelClient extends EventEmitter {
 
 		// load in chunks from the server;
 		connection.on('chunk', function(encoded: any, meta: any) {
-			//console.log('encoded', encoded);
+			console.log('encoded');
 			// ensure `encoded` survived transmission as an array;
 			// JSON stringifies Uint8Arrays as objects;
 			if (encoded.length === undefined) {
