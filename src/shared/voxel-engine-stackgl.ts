@@ -256,7 +256,7 @@ export class Game extends EventEmitter {
 
 		if (this.isClient) {
 			if (opts.exposeGlobal) {
-				window['game'] = window['g'] = this;
+				(<any>window).game = (<any>window).g = this;
 			}
 		}
 
@@ -561,7 +561,7 @@ export class Game extends EventEmitter {
 
 		// based on game-shell makeDefaultContainer()
 		var container = document.createElement("div");
-		container.tabindex = 1;
+		(<any>container).tabindex = 1;
 		container.style.position = "absolute";
 		container.style.left = "0px";
 		container.style.right = "0px";
@@ -592,7 +592,7 @@ export class Game extends EventEmitter {
 	}
 	webGlCapable(){
 		try {
-			return !!window.WebGLRenderingContext && !!document.createElement( 'canvas' ).getContext( 'experimental-webgl' );
+			return !!(<any>window).WebGLRenderingContext && !!document.createElement( 'canvas' ).getContext( 'experimental-webgl' );
 		} catch ( e ) {
 			return false;
 		}

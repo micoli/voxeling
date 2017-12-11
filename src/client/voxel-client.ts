@@ -245,9 +245,13 @@ export class VoxelClient extends EventEmitter {
 		}, 1000);
 
 		// handle removing clients that leave;
-		connection.on('leave', removeClient);
-
-		// return the game object;
+		connection.on('leave', function (id: any) {
+			if (!self.remoteClients[id]) {
+				return;
+			}
+			self.game.scene.remove(self.remoteClients[id].mesh);
+			delete self.remoteClients[id];
+		});
 
 		// send player state to server, mostly avatar info (position, rotation, etc.);
 		function sendState() {
@@ -260,15 +264,6 @@ export class VoxelClient extends EventEmitter {
 				}
 			};
 			connection.emit('state', state);
-		}
-
-		// unregister a remote client;
-		function removeClient(id: any) {
-			if (!self.remoteClients[id]) {
-				return;
-			}
-			self.game.scene.remove(self.remoteClients[id].mesh);
-			delete self.remoteClients[id];
 		}
 
 		// process update from the server, mostly avatar info (position, rotation, etc.);

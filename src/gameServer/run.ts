@@ -2,8 +2,7 @@ import { GameServer } from './game-server';
 const Path = require( 'path' );
 const Hapi = require( 'hapi' );
 const Inert = require( 'inert' );
-var WebSocketEmitter = require( '../shared/web-socket-emitter' );
-
+import { Server as WebSocketEmitterServer } from '../shared/web-socket-emitter';
 
 var run = function() {
 	var worldId = 'test';
@@ -27,7 +26,6 @@ var run = function() {
 	} );
 
 	const provision = async () => {
-
 		await httpServer.register( Inert );
 		await httpServer.start();
 		httpServer.route( {
@@ -47,7 +45,7 @@ var run = function() {
 
 	setTimeout( function() {
 		console.log( 'started' );
-		var wseServer = new WebSocketEmitter.server( {
+		var wseServer = new WebSocketEmitterServer( {
 			server: '127.0.0.1',
 			port: 10005
 		} );

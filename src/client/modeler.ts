@@ -4,7 +4,7 @@ var glm = require('gl-matrix'),
 	mat4 = glm.mat4,
 	quat = glm.quat;
 
-import {WebGL} from './lib/webgl';
+var WebGL:any = {};//import {WebGL} from './lib/webgl';
 var Movable = require('./lib/movable');
 var Camera = require('./lib/camera');
 var Lines = require('./lib/lines');
@@ -15,7 +15,7 @@ var pool = require('./lib/object-pool');
 //var mesh = require('./lib/player-mesh');
 
 var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
-var webgl: WebGL;
+var webgl: any;//WebGL;
 
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;

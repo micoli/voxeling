@@ -7,11 +7,9 @@ var log = require('./log')('lib/web-socket-emitter', false );
 
 /*
 TODO
-
 * Outline events on the client and server sides. Can remap node events to something that makes more sense given the context
-
 */
-class WebSocketEmitter {
+export class WebSocketEmitter {
 	emitter: any;
 	webSocket: any;
 	isOpen: any;
@@ -184,49 +182,6 @@ export class Client {
 	}
 }
 
-// Same opts you'd pass to ws module
-export class Server2 {
-	ws: any;
-	emitter: any;
-	constructor(opts: any) {
-		var self = this;
-		var wss = this.ws = new SimpleWebsocketServer(opts || {
-			port: 10005
-		});
-		var browserify = 'onconnection' in wss;
-		this.emitter = new EventEmitter();
-
-		var onError = function(message:any) {
-			log('onError');
-			self.emitter.emit('error', message);
-		};
-
-		var onConnection = function(ws:any) {
-			log('onConnection');
-			//var location = url.parse(ws.upgradeReq.url, true);
-			var emitter = new EventEmitter();
-			var wse = new WebSocketEmitter(ws, emitter, function(){
-				return !!ws;
-			});
-			self.emitter.emit('connection', wse);
-		};
-
-		log(browserify ? 'WSE Server is browserified' : 'WSE Server is not browserified');
-
-		if (browserify) {
-			wss.onconnection = onConnection;
-			wss.onerror = onError;
-		} else {
-			wss.on('connection', onConnection);
-			wss.on('error', onError);
-		}
-	}
-
-	on(name: any, callback: any) {
-		this.emitter.on(name, callback);
-	}
-}
-
 export class Server {
 	ws: any;
 	emitter: any;
@@ -266,7 +221,7 @@ export class Server {
 	}
 }
 
-module.exports = {
-	client: Client,
-	server: Server
-};
+/*module.exports = {
+	Client: Client,
+	Server: Server
+};*/

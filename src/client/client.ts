@@ -1,6 +1,6 @@
 var config = require('../config');
 import {Game} from '../shared/voxel-engine-stackgl';
-import {client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
+import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
 
 var initGame = function() {
 	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
@@ -9,7 +9,7 @@ var initGame = function() {
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
 
-	window.voxelGame = new Game({
+	(<any>window).voxelGame = new Game({
 		exposeGlobal: true,
 		pluginLoaders: {
 			'voxel-client' : require('./voxel-client'),
@@ -123,13 +123,10 @@ var initGame = function() {
 					'F5': 'pov',
 					'O': 'home',
 					'E': 'inventory',
-
 					'T': 'console',
 					'/': 'console2',
 					'.': 'console3',
-
 					'P': 'packs',
-
 					'F1': 'zen'
 				}
 			},
