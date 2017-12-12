@@ -3,18 +3,16 @@ import {EventEmitter} from 'events';
 var duplexEmitter = require('duplex-emitter');
 var extend = require('extend');
 import {Game} from '../shared/voxel-engine-stackgl';
-//var skin = require('minecraft-skin');
 var crunch = require('voxel-crunch');
-
 var voxelPlayer = require('voxel-player');
-var skin = require('minecraft-skin');
+var ndarray = require('ndarray');
+import {avatarView} from './avatar-view';
+//var voxelPlayer = require('voxel-player');
+//var skin = require('minecraft-skin');
 var glm = require('gl-matrix');
 
-var ndarray = require('ndarray');
 import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
-function scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
-	return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
-}
+
 module.exports = (game: any, opts: any) => new VoxelClient(game, opts);
 module.exports.pluginInfo = {
 	loadAfter: ['voxel-console']
@@ -55,6 +53,9 @@ export class VoxelClient extends EventEmitter {
 		})
 	}
 
+	private scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
+		return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+	}
 	bindEvents(connection: any) {
 		var self = this;
 		// receive id from server;
@@ -114,12 +115,12 @@ export class VoxelClient extends EventEmitter {
 			console.log(11111);
 			// create the player from a minecraft skin file and tell the;
 			// game to use it as the main player;
-			var createPlayer = voxelPlayer(game);
+			/*var createPlayer = voxelPlayer(game);
 			var avatar = self.avatar = createPlayer(self.texturePath+self.playerTexture);
 			avatar.possess();
 			var position = game.settings.avatarInitialPosition;
 			avatar.position.set(position[0], position[1], position[2]);
-
+			*/
 			// tell modules consumers we're ready;
 			self.emit('loadComplete');
 		});
@@ -233,7 +234,7 @@ export class VoxelClient extends EventEmitter {
 					self.onServerUpdate(update);
 					var state = getNormalizedState(self.game.controls.target());
 					state.p.z-=10;
-					//self.updatePlayerPosition('uu',state);
+					self.updatePlayerPosition('uu',state);
 					// other players;
 				} else {
 					self.updatePlayerPosition(player, update);
@@ -263,10 +264,8 @@ export class VoxelClient extends EventEmitter {
 		if (!player) {
 			//var createPlayer = voxelPlayer(self.game);
 			//var player = createPlayer(self.texturePath+self.playerTexture,{scale:0.5});
-			let playerSkin = skin(self.game.THREE, self.texturePath+self.playerTexture, {
-				scale: glm.vec3.create(0.04, 0.04, 0.04)
-			});
-			let playerMesh = playerSkin.mesh;
+			let player = new avatarView(self.game);
+			let playerMesh = player.mesh;
 			self.remoteClients[id] = player;
 			playerMesh.children[0].position.y = 10;
 			self.game.scene.add(player);
@@ -275,7 +274,7 @@ export class VoxelClient extends EventEmitter {
 		let playerMesh = playerSkin.mesh;
 		playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
 		playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
-		playerSkin.head.rotation.z = scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
+		playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
 	}
 
 	updatePlayerGhost(id: any, update: any) {
@@ -297,7 +296,26 @@ export class VoxelClient extends EventEmitter {
 		let playerMesh = playerSkin.mesh;
 		playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
 		playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
-		playerSkin.head.rotation.z = scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
+		playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
+	}
+
+	getSkin(textureURI:any,id : any) {
+		var self = this;
+		var skin: any;
+		var shader: any;
+		var mesh: any;
+
+		createSkinTexture(this.game.shell.gl, textureURI, this.playerTexture, 'image/png', function(err: any, texture: any) {
+			self.remoteClients[id] = texture
+		});
+
+		mesh = createSkinMesh(this.game.shell.gl);
+
+		shader = glslify({
+			vertex: './avatar.vert'     // includes matrix transforms
+		, fragment: './avatar.frag'   // applies texture
+		})(this.game.shell.gl);
+
 	}
 
 }
