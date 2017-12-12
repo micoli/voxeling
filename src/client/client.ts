@@ -64,17 +64,17 @@ var initGame = function() {
 			'voxel-keys': require('voxel-keys'),
 			'kb-bindings-ui': require('kb-bindings-ui'),
 			'voxel-decorative': require('voxel-decorative'),
+			'voxel-player': require('voxel-player'),
 			//'voxel-land': require('voxel-land'),
 			//'voxel-flatland': require('voxel-flatland'),
 		},
 		pluginOpts: {
 			'voxel-client' : {
-				getConnection : function(initConnection:any){
+				getConnection : function(init:any){
 					var connection = new WebSocketEmitterClient();
 					connection.on('open', function() {
-						setTimeout(function() {
-							initConnection(connection);
-						}, 2000);
+						console.log('aaaa 2');
+						init(connection);
 					});
 
 					connection.on('close', function() {
@@ -85,6 +85,7 @@ var initGame = function() {
 						console.log('websocket error');
 					});
 					connection.connect(config.server);
+
 				}
 			},
 			'voxel-engine-stackgl': {
@@ -117,10 +118,10 @@ var initGame = function() {
 					'<space>': 'jump',
 					'<shift>': 'crouch',
 					'<control>': 'alt',
-					'<tab>': 'sprint',
+					'<tab>': 'pov',
 
 					// our extras
-					'F5': 'pov',
+					'F5': 'sprint',
 					'O': 'home',
 					'E': 'inventory',
 					'T': 'console',
@@ -183,7 +184,7 @@ var initGame = function() {
 			'voxel-drop': {},
 			'voxel-zen': {},
 
-			//'voxel-player': {image: 'player.png', homePosition: [2,14,4], homeRotation: [0,0,0]}, // three.js TODO: stackgl avatar
+			'voxel-player': {image: 'player.png', homePosition: [2,14,4], homeRotation: [0,0,0]}, // three.js TODO: stackgl avatar
 			'voxel-health': {},
 			'voxel-health-bar': {},
 			//'voxel-health-fall': {}, // requires voxel-player TODO: enable and test
@@ -221,5 +222,4 @@ var initGame = function() {
 		}
 	});
 };
-
 initGame();

@@ -11,6 +11,8 @@ var engine = require('voxel-engine')
 var ndarray = require('ndarray');
 
 export class voxelServer extends EventEmitter {
+	updateDelay: number = 1000 / 3; // every 330ms;
+	nbUpdate: number = 0;
 	settings: any = {};
 	game: any = {};
 	chunkCache: any = {};
@@ -50,7 +52,7 @@ export class voxelServer extends EventEmitter {
 
 		setInterval(self.handleErrors(function() {
 			self.sendUpdate()
-		}), 1000 / 22) // every 45ms
+		}), this.updateDelay);
 
 		// forward some events to module consumer
 		game.voxels.on('missingChunk', function(chunk: any) {
@@ -59,17 +61,15 @@ export class voxelServer extends EventEmitter {
 	}
 
 	// Setup the client connection - register events, etc
-	connectClient(duplexStream: any) {
+	connectClient(connection: any) {
 		var self = this
 		var settings = self.settings
 		var game = self.game
-		// create 'connection' remote event emitter from duplex stream
-		var connection = (duplexStream)
 		// register client id
 		var id = uuid()
-		connection.id = duplexStream.id = id
+		connection.id = connection.id = id
 		self.broadcast(id, 'join', id)
-		var client = self.clients[id] = {
+		self.clients[id] = {
 			id: id,
 			connection: connection,
 			player: {
@@ -78,13 +78,14 @@ export class voxelServer extends EventEmitter {
 			},
 		}
 
-		// setup client response handlers
-		self.bindClientEvents(client)
-
-		// send client id and initial game settings
-		connection.emit('id', id)
-		connection.emit('settings', settings)
-		console.log('id and settings emmited')
+		setTimeout(function() {
+			// send client id and initial game settings
+			connection.emit('id', id);
+			connection.emit('settings', settings);
+			console.log('id and settings emmited');
+			// setup client response handlers
+			self.bindClientEvents(self.clients[id]);
+		}, 4000);
 	}
 
 	removeClient(duplexStream: any) {
@@ -99,13 +100,12 @@ export class voxelServer extends EventEmitter {
 		var self = this
 		var game = self.game
 		var id = client.id
-		var connection = client.connection
 
 		// forward chat message
-		connection.on('data', function(message: any) {
-			//console.log('ici data', message);
+		client.connection.on('data', function(message: any) {
+			console.log('ici data', message);
 		});
-		connection.on('chat', self.handleErrors(function(message: any) {
+		client.connection.on('chat', self.handleErrors(function(message: any) {
 			console.log('ici chat');
 			// ignore if no message provided
 			if (!message.text) return
@@ -115,42 +115,41 @@ export class voxelServer extends EventEmitter {
 		}))
 
 		// when user ready ( game created, etc )
-		connection.on('created', self.handleErrors(function() {
+		client.connection.on('created', self.handleErrors(function() {
 			// send initial world payload
-			self.sendInitialChunks(connection)
+			self.sendInitialChunks(client.connection)
 			// emit client.created for module consumers
 			self.emit('client.created', client)
 		}))
 
 		// client sends new position, rotation
-		connection.on('state', self.handleErrors(function(state: any) {
-			client.player.rotation.x = state.rotation.x
-			client.player.rotation.y = state.rotation.y
+		client.connection.on('state', self.handleErrors(function(state: any) {
+			client.player.rotation.x = state.r.x
+			client.player.rotation.y = state.r.y
 			var pos = client.player.position
-			var distance = pos.distanceTo(state.position)
+			var distance = pos.distanceTo(state.p)
 			if (distance > 20) {
 				var before = pos.clone()
-				pos.lerp(state.position, 0.1)
+				pos.lerp(state.p, 0.1)
 				return
 			}
-			pos.copy(state.position)
+			pos.copy(state.p)
 			self.emit('client.state', client, state)
 		}))
 
 		// client modifies a block
-		var chunkCache = self.chunkCache
-		connection.on('set', self.handleErrors(function(pos: any, val: any) {
+		client.connection.on('set', self.handleErrors(function(pos: any, val: any) {
 			game.setBlock(pos, val)
 			var chunkPos = game.voxels.chunkAtPosition(pos)
 			var chunkID = chunkPos.join('|')
-			if (chunkCache[chunkID]) delete chunkCache[chunkID]
+			if (self.chunkCache[chunkID]) delete self.chunkCache[chunkID]
 			// broadcast 'set' to all players
 			self.broadcast(null, 'set', pos, val, client.id)
 		}))
 
 		// forward custom events
 		self.forwardEvents.map(function(eventName) {
-			connection.on(eventName, function() {
+			client.connection.on(eventName, function() {
 				var args = [].slice.apply(arguments)
 				// add event name
 				args.unshift(eventName)
@@ -195,9 +194,13 @@ export class voxelServer extends EventEmitter {
 				rotation: {
 					x: client.player.rotation.x,
 					y: client.player.rotation.y,
-				},
-			}
+				}
+			};
 		})
+		this.nbUpdate = (this.nbUpdate+1) % 10;
+		if(this.nbUpdate==0){
+			console.log(this.nbUpdate,JSON.stringify(update));
+		}
 		self.broadcast(null, 'update', update)
 	}
 
@@ -205,15 +208,14 @@ export class voxelServer extends EventEmitter {
 	sendInitialChunks(connection: any) {
 		var self = this
 		var chunks = self.game.voxels.chunks
-		var chunkCache = self.chunkCache
 		Object.keys(chunks).map(function(chunkID) {
 			var chunk = chunks[chunkID];
 
 			chunk.dims = [34, 34, 34];
-			var encoded = chunkCache[chunkID]
+			var encoded = self.chunkCache[chunkID]
 			if (!encoded) {
 				encoded = crunch.encode(chunk.voxels.data);
-				chunkCache[chunkID] = encoded;
+				self.chunkCache[chunkID] = encoded;
 			}
 			connection.emit('chunk', encoded, {
 				position: chunk.position,

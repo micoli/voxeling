@@ -1,7 +1,9 @@
 var EventEmitter = require('events').EventEmitter;
 var slice = Array.prototype.slice;
 var SimpleWebsocketServer = require('simple-websocket/server');
-var SimpleWebsocketClient = require('simple-websocket');
+//var SimpleWebsocketClient = require('simple-websocket');
+//var WebSocketClient = require('ws');
+
 
 var log = require('./log')('lib/web-socket-emitter', false );
 
@@ -89,8 +91,9 @@ export class WebSocketEmitter {
 
 	emit(name: any, callback: any) {
 		var self = this;
-
-		log('emit',name);
+		if(name!='update' && name!='chunk'){
+			log('emit',name);
+		}
 
 		if (!name) {
 			throw 'Name required (emit)';
@@ -149,9 +152,9 @@ export class Client {
 		var self = this;
 		// Don't need to specify URL if we did previously
 		this.url = url || this.url;
-		var ws = new SimpleWebsocketClient(this.url);
-		this.wse = new WebSocketEmitter(ws._ws, this.emitter, function(){
-			return !!ws._ws && ws._ws.readyState == 1;
+		var ws = new WebSocket(this.url);
+		this.wse = new WebSocketEmitter(ws, this.emitter, function(){
+			return !!ws && ws.readyState == 1;
 		});
 		return ws;
 	}

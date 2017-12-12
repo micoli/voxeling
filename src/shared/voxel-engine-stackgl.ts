@@ -14,6 +14,7 @@ var tic = require('tic')();
 var ndarray = require('ndarray');
 var isndarray = require('isndarray');
 var obsolete = require('obsolete');
+var three = require('three');
 
 var createPlugins = require('voxel-plugins');
 var extend = require('extend');
@@ -124,6 +125,7 @@ export class Game extends EventEmitter {
 		'<tab>': 'sprint'
 	};
 	settings : any={};
+	THREE:any = three;
 	constructor(opts: any) {
 		super();
 		var self = this;
@@ -151,7 +153,7 @@ export class Game extends EventEmitter {
 		this.setConfigurablePositions(opts);
 		this.configureChunkLoading(opts);
 		this.setDimensions(opts);
-		obsolete(this, 'THREE');
+		//obsolete(this, 'THREE');
 		this.vector = vector;
 		obsolete(this, 'glMatrix', 'use your own gl-matrix, gl-vec3, or gl-vec4');
 		this.arrayType = opts.arrayType || this.getArrayType(opts.arrayTypeSize) || Uint8Array;
