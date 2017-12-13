@@ -291,6 +291,9 @@ export class VoxelClient extends EventEmitter {
 		}
 		let playerSkin = self.remoteClients[id];
 		let playerMesh = playerSkin.mesh;
+		playerSkin.globalPosX=update.p.x+2;
+		playerSkin.globalPosY=update.p.y;
+		playerSkin.globalPosZ=update.p.z+2;
 		//playerSkin.meshShader.attributes.position = [update.p.x,update.p.y,update.p.z-5];
 		//playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
 		//playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);

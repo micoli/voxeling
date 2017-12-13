@@ -5,6 +5,9 @@ var createSkinMesh = avatarModule.createSkinMesh
 var createSkinTexture = avatarModule.createSkinTexture
 
 export class avatarView {
+	globalPosX: any=0;
+	globalPosY: any=0;
+	globalPosZ: any=0;
 	shader: any;
 	game: any;
 	gl: any;
@@ -95,6 +98,9 @@ export class avatarView {
 		this.meshShader.uniforms.lArmRotateX = Math.sin(this.t / 100 * 2 * Math.PI)
 		this.meshShader.uniforms.rLegRotateX = Math.sin(2 * this.t / 100 * 2 * Math.PI)
 		this.meshShader.uniforms.lLegRotateX = Math.cos(2 * this.t / 100 * 2 * Math.PI)
+		this.meshShader.uniforms.globalPosX = this.globalPosX;
+		this.meshShader.uniforms.globalPosY = this.globalPosY;
+		this.meshShader.uniforms.globalPosZ = this.globalPosZ;
 
 		if (this.skin){
 			this.meshShader.uniforms.skin = this.skin.bind();

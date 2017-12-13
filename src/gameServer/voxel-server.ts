@@ -124,6 +124,7 @@ export class voxelServer extends EventEmitter {
 
 		// client sends new position, rotation
 		client.connection.on('state', self.handleErrors(function(state: any) {
+			console.log(state);
 			client.player.rotation.x = state.r.x
 			client.player.rotation.y = state.r.y
 			var pos = client.player.position
