@@ -31,6 +31,8 @@ export class VoxelClient extends EventEmitter {
 	serverSettingBlock: any;
 	avatar: any;
 	name: any;
+	currentState:any={};
+	isReady : boolean = false;
 	constructor(game: Game, opts: any) {
 		super();
 		var self = this;
@@ -56,17 +58,17 @@ export class VoxelClient extends EventEmitter {
 	private scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
 		return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
 	}
+
 	bindEvents(connection: any) {
 		var self = this;
-		// receive id from server;
+
 		connection.on('id', function(id: any) {
-			console.log('Id', id );
+			console.log('receiving id', id );
 			self.playerID = id;
 		});
 
-		// receive initial game settings;
 		connection.on('settings', function(settings: any) {
-			console.log('settings', settings);
+			console.log('receiving settings', settings);
 			// set client-specific settings;
 			settings.isClient = true;
 			settings.texturePath = self.texturePath;
@@ -80,19 +82,13 @@ export class VoxelClient extends EventEmitter {
 
 		// load in chunks from the server;
 		connection.on('chunk', function(encoded: any, meta: any) {
-			console.log('encoded 22');
 			// ensure `encoded` survived transmission as an array;
 			// JSON stringifies Uint8Arrays as objects;
 			if (encoded.length === undefined) {
 				var lastIndex = Math.max.apply(null, Object.keys(encoded).map(Number));
 				encoded.length = lastIndex + 1;
 			}
-			var chunk = ndarray(
-				crunch.decode(encoded),
-				meta.voxels.shape
-				//meta.voxels.stride,
-				//meta.voxels.offset
-			);
+			var chunk = ndarray(crunch.decode(encoded),meta.voxels.shape);
 
 			chunk.position = meta.position;
 			chunk.dims = meta.dims;
@@ -112,15 +108,6 @@ export class VoxelClient extends EventEmitter {
 					self.emit('error', err);
 				}
 			}
-			console.log(11111);
-			// create the player from a minecraft skin file and tell the;
-			// game to use it as the main player;
-			/*var createPlayer = voxelPlayer(game);
-			var avatar = self.avatar = createPlayer(self.texturePath+self.playerTexture);
-			avatar.possess();
-			var position = game.settings.avatarInitialPosition;
-			avatar.position.set(position[0], position[1], position[2]);
-			*/
 			// tell modules consumers we're ready;
 			self.emit('loadComplete');
 		});
@@ -131,6 +118,34 @@ export class VoxelClient extends EventEmitter {
 			self.game.setBlock(pos, val);
 			self.serverSettingBlock = false;
 		});
+
+		// handle server updates;
+		connection.on('update', function(updates: any) {
+			if(!self.isReady){
+				return;
+			}
+			Object.keys(updates.positions).map(function(playerID) {
+				var update = updates.positions[playerID];
+
+				if (playerID === self.playerID) {
+					// local player;
+					self.onServerUpdate(update);
+					//self.updatePlayerPosition('uu',update);
+				} else {
+					// other players;
+					self.updatePlayerPosition(playerID, update);
+				}
+			});
+		});
+
+		// handle removing clients that leave;
+		connection.on('leave', function (id: any) {
+			if (!self.remoteClients[id]) {
+				return;
+			}
+			delete self.remoteClients[id];
+		});
+
 	}
 
 	enable() {
@@ -165,10 +180,10 @@ export class VoxelClient extends EventEmitter {
 				}
 			});
 			if (interacting) {
-				sendState();
+				self.sendState();
 			}
 		});
-		console.log('registered');
+
 		self.game.voxels.on('missingChunk', function(pos: any) {
 			console.log('missingChunk ask', pos, connection.readyState === connection.CLOSED);
 			if (connection.readyState === connection.CLOSED) {
@@ -176,6 +191,7 @@ export class VoxelClient extends EventEmitter {
 			}
 			connection.emit('missingChunk', pos);
 		});
+
 		// send voxel edits;
 		self.game.on('setBlock', function(pos: any, val: any) {
 			if (self.serverSettingBlock) {
@@ -184,69 +200,41 @@ export class VoxelClient extends EventEmitter {
 			connection.emit('set', pos, val);
 		});
 
-		// handle server updates;
-		// delay is because three.js seems to throw errors if you add stuff too soon;
 
+		// delay is because three.js seems to throw errors if you add stuff too soon;
 		setTimeout(function() {
-			connection.on('update', serverUpdate);
+			self.isReady = true;
 		}, 1000);
 
-		// handle removing clients that leave;
-		connection.on('leave', function (id: any) {
-			if (!self.remoteClients[id]) {
-				return;
-			}
-			self.game.scene.remove(self.remoteClients[id].mesh);
-			delete self.remoteClients[id];
-		});
-		function getNormalizedState (player:any){
-			return {
-				p: {
-					x: Math.round(player.yaw.position.x*100)/100,
-					y: Math.round(player.yaw.position.y*100)/100,
-					z: Math.round(player.yaw.position.z*100)/100
-				},
-				r: {
-					y: Math.round(player.yaw.rotation.y*200)/200,
-					x: Math.round(player.pitch.rotation.x*200)/200
-				}
-			};
-		}
-		let currentState='';
-		// send player state to server, mostly avatar info (position, rotation, etc.);
-		function sendState() {
-			var state = getNormalizedState(self.game.controls.target());
-			let newState = JSON.stringify(state);
-			if(currentState !== newState){
-				currentState = newState;
-				//console.log('state', newState);
-				connection.emit('state', state);
-			}
-		}
-
-		// process update from the server, mostly avatar info (position, rotation, etc.);
-		function serverUpdate(updates: any) {
-			Object.keys(updates.positions).map(function(playerID) {
-				var update = updates.positions[playerID];
-
-				// local player;
-				if (playerID === self.playerID) {
-					self.onServerUpdate(update);
-					var state = getNormalizedState(self.game.controls.target());
-					state.p.z-=10;
-					self.updatePlayerPosition('uu',state);
-					// other players;
-				} else {
-					self.updatePlayerPosition(player, update);
-				}
-			});
-		}
 		return self.game;
+	}
+
+	sendState() {
+		var state = this.getNormalizedState(this.game.controls.target());
+		let newState = JSON.stringify(state);
+		if(this.currentState !== newState){
+			this.currentState = newState;
+			this.connection.emit('state', state);
+		}
+	}
+
+	private getNormalizedState (player:any){
+		return {
+			p: {
+				x: Math.round(player.yaw.position.x*100)/100,
+				y: Math.round(player.yaw.position.y*100)/100,
+				z: Math.round(player.yaw.position.z*100)/100
+			},
+			r: {
+				y: Math.round(player.yaw.rotation.y*200)/200,
+				x: Math.round(player.pitch.rotation.x*200)/200
+			}
+		};
 	}
 
 	onServerUpdate(update: any) {
 		var self = this;
-		// todo use server sent location;
+		//var state = this.getNormalizedState(self.game.controls.target());
 	}
 
 	lerpMe(position: any) {
@@ -259,85 +247,14 @@ export class VoxelClient extends EventEmitter {
 
 	updatePlayerPosition(id: any, update: any) {
 		var self = this;
-		var pos = update.p;
-		var player = self.remoteClients[id];
-		if (!player) {
-			/*var mesh = new self.game.THREE.Mesh(
-			new self.game.THREE.CubeGeometry(1, 3, 1), // width, height, depth
-				self.game.materials.material
-			)
-			// paint the mesh with a specific texture in the atlas
-			//self.game.materials.paint(mesh, 'obsidian')
-			// move the item to some location
-			mesh.position.set(0, 3, -5)
-			var item = self.game.addItem({
-				mesh: mesh,
-				size: 3,
-				//velocity: { x: 0, y: 0, z: 0 } // initial velocity
-			})*/
-			//var skin = require('minecraft-skin')
-			//var duck = skin(THREE, 'neg.png')
-			//var player = duck.createPlayerObject()
-			//player.position.y -= 15
-			/*scene.add(duckPlayer)
-			//var createPlayer = require('voxel-player')(self.game);
-			var player = createPlayer(self.texturePath+self.playerTexture,{scale:0.5});
-			*/
-			let player = new avatarView(self.game);
-			let playerMesh = player.mesh;
-			self.remoteClients[id] = player;
-			//playerMesh.children[0].position.y = 10;
-			//self.game.scene.add(player);
+		if (!self.remoteClients[id]) {
+			self.remoteClients[id] = new avatarView(self.game);
+			self.remoteClients[id].walk();
 		}
-		let playerSkin = self.remoteClients[id];
-		let playerMesh = playerSkin.mesh;
-		playerSkin.globalPosX=update.p.x+2;
-		playerSkin.globalPosY=update.p.y;
-		playerSkin.globalPosZ=update.p.z+2;
-		//playerSkin.meshShader.attributes.position = [update.p.x,update.p.y,update.p.z-5];
-		//playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
+		self.remoteClients[id].globalPosX=update.p.x;
+		self.remoteClients[id].globalPosY=update.p.y;
+		self.remoteClients[id].globalPosZ=update.p.z;
 		//playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
 		//playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
 	}
-
-	updatePlayerGhost(id: any, update: any) {
-		var self = this;
-		var pos = update.p;
-		var player = self.remoteClients[id];
-		if (!player) {
-			var createPlayer = voxelPlayer(self.game);
-			var player = createPlayer(self.playerTexture);
-			/*let playerSkin = skin(self.game.THREE, self.playerTexture, {
-				scale: new glm.vec3(0.04, 0.04, 0.04)
-			});*/
-			//let playerMesh = playerSkin.mesh;
-			self.remoteClients[id] = player;
-			//playerMesh.children[0].position.y = 10;
-			self.game.scene.add(player);
-		}
-		let playerSkin = self.remoteClients[id];
-		let playerMesh = playerSkin.mesh;
-		playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
-		playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
-		playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
-	}
-	/*getSkin(textureURI:any,id : any) {
-		var self = this;
-		var skin: any;
-		var shader: any;
-		var mesh: any;
-
-		createSkinTexture(this.game.shell.gl, textureURI, this.playerTexture, 'image/png', function(err: any, texture: any) {
-			self.remoteClients[id] = texture
-		});
-
-		mesh = createSkinMesh(this.game.shell.gl);
-
-		shader = glslify({
-			vertex: './avatar.vert'     // includes matrix transforms
-		, fragment: './avatar.frag'   // applies texture
-		})(this.game.shell.gl);
-
-	}*/
-
 }

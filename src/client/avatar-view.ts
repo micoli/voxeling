@@ -5,21 +5,32 @@ var createSkinMesh = avatarModule.createSkinMesh
 var createSkinTexture = avatarModule.createSkinTexture
 
 export class avatarView {
-	globalPosX: any=0;
-	globalPosY: any=0;
-	globalPosZ: any=0;
-	shader: any;
 	game: any;
+	gameShader: any;
 	gl: any;
+
 	skin:any;
 	mesh:any;
 	meshShader:any;
-	t:number=0;
+
+	dt:number=0;
+
+	globalPosX: any=0;
+	globalPosY: any=0;
+	globalPosZ: any=0;
+	u_Translation: any;
+
+	onInit:any;
+	onUpdatePerspective:any;
+	onRender:any;
+
+	isWalking:boolean = true;
 	constructor ( game:any ){
 		this.game = game;
 
-		this.shader = game.plugins.get( 'voxel-shader' );
-		if ( !this.shader ) {
+		this.gameShader = game.plugins.get( 'voxel-shader' );
+
+		if ( !this.gameShader ) {
 			throw 'voxel-webview requires voxel-shader plugin' ;
 		}
 
@@ -28,92 +39,95 @@ export class avatarView {
 	}
 
 	init(){
-		var textureURI = '/textures/';
-		var textureFile ='substack.png';
 		var self = this;
+		var textureURI = '/textures/';
+		var textureFile ='SnDKuc1.png';
+
 		createSkinTexture(this.game.shell.gl, textureURI+textureFile, textureFile, 'image/png', function(err: any, texture: any) {
-			self.skin = texture
+			self.skin = texture;
 		});
 
 		self.mesh = createSkinMesh(this.game.shell.gl);
-
-		self.meshShader = glShader(this.game.shell.gl,
+		self.meshShader = glShader(this.game.shell.gl ,
 			glslify ('./avatar.vert'),
 			glslify ('./avatar.frag')
 		);
 	}
 
-	enable() {
+	walk(){
+		this.isWalking=true;
+	}
+	halt(){
+		this.isWalking=false;
+	}
 
-		if ( this.game.shell.gl ) {
+	enable(){
+		this.onInit = this.ginit.bind( this );
+		this.onUpdatePerspective = this.updatePerspective.bind( this );
+		this.onRender = this.render.bind( this );
+		if ( this.game.shell.gl ){
 			// gl is already initialized - we won't receive gl-init, or the first gl-resize
 			// call it here (on-demand plugin loading) TODO: cleaner generic fix for plugins receiving init events too late
 			this.ginit();
 			this.updatePerspective();
 		} else {
-			this.game.shell.on( 'gl-init', this.onInit = this.ginit.bind( this ) );
+			this.game.shell.on( 'gl-init', this.onInit);
 		}
 
-		this.shader.on( 'updateProjectionMatrix', this.onUpdatePerspective = this.updatePerspective.bind( this ) );
-		this.game.shell.on( 'gl-render', this.onRender = this.render.bind( this ) );
+		this.gameShader.on( 'updateProjectionMatrix',  this.onUpdatePerspective);
+		this.game.shell.on( 'gl-render', this.onRender);
 	};
 
 	disable() {
 		this.game.shell.removeListener( 'gl-render', this.onRender );
 		if ( this.onInit ) this.game.shell.removeListener( 'gl-init', this.onInit );
-		this.shader.removeListener( 'updateProjectionMatrix', this.onUpdatePerspective );
-	};
+		this.gameShader.removeListener( 'updateProjectionMatrix', this.onUpdatePerspective );
+	}
 
-	ginit( ) {
+	ginit() {
 		this.gl = this.game.shell.gl;
-		//this.css3d.ginit( this.game.shell.gl );
-	};
+	}
 
 	updatePerspective() {
-		var cameraFOVradians = this.shader.cameraFOV * Math.PI / 180;
-
+		var cameraFOVradians = this.gameShader.cameraFOV * Math.PI / 180;
 		//this.css3d.updatePerspective( cameraFOVradians, this.game.shell.width, this.game.shell.height );
-	};
+	}
 
 	render() {
-		//this.css3d.render( this.shader.viewMatrix, this.shader.projectionMatrix );
-		this.gl.enable(this.gl.CULL_FACE)
-		this.gl.enable(this.gl.DEPTH_TEST)
+		if(!this.u_Translation){
+			this.u_Translation = this.gl.getUniformLocation(this.meshShader.program, 'u_Translation');
+		}
+		this.gl.enable(this.gl.CULL_FACE);
+		this.gl.enable(this.gl.DEPTH_TEST);
 
-		/*camera.view(view)
-		mat4.perspective(proj // note: shouldn't have to calculate this everytime (only if shell changes; add event), but this is only a demo
-		, Math.PI / 4
-		, shell.width / shell.height
-		, 0.001
-		, 1000
-		)*/
-		this.meshShader.bind()
-		this.meshShader.attributes.position.location = 0
-		this.meshShader.attributes.uv.location = 1
-		this.meshShader.uniforms.projectionMatrix = this.shader.projectionMatrix
-		this.meshShader.uniforms.modelViewMatrix = this.shader.viewMatrix
-		this.t += 1;
-		this.t %= 100
-		this.meshShader.uniforms.rArmRotateX = Math.sin(this.t / 100 * 2 * Math.PI)
-		this.meshShader.uniforms.lArmRotateX = Math.sin(this.t / 100 * 2 * Math.PI)
-		this.meshShader.uniforms.rLegRotateX = Math.sin(2 * this.t / 100 * 2 * Math.PI)
-		this.meshShader.uniforms.lLegRotateX = Math.cos(2 * this.t / 100 * 2 * Math.PI)
-		this.meshShader.uniforms.globalPosX = this.globalPosX;
-		this.meshShader.uniforms.globalPosY = this.globalPosY;
-		this.meshShader.uniforms.globalPosZ = this.globalPosZ;
+		this.meshShader.bind();
+		this.meshShader.attributes.position.location = 0;
+		this.meshShader.attributes.uv.location = 1;
+		this.meshShader.uniforms.projectionMatrix = this.gameShader.projectionMatrix;
+		this.meshShader.uniforms.modelViewMatrix = this.gameShader.viewMatrix;
+		if(this.isWalking){
+			this.dt += 1;
+			this.dt %= 100;
+		}else{
+			if(this.dt!=0){
+				this.dt += 1;
+				this.dt %= 100;
+			}
+		}
+		this.gl.uniform4f(this.u_Translation, this.globalPosX, this.globalPosY, this.globalPosZ, 0.0);
+		this.meshShader.uniforms.rArmRotateX = Math.sin(this.dt / 100 * 2 * Math.PI);
+		this.meshShader.uniforms.lArmRotateX = Math.sin(this.dt / 100 * 2 * Math.PI);
+		this.meshShader.uniforms.rLegRotateX = Math.sin(2 * this.dt / 100 * 2 * Math.PI);
+		this.meshShader.uniforms.lLegRotateX = Math.cos(2 * this.dt / 100 * 2 * Math.PI);
 
 		if (this.skin){
 			this.meshShader.uniforms.skin = this.skin.bind();
-		};
-		this.meshShader.attributes.position.pointer()
-		this.meshShader.attributes.uv.pointer()
+		}
+		this.meshShader.attributes.position.pointer();
+		this.meshShader.attributes.uv.pointer();
 
-		// Bind the VAO, and draw all of the elements
-		// to the screen as triangles. The gl-vao module
-		// will handle when to use gl.drawArrays/gl.drawElements
-		// for you.
-		this.mesh.bind()
-		this.mesh.draw(this.gl.TRIANGLES, this.mesh.length)
-		this.mesh.unbind()
-	};
+		this.mesh.bind();
+		this.mesh.draw(this.gl.TRIANGLES,this.mesh.length);
+		this.mesh.unbind();
+	}
 }

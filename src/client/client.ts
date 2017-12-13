@@ -25,7 +25,7 @@ var initGame = function() {
 			'voxel-recipes': require('voxel-recipes'),
 			'voxel-quarry': require('voxel-quarry'),
 			'voxel-measure': require('voxel-measure'),
-			'voxel-webview': require('voxel-webview'),
+			//'voxel-webview': require('voxel-webview'),
 			'voxel-vr': require('voxel-vr'),
 			'voxel-workbench': require('voxel-workbench'),
 			'voxel-furnace': require('voxel-furnace'),
@@ -157,7 +157,7 @@ var initGame = function() {
 			'voxel-recipes': {},
 			'voxel-quarry': {},
 			'voxel-measure': {},
-			'voxel-webview': {},
+			//'voxel-webview': {},
 			'voxel-vr': { onDemand: true }, // has to be enabled after gl-init to replace renderer
 			'voxel-carry': {},
 			'voxel-bucket': { fluids: ['water', 'lava'] },

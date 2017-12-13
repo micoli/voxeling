@@ -42,22 +42,24 @@ export class voxelServer extends EventEmitter {
 			avatarInitialPosition: [2, 120, 2],
 			forwardEvents: [],
 		}
-		var settings = self.settings = extend({}, defaults, opts)
 
 		// prepare a server object to return
+		var settings = self.settings = extend({}, defaults, opts)
 		self.forwardEvents = settings.forwardEvents
 		var game = self.game = engine(settings)
+
+
+		// forward some events to module consumer
+		game.voxels.on('missingChunk', function(chunk: any) {
+			self.emit('missingChunk', chunk);
+		});
+
 		var clients = self.clients = {}
 		var chunkCache = self.chunkCache = {}
 
 		setInterval(self.handleErrors(function() {
 			self.sendUpdate()
 		}), this.updateDelay);
-
-		// forward some events to module consumer
-		game.voxels.on('missingChunk', function(chunk: any) {
-			self.emit('missingChunk', chunk);
-		});
 	}
 
 	// Setup the client connection - register events, etc
@@ -69,16 +71,16 @@ export class voxelServer extends EventEmitter {
 		var id = uuid()
 		connection.id = connection.id = id
 		self.broadcast(id, 'join', id)
-		self.clients[id] = {
-			id: id,
-			connection: connection,
-			player: {
-				rotation: new game.THREE.Vector3(),
-				position: new game.THREE.Vector3(),
-			},
-		}
 
 		setTimeout(function() {
+			self.clients[id] = {
+				id: id,
+				connection: connection,
+				player: {
+					p: {x:0,y:0,z:0},
+					r: {x:0,y:0}
+				}
+			};
 			// send client id and initial game settings
 			connection.emit('id', id);
 			connection.emit('settings', settings);
@@ -125,16 +127,22 @@ export class voxelServer extends EventEmitter {
 		// client sends new position, rotation
 		client.connection.on('state', self.handleErrors(function(state: any) {
 			console.log(state);
-			client.player.rotation.x = state.r.x
-			client.player.rotation.y = state.r.y
-			var pos = client.player.position
-			var distance = pos.distanceTo(state.p)
-			if (distance > 20) {
-				var before = pos.clone()
-				pos.lerp(state.p, 0.1)
-				return
-			}
-			pos.copy(state.p)
+
+			client.player.r.x = state.r.x;
+			client.player.r.y = state.r.y;
+
+			client.player.p.x = state.p.x;
+			client.player.p.y = state.p.y;
+			client.player.p.z = state.p.z;
+
+			//var pos = client.player.p
+			//var distance = pos.distanceTo(state.p)
+			//if (distance > 20) {
+				//var before = pos.clone()
+				//pos.lerp(state.p, 0.1)
+				//return
+			//}
+			//pos.copy(state.p)
 			self.emit('client.state', client, state)
 		}))
 
@@ -191,10 +199,10 @@ export class voxelServer extends EventEmitter {
 		clientIds.map(function(id) {
 			var client = self.clients[id];
 			update.positions[id] = {
-				position: client.player.position,
-				rotation: {
-					x: client.player.rotation.x,
-					y: client.player.rotation.y,
+				p: client.player.p,
+				r: {
+					x: client.player.r.x,
+					y: client.player.r.y,
 				}
 			};
 		})
