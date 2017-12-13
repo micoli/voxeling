@@ -97,7 +97,7 @@ export class avatarView {
 		this.meshShader.uniforms.lLegRotateX = Math.cos(2 * this.t / 100 * 2 * Math.PI)
 
 		if (this.skin){
-			//this.meshShader.uniforms.skin = this.skin.bind();
+			this.meshShader.uniforms.skin = this.skin.bind();
 		};
 		this.meshShader.attributes.position.pointer()
 		this.meshShader.attributes.uv.pointer()
