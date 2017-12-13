@@ -1,3 +1,4 @@
+var glShader = require('gl-shader')
 var glslify = require('glslify');
 var avatarModule = require('avatar')
 var createSkinMesh = avatarModule.createSkinMesh
@@ -27,16 +28,16 @@ export class avatarView {
 		var textureURI = '/textures/';
 		var textureFile ='substack.png';
 		var self = this;
-		createSkinTexture(this.game.shell.gl, textureURI, textureFile, 'image/png', function(err: any, texture: any) {
+		createSkinTexture(this.game.shell.gl, textureURI+textureFile, textureFile, 'image/png', function(err: any, texture: any) {
 			self.skin = texture
 		});
 
 		self.mesh = createSkinMesh(this.game.shell.gl);
 
-		self.meshShader = glslify({
-			vertex: './avatar.vert'     // includes matrix transforms
-		, fragment: './avatar.frag'   // applies texture
-		})(this.game.shell.gl);
+		self.meshShader = glShader(this.game.shell.gl,
+			glslify ('./avatar.vert'),
+			glslify ('./avatar.frag')
+		);
 	}
 
 	enable() {
@@ -83,7 +84,6 @@ export class avatarView {
 		, 0.001
 		, 1000
 		)*/
-
 		this.meshShader.bind()
 		this.meshShader.attributes.position.location = 0
 		this.meshShader.attributes.uv.location = 1
@@ -96,7 +96,9 @@ export class avatarView {
 		this.meshShader.uniforms.rLegRotateX = Math.sin(2 * this.t / 100 * 2 * Math.PI)
 		this.meshShader.uniforms.lLegRotateX = Math.cos(2 * this.t / 100 * 2 * Math.PI)
 
-		if (this.skin) this.meshShader.uniforms.skin = this.skin.bind()
+		if (this.skin){
+			//this.meshShader.uniforms.skin = this.skin.bind();
+		};
 		this.meshShader.attributes.position.pointer()
 		this.meshShader.attributes.uv.pointer()
 

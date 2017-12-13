@@ -4,8 +4,8 @@ var duplexEmitter = require('duplex-emitter');
 var extend = require('extend');
 import {Game} from '../shared/voxel-engine-stackgl';
 var crunch = require('voxel-crunch');
-var voxelPlayer = require('voxel-player');
 var ndarray = require('ndarray');
+//var THREE = require('THREE');
 import {avatarView} from './avatar-view';
 //var voxelPlayer = require('voxel-player');
 //var skin = require('minecraft-skin');
@@ -262,19 +262,39 @@ export class VoxelClient extends EventEmitter {
 		var pos = update.p;
 		var player = self.remoteClients[id];
 		if (!player) {
-			//var createPlayer = voxelPlayer(self.game);
-			//var player = createPlayer(self.texturePath+self.playerTexture,{scale:0.5});
+			/*var mesh = new self.game.THREE.Mesh(
+			new self.game.THREE.CubeGeometry(1, 3, 1), // width, height, depth
+				self.game.materials.material
+			)
+			// paint the mesh with a specific texture in the atlas
+			//self.game.materials.paint(mesh, 'obsidian')
+			// move the item to some location
+			mesh.position.set(0, 3, -5)
+			var item = self.game.addItem({
+				mesh: mesh,
+				size: 3,
+				//velocity: { x: 0, y: 0, z: 0 } // initial velocity
+			})*/
+			//var skin = require('minecraft-skin')
+			//var duck = skin(THREE, 'neg.png')
+			//var player = duck.createPlayerObject()
+			//player.position.y -= 15
+			/*scene.add(duckPlayer)
+			//var createPlayer = require('voxel-player')(self.game);
+			var player = createPlayer(self.texturePath+self.playerTexture,{scale:0.5});
+			*/
 			let player = new avatarView(self.game);
 			let playerMesh = player.mesh;
 			self.remoteClients[id] = player;
-			playerMesh.children[0].position.y = 10;
-			self.game.scene.add(player);
+			//playerMesh.children[0].position.y = 10;
+			//self.game.scene.add(player);
 		}
 		let playerSkin = self.remoteClients[id];
 		let playerMesh = playerSkin.mesh;
-		playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
-		playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
-		playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
+		//playerSkin.meshShader.attributes.position = [update.p.x,update.p.y,update.p.z-5];
+		//playerMesh.position.copy(playerMesh.position.lerp(pos, self.lerpPercent));
+		//playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
+		//playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
 	}
 
 	updatePlayerGhost(id: any, update: any) {
@@ -298,8 +318,7 @@ export class VoxelClient extends EventEmitter {
 		playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
 		playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
 	}
-
-	getSkin(textureURI:any,id : any) {
+	/*getSkin(textureURI:any,id : any) {
 		var self = this;
 		var skin: any;
 		var shader: any;
@@ -316,6 +335,6 @@ export class VoxelClient extends EventEmitter {
 		, fragment: './avatar.frag'   // applies texture
 		})(this.game.shell.gl);
 
-	}
+	}*/
 
 }
