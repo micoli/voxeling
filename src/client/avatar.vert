@@ -9,7 +9,7 @@ uniform float lArmRotateX;
 uniform float rLegRotateX;
 uniform float lLegRotateX;
 
-uniform vec4 u_Translation;
+uniform mat4 u_Translation;
 
 varying vec2 vUv;
 
@@ -78,7 +78,7 @@ void main() {
 		partMatrix *= translate(part == 4 ? -0.5 : 0.5, 0.0, 0.0);
 	}
 
-	gl_Position = projectionMatrix * modelViewMatrix * partMatrix * vec4(position.xyz, 1.0) + u_Translation;
+	gl_Position = projectionMatrix  * modelViewMatrix * u_Translation * partMatrix  * vec4(position.xyz, 1.0);
 
 	vUv = uv;
 }

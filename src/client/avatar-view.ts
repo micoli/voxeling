@@ -6,7 +6,7 @@ var createSkinTexture = avatarModule.createSkinTexture
 
 export class avatarView {
 	game: any;
-	gameShader: any;
+	shaderPlugin: any;
 	gl: any;
 
 	skin:any;
@@ -28,30 +28,13 @@ export class avatarView {
 	constructor ( game:any ){
 		this.game = game;
 
-		this.gameShader = game.plugins.get( 'voxel-shader' );
+		this.shaderPlugin = game.plugins.get( 'voxel-shader' );
 
-		if ( !this.gameShader ) {
+		if ( !this.shaderPlugin ) {
 			throw 'voxel-webview requires voxel-shader plugin' ;
 		}
 
-		this.init();
 		this.enable();
-	}
-
-	init(){
-		var self = this;
-		var textureURI = '/textures/';
-		var textureFile ='SnDKuc1.png';
-
-		createSkinTexture(this.game.shell.gl, textureURI+textureFile, textureFile, 'image/png', function(err: any, texture: any) {
-			self.skin = texture;
-		});
-
-		self.mesh = createSkinMesh(this.game.shell.gl);
-		self.meshShader = glShader(this.game.shell.gl ,
-			glslify ('./avatar.vert'),
-			glslify ('./avatar.frag')
-		);
 	}
 
 	walk(){
@@ -74,28 +57,41 @@ export class avatarView {
 			this.game.shell.on( 'gl-init', this.onInit);
 		}
 
-		this.gameShader.on( 'updateProjectionMatrix',  this.onUpdatePerspective);
+		this.shaderPlugin.on( 'updateProjectionMatrix',  this.onUpdatePerspective);
 		this.game.shell.on( 'gl-render', this.onRender);
 	};
 
 	disable() {
+		if ( this.onInit ) {
+			this.game.shell.removeListener( 'gl-init', this.onInit );
+		}
+		this.shaderPlugin.removeListener( 'updateProjectionMatrix', this.onUpdatePerspective );
 		this.game.shell.removeListener( 'gl-render', this.onRender );
-		if ( this.onInit ) this.game.shell.removeListener( 'gl-init', this.onInit );
-		this.gameShader.removeListener( 'updateProjectionMatrix', this.onUpdatePerspective );
 	}
 
 	ginit() {
 		this.gl = this.game.shell.gl;
+		var self = this;
+		var textureURI = '/textures/';
+		var textureFile ='SnDKuc1.png';
+
+		createSkinTexture(this.game.shell.gl, textureURI+textureFile, textureFile, 'image/png', function(err: any, texture: any) {
+			self.skin = texture;
+		});
+
+		self.mesh = createSkinMesh(this.game.shell.gl);
+		self.meshShader = glShader(this.game.shell.gl ,
+			glslify ('./avatar.vert'),
+			glslify ('./avatar.frag')
+		);
 	}
 
 	updatePerspective() {
-		var cameraFOVradians = this.gameShader.cameraFOV * Math.PI / 180;
 		//this.css3d.updatePerspective( cameraFOVradians, this.game.shell.width, this.game.shell.height );
 	}
 
 	render() {
 		if(!this.u_Translation){
-			this.u_Translation = this.gl.getUniformLocation(this.meshShader.program, 'u_Translation');
 		}
 		this.gl.enable(this.gl.CULL_FACE);
 		this.gl.enable(this.gl.DEPTH_TEST);
@@ -103,8 +99,8 @@ export class avatarView {
 		this.meshShader.bind();
 		this.meshShader.attributes.position.location = 0;
 		this.meshShader.attributes.uv.location = 1;
-		this.meshShader.uniforms.projectionMatrix = this.gameShader.projectionMatrix;
-		this.meshShader.uniforms.modelViewMatrix = this.gameShader.viewMatrix;
+		this.meshShader.uniforms.projectionMatrix = this.shaderPlugin.projectionMatrix;
+		this.meshShader.uniforms.modelViewMatrix = this.shaderPlugin.viewMatrix;
 		if(this.isWalking){
 			this.dt += 1;
 			this.dt %= 100;
@@ -114,7 +110,16 @@ export class avatarView {
 				this.dt %= 100;
 			}
 		}
-		this.gl.uniform4f(this.u_Translation, this.globalPosX, this.globalPosY, this.globalPosZ, 0.0);
+
+		var translation = [
+		    1, 0, 0, 0,
+		    0, 1, 0, 0,
+		    0, 0, 1, 0,
+		    this.globalPosX, this.globalPosY+2, this.globalPosZ, 1
+		];
+
+		this.u_Translation = this.gl.getUniformLocation(this.meshShader.program, 'u_Translation');
+		this.gl.uniformMatrix4fv(this.u_Translation, false, translation);
 		this.meshShader.uniforms.rArmRotateX = Math.sin(this.dt / 100 * 2 * Math.PI);
 		this.meshShader.uniforms.lArmRotateX = Math.sin(this.dt / 100 * 2 * Math.PI);
 		this.meshShader.uniforms.rLegRotateX = Math.sin(2 * this.dt / 100 * 2 * Math.PI);
