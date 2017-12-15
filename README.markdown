@@ -39,7 +39,7 @@ What I'm working on
 * Point light sources and shadow mapping
 
 
-Technical Features 
+Technical Features
 ====
 
 * Client and Server (ported bits from my voxel-client and voxel-server forks)
@@ -70,8 +70,6 @@ In terminal 1:
 ```
 # git clone the repo into voxeling folder
 cd /path/to/voxeling
-# Download textures from http://bdcraft.net/purebdcraft-minetest (256x256 version)
-# Extract to www/testbdcraft
 npm install
 
 # create folder for world chunks

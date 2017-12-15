@@ -3,11 +3,9 @@ import {Game} from '../shared/voxel-engine-stackgl';
 import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
 
 var initGame = function() {
-	var canvas = (<HTMLCanvasElement>document.getElementById('herewego'));
-	//var inputHandler = new InputHandler(document.body, canvas);
-
-	canvas.width = canvas.clientWidth;
-	canvas.height = canvas.clientHeight;
+	var _canvas = (<HTMLCanvasElement>document.getElementById('game-holder'));
+	_canvas.width = _canvas.clientWidth;
+	_canvas.height = _canvas.clientHeight;
 
 	(<any>window).voxelGame = new Game({
 		exposeGlobal: true,
@@ -73,7 +71,7 @@ var initGame = function() {
 				getConnection : function(init:any){
 					var connection = new WebSocketEmitterClient();
 					connection.on('open', function() {
-						console.log('aaaa 2');
+						console.log('websocket opened, init');
 						init(connection);
 					});
 
@@ -89,9 +87,9 @@ var initGame = function() {
 				}
 			},
 			'voxel-engine-stackgl': {
-				appendDocument: true,
+				appendDocument: false,
 				exposeGlobal: true,  // for debugging
-
+				container : _canvas,
 				lightsDisabled: true,
 				arrayTypeSize: Uint8Array.BYTES_PER_ELEMENT,// Uint16Array,  // arrayType: Uint8Array
 				useAtlas: true,
@@ -211,7 +209,6 @@ var initGame = function() {
 			'voxel-voila': {},
 			'voxel-fullscreen': {},
 			'voxel-keys': {},
-
 			// the GUI window (built-in toggle with 'H')
 			//'voxel-debug': {}, // heavily three.js dependent TODO: more debugging options for stackgl-based engine besides camera?
 			'camera-debug': {}, // TODO: port from game-shell-fps-camera

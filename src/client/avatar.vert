@@ -9,7 +9,12 @@ uniform float lArmRotateX;
 uniform float rLegRotateX;
 uniform float lLegRotateX;
 
-uniform mat4 u_Translation;
+uniform float globalPosX;
+uniform float globalPosY;
+uniform float globalPosZ;
+
+uniform float globalYaw;
+uniform float globalPitch;
 
 varying vec2 vUv;
 
@@ -52,12 +57,17 @@ mat4 rotateXaround(float a, float x, float y, float z) {
 	return translate(x,y,z) * rotateX(a) * translate(-x,-y,-z);
 }
 
+mat4 rotateYaround(float a, float x, float y, float z) {
+	return translate(x,y,z) * rotateY(a) * translate(-x,-y,-z);
+}
+
 void main() {
 	mat4 partMatrix = mat4(1.0);
 
 	int part = int(position.w);
 	if (part == 0) {
 		// head
+		partMatrix *= rotateX(globalPitch);
 	} else if (part == 1) {
 		// body
 		partMatrix *= translate(0.0, -1.25, 0.0) * scale(1.0, 1.5, 0.5);
@@ -77,8 +87,7 @@ void main() {
 		partMatrix *= scale(0.5, 1.5, 0.5);
 		partMatrix *= translate(part == 4 ? -0.5 : 0.5, 0.0, 0.0);
 	}
-
-	gl_Position = projectionMatrix  * modelViewMatrix * u_Translation * partMatrix  * vec4(position.xyz, 1.0);
+	gl_Position = projectionMatrix  * modelViewMatrix * translate(globalPosX,globalPosY,globalPosZ) * rotateYaround(globalYaw, 0.0, 0.0, 0.0) * partMatrix  * vec4(position.xyz, 1.0);
 
 	vUv = uv;
 }

@@ -78,7 +78,7 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 		exec: 'node --inspect ',
 		//script : outDir+'src/server/index.js',
 		script : outDir+'src/gameServer/run.js',
-		ext : 'ts json',
+		ext : 'ts json vert',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
 		env : {
@@ -258,25 +258,10 @@ gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function()
 	//bundleClient('client-worker',true);
 	gulp.watch([
 		'src/client/**/*.ts',
+		'src/client/**/*.vert',
 		'src/shared/**/*.ts'
 	], [ 'build-client' ]);
-	return;
-	gulp.watch([
-		'src/client/client-worker.ts',
-		'src/shared/coordinates.ts',
-		'src/client/lib/textures.ts',
-		'src/client/lib/frustum.ts',
-		'src/shared/generators/client.ts',
-		'src/shared/web-socket-emitter.ts',
-		'src/client/lib/rle-decoder.ts',
-		'src/client/lib/object-pool.ts',
-		'src/client/lib/meshers/horizontal-merge.ts',
-		'src/client/lib/timer.ts',
-		'src/shared/log.ts',
-		'src/shared/voxel-engine-stackgl.ts'
-	], [ 'build-client-worker' ]);
-
-})
+});
 
 gulp.task('watch-server', [ /*'lint-ts',*/ 'build-server', 'configurations' ], function() {
 	gulp.watch([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);

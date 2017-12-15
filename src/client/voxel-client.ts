@@ -251,9 +251,7 @@ export class VoxelClient extends EventEmitter {
 			self.remoteClients[id] = new avatarView(self.game);
 			self.remoteClients[id].walk();
 		}
-		self.remoteClients[id].globalPosX=update.p.x;
-		self.remoteClients[id].globalPosY=update.p.y;
-		self.remoteClients[id].globalPosZ=update.p.z;
+		self.remoteClients[id].update(update);
 		//playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
 		//playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
 	}

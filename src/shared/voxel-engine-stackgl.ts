@@ -188,8 +188,6 @@ export class Game extends EventEmitter {
 		//API not likely compatible (TODO: make it compatible?)
 		obsolete(this, 'camera');
 
-
-
 		// the game-shell
 		if (this.isClient) /*GZ: Do not load on server, as document element is missing*/ {
 			var createShell = require('gl-now');
@@ -560,7 +558,6 @@ export class Game extends EventEmitter {
 		if (opts.container) {
 			return opts.container;
 		}
-
 		// based on game-shell makeDefaultContainer()
 		var container = document.createElement("div");
 		(<any>container).tabindex = 1;
