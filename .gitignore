@@ -4,6 +4,7 @@ chunks
 node_modules
 .tern-project
 public/client/client.js
+public/client/app.js
 public/client/client-worker.js
 
 .project
