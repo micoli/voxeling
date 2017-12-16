@@ -16,7 +16,7 @@ export function init(configs: IServerConfigurations, database: IDatabase): Promi
 
 		const port = process.env.PORT || configs.port;
 		const server = new Hapi.Server();
-		const gameserver = new GameServer();
+		const gameserver = new GameServer({});
 		server.connection({
 			port: port,
 			routes: {

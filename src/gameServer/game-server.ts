@@ -1,117 +1,212 @@
-var WebSocketEmitter = require('../shared/web-socket-emitter');
-import {Server} from './lib/server';
-import {FileChunkStore} from './lib/chunk-stores/file';
-import {MysqlChunkStore} from './lib/chunk-stores/mysql';
-var chunkGenerator = require('../shared/generators/server-terraced');
-import {VoxelStats} from './lib/voxel-stats';
+// external dependencies
 var config = require('../config');
-var debug = false;
+var path = require('path');
+var extend = require('extend');
+var ndarray = require('ndarray');
+import {EventEmitter} from 'events';
+import {voxelServer} from './voxel-server';
 
-export class GameServer {
-	mysqlPool: any;
-	clientSettings: {
-		initialPosition: any;
-	};
+// internal dependencies
+//var modvox = require('./features/modvox/server.js');
+//var entity = require('./features/entity/server.js');
 
-	constructor() {
-		// This only gets filled by require if config.mysql isn't empty
-		this.clientSettings = {
-			initialPosition: config.initialPosition
+export class GameServer extends EventEmitter {
+	baseServer: any;
+	game: any;
+	settings: any;
+	spatialTriggers: any[];
+	connections: number;
+	connectionLimit: number = 10;
+	constructor(opts: any) {
+		super();
+		// force instantiation via `new` keyword
+		this.initialize(opts);
+	}
+
+	public connectClient(duplexStream: any) {
+		var self = this;
+		self.baseServer.connectClient(duplexStream);
+		console.log(duplexStream.id, 'join');
+	}
+
+	public removeClient(duplexStream: any) {
+		var self = this;
+		self.baseServer.removeClient(duplexStream);
+		console.log(duplexStream.id, 'left');
+	}
+
+	//
+	// Private
+	//
+
+	private initialize(opts: any) {
+		var self = this;
+
+		// for debugging
+		var defaults = {
+			generateChunks: false,
+			chunkDistance: 2,
+			materials: [
+				['grass', 'dirt', 'grass_dirt'],
+				'dirt',
+				'plank',
+				'cobblestone',
+				'brick',
+				'bedrock',
+				'glowstone',
+				'netherrack',
+				'obsidian',
+				'diamond',
+				'whitewool',
+				'redwool',
+				'bluewool',
+			],
+			avatarInitialPosition: [2, 20, 2],
+			forwardEvents: ['spatialTrigger'],
 		};
+		var settings = self.settings = extend({}, defaults, opts);
 
-		var chunkStore = null;
-		if (config.mysql) {
-			this.mysqlPool = require('mysql').createPool(config.mysql);
-			chunkStore = new MysqlChunkStore(
-				new chunkGenerator(config.chunkSize),
-				config.mysql
-			);
-		} else {
-			chunkStore = new FileChunkStore(
-				new chunkGenerator(config.chunkSize),
-				config.chunkFolder
-			);
-		}
+		// get database
+		// enable event forwarding for features
+		//settings.forwardEvents.push('modvox');
+		//settings.forwardEvents.push('entity');
 
-		var serverSettings = {
-			// test with memory chunk store for now
-			worldRadius: config.worldRadius || 10,
-			maxPlayers: config.maxPlayers || 10
-		};
+		// create and initialize base game server
+		var baseServer = self.baseServer = new voxelServer(settings);
+		self.game = baseServer.game;
 
-		// Chunk persistence
-		var chunksToSave = {};
+		// sane defaults
+		self.spatialTriggers = [];
+		// expose emitter methods on client
+		// add features
+		//modvox(self);
+		//entity(self);
+		self.bindEvents();
+	}
 
-		var server = new Server(config, chunkStore, serverSettings, this.clientSettings);
+	private bindEvents() {
+		var self = this;
+		var settings = self.settings;
+		var baseServer = self.baseServer;
+		var game = self.game;
 
-		server.on('client.join', function(client: any) {
-			console.log(client);
+		// setup spatial triggers
+		self.setupSpatialTriggers();
+
+		// setup world CRUD handlers
+		baseServer.on('missingChunk', function (position: any, complete: any) {
+			var cs = self.game.chunkSize;
+			var dimensions: any[] = [cs, cs, cs];
+
+			var chunk: any = {
+				position : position,
+				voxels: self.getFlatChunkVoxels(position),
+				dims : dimensions,
+			};
+			chunk.length = chunk.voxels.length;
+			self.game.showChunk(chunk);
+			self.emit('chunkLoaded', chunk);
 		});
 
-		server.on('client.leave', function(client: any) {
+		baseServer.on('set', function(pos: any, val: any) {
+			var chunk = game.getChunkAtPosition(pos);
+			//storeChunk(chunk);
 		});
+		// trigger world load and emit 'ready' when done
 
-		server.on('client.state', function(state: any) {
-		});
-
-		server.on('chat', function(message: any) {
-			console.log('chat', message);
-			VoxelStats.count('chat.messages.sent');
-			if (this.mysqlPool) {
-				var row = {
-					created_ms: Date.now(),
-					username: message.user,
-					message: message.text
-				};
-				this.mysqlPool.query('insert into chat SET ?', row);
+		var loadedChunks = 0;
+		var expectedNumberOfInitialChunks = Math.pow(self.game.voxels.distance * 2, 3); // (2*2)^3=64 from [-2,-2,-2] --> [1,1,1]
+		self.on('chunkLoaded', function(chunk: any) {
+			loadedChunks++;
+			// TODO: ideally would unsub if this condition is true
+			if (loadedChunks === expectedNumberOfInitialChunks) {
+				self.emit('ready');
 			}
 		});
+		game.voxels.requestMissingChunks(game.worldOrigin);
 
-		server.on('error', function(error: any) {
-			console.log(error);
+		// log chat
+		baseServer.on('chat', function(message: any) {
+			console.log('chat - ', message);
 		});
 
-		function clientUsernames() {
-			var usernames = [];
-			for (var clientId in server.clients) {
-				var client = server.clients[clientId];
-				usernames.push(client.username);
-			}
-			console.log('Usernames:', usernames.join(','));
-		}
-
-		// WEBSOCKET SETUP
-		var connectionLimit = config.maxPlayers;
-		var connections = 0;
-
-		var wseServer = new WebSocketEmitter.server({
-			host: config.websocketBindAddress,
-			port: config.websocketBindPort
+		// handle errors
+		baseServer.on('error', function(error: any) {
+			console.log('error - error caught in server:');
+			console.log(error.stack);
 		});
 
-		wseServer.on('error', function(error: any) {
-			console.log(error);
-		});
-
-		wseServer.on('connection', function(connection: any) {
-			VoxelStats.count('connections.incoming');
-			// Have we reached our player max?
-			var ts = new Date();
-			console.log(ts.toUTCString(), 'Incoming client connection');
-			connections++;
-			console.log('Connections: ' + connections);
-
-			connection.on('close', function() {
-				connections--;
-				var ts = new Date();
-				console.log(ts.toUTCString(), 'Connections: ' + connections);
+		// store chunk in db
+		/*function storeChunk(chunk: any) {
+			self.voxelDb.store(settings.worldId, chunk, function afterStore(err: any) {
+				if (err) {
+					console.error('chunk store error', err.stack);
+				}
 			});
-			if (connections > connectionLimit) {
-				console.log('Denying connection, at our limit');
-				connection.close();
-				return;
-			}
-			server.connectClient(connection);
+		}*/
+	}
+
+	private setupSpatialTriggers() {
+		var self = this;
+		var baseServer = self.baseServer;
+
+		// get modvoxes from db
+		/*self.voxelDb.db.get('spatialTriggers', function(err: any, val: any) {
+			self.spatialTriggers = val ? JSON.parse(val) : [];
+		});*/
+
+		// set modvox
+		baseServer.on('spatialTrigger', function(spatialTrigger: any) {
+			// add to list
+			self.spatialTriggers.push(spatialTrigger);
+			updateSpatialTriggerStore();
 		});
+
+		// send spatialTriggers on join
+		baseServer.on('client.join', function(client: any) {
+			console.log('client.join');
+			self.spatialTriggers.map(function(spatialTrigger: any) {
+				client.connection.emit('spatialTrigger', spatialTrigger);
+			});
+		});
+		// store spatialTriggers
+		function updateSpatialTriggerStore() {
+			//self.voxelDb.db.put('spatialTriggers', JSON.stringify(self.spatialTriggers));
+		}
+	}
+
+	getFlatChunkVoxels(position: any) {
+		var material = 11;
+		if (position[1] > 0) {
+			material = 0;
+		}
+
+		var chunkSize = 32;
+		var width = chunkSize;
+		var pad = 4;
+		var arrayType = Uint8Array;
+		var chunkSizem = width - 1;
+
+		var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
+		var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
+		var h = pad >> 1;
+		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
+		var b = 0;
+		for (var x = 0; x < width; ++x) {
+			for (var z = 0; z < width; ++z) {
+				for (var y = 0; y < width; ++y) {
+					b++;
+					if ((x == 0 || x == chunkSizem || z == 0 || z == chunkSizem) && (y == 0 || y == chunkSizem)) {
+						voxels.set(x, y, z, 37);
+					} else if (position[1] == 0 && y == 0) {
+						voxels.set(x, y, z, material);
+					} else {
+						voxels.set(x, y, z, 0);
+					}
+				}
+			}
+		}
+		voxelsPadded.position = position;
+		return voxelsPadded;
 	}
 }

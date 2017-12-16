@@ -72,11 +72,13 @@ gulp.task('compile-test', function() {
 });
 
 gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'configurations','build-server' ], function() {
-	gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
+	//gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
-		script : outDir+'src/server/index.js',
-		ext : 'ts json',
+		exec: 'node --inspect ',
+		//script : outDir+'src/server/index.js',
+		script : outDir+'src/gameServer/run.js',
+		ext : 'ts json vert',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
 		env : {
@@ -241,11 +243,11 @@ function bundleClient1(file,watch){
 }
 
 gulp.task('build-client', function() {
-	return bundleClient('client',false);
+	return bundleClient('app',false);
 });
 
 gulp.task('build-client-worker', function() {
-	return bundleClient('client-worker',false);
+	//return bundleClient('client-worker',false);
 });
 
 gulp.task('build-clients', [ 'build-client', 'build-client-worker' ]);
@@ -256,23 +258,10 @@ gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function()
 	//bundleClient('client-worker',true);
 	gulp.watch([
 		'src/client/**/*.ts',
+		'src/client/**/*.vert',
 		'src/shared/**/*.ts'
 	], [ 'build-client' ]);
-	gulp.watch([
-		'src/client/client-worker.ts',
-		'src/shared/coordinates.ts',
-		'src/client/lib/textures.ts',
-		'src/client/lib/frustum.ts',
-		'src/shared/generators/client.ts',
-		'src/shared/web-socket-emitter.ts',
-		'src/client/lib/rle-decoder.ts',
-		'src/client/lib/object-pool.ts',
-		'src/client/lib/meshers/horizontal-merge.ts',
-		'src/client/lib/timer.ts',
-		'src/shared/log.ts'
-	], [ 'build-client-worker' ]);
-
-})
+});
 
 gulp.task('watch-server', [ /*'lint-ts',*/ 'build-server', 'configurations' ], function() {
 	gulp.watch([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);
