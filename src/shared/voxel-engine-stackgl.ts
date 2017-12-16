@@ -15,8 +15,7 @@ var ndarray = require('ndarray');
 var isndarray = require('isndarray');
 var obsolete = require('obsolete');
 var three = require('three');
-
-var createPlugins = require('voxel-plugins');
+var voxelPlugins = require('voxel-plugins');
 var extend = require('extend');
 // cleanup key name - based on https://github.com/mikolalysenko/game-shell/blob/master/shell.js
 var filtered_vkey = function(k:any) {
@@ -227,7 +226,7 @@ export class Game extends EventEmitter {
 				'voxel-registry': require('voxel-registry'),
 			});
 		}
-		var plugins = createPlugins(this, {
+		var plugins = voxelPlugins(this, {
 			masterPluginName: 'voxel-engine-stackgl',
 			loaders: pluginLoaders,
 			require: opts.require // optional (opts.pluginLoaders favored instead)

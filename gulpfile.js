@@ -243,7 +243,7 @@ function bundleClient1(file,watch){
 }
 
 gulp.task('build-client', function() {
-	return bundleClient('client',false);
+	return bundleClient('app',false);
 });
 
 gulp.task('build-client-worker', function() {

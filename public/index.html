@@ -30,7 +30,7 @@
 </head>
 
 <body class="nav-md">
-	<div class="container body">
+	<div class="container body" id="app">
 		<div class="main_container">
 			<div class="col-md-3 left_col">
 				<div class="left_col scroll-view">
@@ -59,7 +59,7 @@
 						<div class="menu_section">
 							<h3>General</h3>
 							<ul class="nav side-menu">
-								<li><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
+								<li><a><i class="fa fa-home"></i> Home {{ field }}<span class="fa fa-chevron-down"></span></a>
 									<ul class="nav child_menu">
 										<li><a href="index.html">Dashboard</a></li>
 										<li><a href="index2.html">Dashboard2</a></li>
@@ -558,6 +558,6 @@
 		<script src="build/js/custom.min.js"></script>
 
 
-		<script src="client/client.js"></script>
+		<script src="client/app.js"></script>
 	</body>
 </html>

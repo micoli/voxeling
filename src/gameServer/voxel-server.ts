@@ -122,7 +122,7 @@ export class voxelServer extends EventEmitter {
 			self.sendInitialChunks(client.connection)
 			// emit client.created for module consumers
 			self.emit('client.created', client)
-		}))
+		}));
 
 		// client sends new position, rotation
 		client.connection.on('state', self.handleErrors(function(state: any) {

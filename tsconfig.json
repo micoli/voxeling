@@ -13,7 +13,8 @@
 	  "DOM"
 	],
 	"noImplicitAny": true,
-	"alwaysStrict": true
+	"alwaysStrict": true,
+	"semicolon": [true, "always"]
 },
 "include": [
 	"src/**/**.ts",

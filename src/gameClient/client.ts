@@ -2,7 +2,7 @@ var config = require('../config');
 import {Game} from '../shared/voxel-engine-stackgl';
 import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
 
-var initGame = function() {
+export default function() {
 	var _canvas = (<HTMLCanvasElement>document.getElementById('game-holder'));
 	_canvas.width = _canvas.clientWidth;
 	_canvas.height = _canvas.clientHeight;
@@ -218,5 +218,4 @@ var initGame = function() {
 			//'voxel-flatland': { block: 'bedrock', onDemand: false},
 		}
 	});
-};
-initGame();
+}
