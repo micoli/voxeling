@@ -23,5 +23,9 @@
 "exclude": [
 	"node_modules",
 	"src/spare"
+],
+"files": [
+	"src/typings.d.ts"
 ]
+
 }

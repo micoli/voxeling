@@ -1,11 +1,8 @@
-import initGame from '../gameClient/client';
-initGame();
+import { Vue, Component } from 'vue-property-decorator';
 
-/*var Vue = require('vue/dist/vue.js');
-var vm = new Vue({
-	el : '#app',
-	data: {
-		field : 'aa'
-	}
-});
-*/
+@Component({
+	template: `
+	`
+})
+export default class App extends Vue {
+}

@@ -17,19 +17,7 @@ const gutil = require('gulp-util');
 
 console.log(plugins.util.colors.yellow('Plugins:') + ' ' + plugins.util.colors.green(Object.keys(plugins)));
 
-//const gutil = require('gulp-util');
-//const ts = require('gulp-typescript');
-//const nodemon = require('gulp-nodemon');
-//const rimraf = require('gulp-rimraf');
-//const tslint = require('gulp-tslint');
-//const mocha = require('gulp-mocha');
-//const shell = require('gulp-shell');
-//const env = require('gulp-env');
-//const connect = require('gulp-connect');
-//const rename = require('gulp-rename');
-
-
-var outDir = 'build/';
+var outDir = 'dist/';
 var tsOptions = {
 	declaration : true,
 	lib : [ "es2015","DOM" ],
