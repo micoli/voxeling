@@ -22,7 +22,7 @@ export default function(server: Hapi.Server, serverConfigs: IServerConfiguration
 			description: 'Get user info.',
 			validate: {
 				headers: UserValidator.jwtValidator,
-			},
+			} /*as Hapi.RouteValidationConfigurationObject*/,
 			plugins: {
 				'hapi-swagger': {
 					responses: {
@@ -47,7 +47,7 @@ export default function(server: Hapi.Server, serverConfigs: IServerConfiguration
 			tags: ['api', 'users'],
 			description: 'Delete current user.',
 			validate: {
-				headers: UserValidator.jwtValidator
+				headers: (Joi.JoiValidationOptions)UserValidator.jwtValidator
 			},
 			plugins: {
 				'hapi-swagger': {

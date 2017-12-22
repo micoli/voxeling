@@ -14,7 +14,7 @@
 	],
 	"noImplicitAny": true,
 	"alwaysStrict": true,
-	"semicolon": [true, "always"]
+	"experimentalDecorators": true
 },
 "include": [
 	"src/**/**.ts",
