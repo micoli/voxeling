@@ -180,7 +180,7 @@ export default class SideMenu extends Vue {
 		$SIDEBAR_MENU.find('a[href="' + CURRENT_URL + '"]').parent('li').addClass('current-page');
 
 		$SIDEBAR_MENU.find('a').filter(function () {
-			return this.href == CURRENT_URL;
+			return (<HTMLAnchorElement>this).href == CURRENT_URL;
 		}).parent('li').addClass('current-page').parents('ul').slideDown({
 			complete : setContentHeight
 		}).parent().addClass('active');

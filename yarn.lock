@@ -59,13 +59,9 @@
     "@types/podium" "*"
     "@types/shot" "*"
 
-"@types/joi@*":
+"@types/joi@*", "@types/joi@^13.0.3":
   version "13.0.3"
   resolved "https://registry.yarnpkg.com/@types/joi/-/joi-13.0.3.tgz#420cd3a59f3e739a711c11619790b3e80068ab92"
-
-"@types/joi@^10.3.2":
-  version "10.6.1"
-  resolved "https://registry.yarnpkg.com/@types/joi/-/joi-10.6.1.tgz#0abd5d81a61fc79bdab65345793c1a526e02daa6"
 
 "@types/jquery@^2.0.32":
   version "2.0.48"
@@ -6193,6 +6189,10 @@ hoek@4.x.x, hoek@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.0.tgz#72d9d0754f7fe25ca2d01ad8f8f9a9449a89526d"
 
+hoek@5.x.x:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-5.0.2.tgz#d2f2c95d36fe7189cf8aa8c237abc1950eca1378"
+
 home-or-tmp@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/home-or-tmp/-/home-or-tmp-2.0.0.tgz#e36c3f2d2cae7d746a857e38d18d5f32a7882db8"
@@ -7040,7 +7040,7 @@ jQuery-Smart-Wizard@mstratman/jQuery-Smart-Wizard#3.3.1:
   version "0.0.0"
   resolved "https://codeload.github.com/mstratman/jQuery-Smart-Wizard/tar.gz/87dd49a418e70d34579c8c8fe335bc964004dea8"
 
-joi@10.x.x, joi@^10.5.0:
+joi@10.x.x:
   version "10.6.0"
   resolved "https://registry.yarnpkg.com/joi/-/joi-10.6.0.tgz#52587f02d52b8b75cdb0c74f0b164a191a0e1fc2"
   dependencies:
@@ -7074,6 +7074,14 @@ joi@^11.1.0:
     hoek "4.x.x"
     isemail "3.x.x"
     topo "2.x.x"
+
+joi@^13.0.2:
+  version "13.0.2"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-13.0.2.tgz#8cc57a573b7c0b64108fa6fd85061c20fcb0d6b0"
+  dependencies:
+    hoek "5.x.x"
+    isemail "3.x.x"
+    topo "3.x.x"
 
 joi@^6.10.1:
   version "6.10.1"
@@ -11990,6 +11998,12 @@ topo@2.x.x, topo@^2.0.2:
   resolved "https://registry.yarnpkg.com/topo/-/topo-2.0.2.tgz#cd5615752539057c0dc0491a621c3bc6fbe1d182"
   dependencies:
     hoek "4.x.x"
+
+topo@3.x.x:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/topo/-/topo-3.0.0.tgz#37e48c330efeac784538e0acd3e62ca5e231fe7a"
+  dependencies:
+    hoek "5.x.x"
 
 toposort@^1.0.0:
   version "1.0.6"

@@ -18,7 +18,7 @@ import TitleStatCount from './components/homepage/TitleStatCount';
 import Homepage from './components/homepage/Homepage';
 import Homepage2 from './components/homepage/Homepage2';
 import Auth from './components/auth/Auth';
-import App from './App';
+//import App from './App';
 
 Vue.mixin({
 	data: function () {
@@ -78,6 +78,6 @@ var vm = new Vue({
 	},
 	created: function () {
 		SecurityService.init(this);
-   },
+},
 	router : router
 });
