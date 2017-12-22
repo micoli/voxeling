@@ -5140,7 +5140,7 @@ gl-matrix@2.X.X, gl-matrix@^2.1.0, gl-matrix@^2.2.0, gl-matrix@^2.2.1, gl-matrix
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/gl-matrix/-/gl-matrix-2.4.0.tgz#2089b13301a29eec822d9d99dffc1f78ee9a3c50"
 
-"gl-mesh@github:deathcap/gl-mesh#ndarrayops12+skip0":
+gl-mesh@deathcap/gl-mesh#ndarrayops12+skip0:
   version "0.1.0"
   resolved "https://codeload.github.com/deathcap/gl-mesh/tar.gz/69a24b4189c5d82b90be7c4ffe9b3e1d35d24e40"
   dependencies:
