@@ -68,6 +68,6 @@ export default class ClosableWidget extends Vue {
 	}
 
 	close (el:any) {
-        $(el.target).closest('.x_panel').remove();
+		$(el.target).closest('.x_panel').remove();
 	}
 }
