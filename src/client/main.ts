@@ -1,3 +1,11 @@
+/*
+test: /\.(glsl|frag|vert|vsh|fsh)$/,
+loader: 'raw'
+},{
+test: /\.(glsl|frag|vert|vsh|fsh)$/,
+loader: 'glslify'
+
+*/
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import './vendor';
@@ -15,10 +23,10 @@ import ProfileMessagesMenu from './components/menu/ProfileMessagesMenu';
 import TitleProgressBar from './components/homepage/TitleProgressBar';
 import TitleProgressValue from './components/homepage/TitleProgressValue';
 import TitleStatCount from './components/homepage/TitleStatCount';
+//import TitleStatCount from './components/homepage/TitleStatCount';
 import Homepage from './components/homepage/Homepage';
 import Homepage2 from './components/homepage/Homepage2';
 import Auth from './components/auth/Auth';
-//import App from './App';
 
 Vue.mixin({
 	data: function () {
@@ -29,7 +37,7 @@ Vue.mixin({
 });
 
 Vue.config.productionTip = false;
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 var router = new VueRouter({
 	routes : [{
@@ -47,7 +55,7 @@ var router = new VueRouter({
 		meta : {
 			rights : ['*']
 		},
-		beforeEnter : function (to, from, next){
+		beforeEnter : function (to: any, from: any, next: any){
 			//Vue.nextTick(function () {});
 			SecurityService.authorize(to.meta.rights,to,next);
 		}

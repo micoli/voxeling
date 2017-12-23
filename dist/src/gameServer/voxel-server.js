@@ -27,6 +27,7 @@ class voxelServer extends events_1.EventEmitter {
         var self = this;
         // server game settings are sent to all
         // new clients when they connect
+        var emptyArray;
         var defaults = {
             isClient: false,
             chunkDistance: 2,
@@ -39,7 +40,7 @@ class voxelServer extends events_1.EventEmitter {
             worldOrigin: [0, 0, 0],
             controls: { discreteFire: true },
             avatarInitialPosition: [2, 120, 2],
-            forwardEvents: [],
+            forwardEvents: emptyArray
         };
         // prepare a server object to return
         var settings = self.settings = extend({}, defaults, opts);

@@ -50,8 +50,11 @@ module.exports = {
 				test: /\.js$/,
 				loader: 'babel-loader',
 				include: [resolve('src'), resolve('test')]
-			},
-			{
+			},{
+				test: /\.(t|j)s$/,
+				loader: 'ify-loader',
+				enforce: 'post'
+			},{
 				test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
 				loader: 'url-loader',
 				options: {
@@ -98,7 +101,7 @@ module.exports = {
 					loader: 'expose-loader',
 					options: '$'
 				}]
-			}
+	        }
 		]
 	},
 	plugins: [

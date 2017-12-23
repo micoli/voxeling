@@ -7,12 +7,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vue_property_decorator_1 = require("vue-property-decorator");
-let App = class App extends vue_property_decorator_1.Vue {
+let TopMenuToggle = class TopMenuToggle extends vue_property_decorator_1.Vue {
+    toggle() {
+        this.$root.$emit('navigation:menuToggle');
+    }
 };
-App = __decorate([
+TopMenuToggle = __decorate([
     vue_property_decorator_1.Component({
         template: `
-	`
+	<div class="nav toggle">
+		<a @click="toggle"><i class="fa fa-bars"></i></a>
+	</div>`
     })
-], App);
-exports.default = App;
+], TopMenuToggle);
+exports.default = TopMenuToggle;

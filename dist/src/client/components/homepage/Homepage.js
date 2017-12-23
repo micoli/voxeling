@@ -1,13 +1,25 @@
-import { Vue, Component } from 'vue-property-decorator';
-
-import ClosableWidget from '../common/ClosableWidget';
-import TitleProgressBar from './TitleProgressBar';
-import TitleProgressValue from './TitleProgressValue';
-import TitleStatCount from './TitleStatCount';
-import GameClient from './GameClient';
-
-@Component({
-	template: `
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const vue_property_decorator_1 = require("vue-property-decorator");
+const ClosableWidget_1 = require("../common/ClosableWidget");
+const TitleProgressBar_1 = require("./TitleProgressBar");
+const TitleProgressValue_1 = require("./TitleProgressValue");
+const TitleStatCount_1 = require("./TitleStatCount");
+let Homepage = class Homepage extends vue_property_decorator_1.Vue {
+    mounted() {
+    }
+    destroyed() {
+    }
+};
+Homepage = __decorate([
+    vue_property_decorator_1.Component({
+        template: `
 	<div class="right_col" role="main">
 		<!-- top tiles -->
 		<div class="row tile_count">
@@ -19,9 +31,6 @@ import GameClient from './GameClient';
 			<title-stat-count :icon="'fa-user'" :title="'Total Connections'" :count="7654.12" :delta="-15"></title-stat-count>
 		</div>
 		<!-- /top tiles -->
-		<div class="row">
-			<game-client></game-client>
-		</div>
 		<div class="row">
 			<div class="col-md-12 col-sm-12 col-xs-12">
 				<div class="dashboard_graph">
@@ -344,18 +353,12 @@ import GameClient from './GameClient';
 			</closable-widget>
 		</div>
 	</div>`,
-	components:{
-		ClosableWidget:ClosableWidget,
-		TitleProgressBar:TitleProgressBar,
-		TitleProgressValue:TitleProgressValue,
-		TitleStatCount:TitleStatCount,
-		GameClient:GameClient
-	}
-})
-export default class Homepage extends Vue {
-	mounted () {
-	}
-
-	destroyed () {
-	}
-}
+        components: {
+            ClosableWidget: ClosableWidget_1.default,
+            TitleProgressBar: TitleProgressBar_1.default,
+            TitleProgressValue: TitleProgressValue_1.default,
+            TitleStatCount: TitleStatCount_1.default
+        }
+    })
+], Homepage);
+exports.default = Homepage;
