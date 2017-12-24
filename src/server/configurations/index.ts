@@ -41,6 +41,7 @@ export interface ISocialDatasConfiguration {
 
 export interface IGameConfigurations {
 	port: number;
+	address : string;
 	generator: string;
 }
 

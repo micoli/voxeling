@@ -13,7 +13,7 @@ export default (): IPlugin => {
 			return new Promise<void>((resolve) => {
 				console.log( 'started' );
 				var wseServer = new WebSocketEmitterServer( {
-					server: '127.0.0.1',
+					server: options.serverConfigs.game.address,
 					port: options.serverConfigs.game.port
 				} );
 
@@ -22,7 +22,7 @@ export default (): IPlugin => {
 				} );
 
 				wseServer.on( 'connection', function( connection: any ) {
-					console.log( 'connected' );
+					console.log( 'Connected' );
 					gameServer.connectClient( connection );
 					connection.on( 'close', function() {
 						console.log( 'main connection closed' );

@@ -57,7 +57,7 @@ var BUILTIN_PLUGIN_OPTS:any = {
 var SERVER_BUILTIN_PLUGIN_OPTS:any = {
 	'voxel-registry': {}
 };
-export class Game extends EventEmitter {
+export class Engine extends EventEmitter {
 	cubeSize: number;
 	startingPosition: any;
 	worldOrigin: any;

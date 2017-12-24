@@ -10,7 +10,7 @@ var crunch = require('voxel-crunch')
 var engine = require('voxel-engine')
 var ndarray = require('ndarray');
 
-export class voxelServer extends EventEmitter {
+export class VoxelServer extends EventEmitter {
 	updateDelay: number = 1000 / 3; // every 330ms;
 	nbUpdate: number = 0;
 	settings: any = {};

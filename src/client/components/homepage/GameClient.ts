@@ -1,7 +1,6 @@
 import { Vue, Component } from 'vue-property-decorator';
-
 import ClosableWidget from '../common/ClosableWidget';
-import voxelClient from '../../../gameClient/client';
+import {VoxelClientInstance} from '../../../gameClient/voxel-client-instance';
 
 @Component({
 	template: `
@@ -18,7 +17,7 @@ import voxelClient from '../../../gameClient/client';
 export default class GameClient extends Vue {
 	mounted () {
 		setTimeout(function(){
-			voxelClient();
+			VoxelClientInstance.get(<HTMLCanvasElement>document.getElementById('game-holder'));
 		},3000);
 	}
 

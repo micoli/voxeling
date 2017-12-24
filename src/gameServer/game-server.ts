@@ -3,8 +3,8 @@ var config = require('../config');
 var path = require('path');
 var extend = require('extend');
 var ndarray = require('ndarray');
-import {EventEmitter} from 'events';
-import {voxelServer} from './voxel-server';
+import { EventEmitter } from 'events';
+import { VoxelServer } from './voxel-server';
 
 // internal dependencies
 //var modvox = require('./features/modvox/server.js');
@@ -19,7 +19,6 @@ export class GameServer extends EventEmitter {
 	connectionLimit: number = 10;
 	constructor(opts: any) {
 		super();
-		// force instantiation via `new` keyword
 		this.initialize(opts);
 	}
 
@@ -34,10 +33,6 @@ export class GameServer extends EventEmitter {
 		self.baseServer.removeClient(duplexStream);
 		console.log(duplexStream.id, 'left');
 	}
-
-	//
-	// Private
-	//
 
 	private initialize(opts: any) {
 		var self = this;
@@ -72,7 +67,7 @@ export class GameServer extends EventEmitter {
 		//settings.forwardEvents.push('entity');
 
 		// create and initialize base game server
-		var baseServer = self.baseServer = new voxelServer(settings);
+		var baseServer = self.baseServer = new VoxelServer(settings);
 		self.game = baseServer.game;
 
 		// sane defaults
