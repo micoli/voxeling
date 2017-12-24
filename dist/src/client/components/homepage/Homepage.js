@@ -11,6 +11,7 @@ const ClosableWidget_1 = require("../common/ClosableWidget");
 const TitleProgressBar_1 = require("./TitleProgressBar");
 const TitleProgressValue_1 = require("./TitleProgressValue");
 const TitleStatCount_1 = require("./TitleStatCount");
+const GameClient_1 = require("./GameClient");
 let Homepage = class Homepage extends vue_property_decorator_1.Vue {
     mounted() {
     }
@@ -31,6 +32,9 @@ Homepage = __decorate([
 			<title-stat-count :icon="'fa-user'" :title="'Total Connections'" :count="7654.12" :delta="-15"></title-stat-count>
 		</div>
 		<!-- /top tiles -->
+		<div class="row">
+			<game-client></game-client>
+		</div>
 		<div class="row">
 			<div class="col-md-12 col-sm-12 col-xs-12">
 				<div class="dashboard_graph">
@@ -357,7 +361,8 @@ Homepage = __decorate([
             ClosableWidget: ClosableWidget_1.default,
             TitleProgressBar: TitleProgressBar_1.default,
             TitleProgressValue: TitleProgressValue_1.default,
-            TitleStatCount: TitleStatCount_1.default
+            TitleStatCount: TitleStatCount_1.default,
+            GameClient: GameClient_1.default
         }
     })
 ], Homepage);

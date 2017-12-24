@@ -15,7 +15,7 @@ function default_1(server, serverConfigs, database) {
             description: 'Get user info.',
             validate: {
                 headers: UserValidator.jwtValidator,
-            },
+            } /*as Hapi.RouteValidationConfigurationObject*/,
             plugins: {
                 'hapi-swagger': {
                     responses: {

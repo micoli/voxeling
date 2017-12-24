@@ -136,7 +136,7 @@ export default function() {
 				// built-in plugins
 				'voxel-registry': {},
 				'voxel-stitch': {
-					artpacks: ['ProgrammerArt-ResourcePack.zip'],
+					artpacks: ['static/ProgrammerArt-ResourcePack.zip'],
 					verbose: false
 				},
 				'voxel-shader': {

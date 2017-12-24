@@ -1,5 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/*
+test: /\.(glsl|frag|vert|vsh|fsh)$/,
+loader: 'raw'
+},{
+test: /\.(glsl|frag|vert|vsh|fsh)$/,
+loader: 'glslify'
+
+*/
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 require("./vendor");
@@ -15,10 +23,10 @@ const TopMenuToggle_1 = require("./components/menu/TopMenuToggle");
 const TitleProgressBar_1 = require("./components/homepage/TitleProgressBar");
 const TitleProgressValue_1 = require("./components/homepage/TitleProgressValue");
 const TitleStatCount_1 = require("./components/homepage/TitleStatCount");
+//import TitleStatCount from './components/homepage/TitleStatCount';
 const Homepage_1 = require("./components/homepage/Homepage");
 const Homepage2_1 = require("./components/homepage/Homepage2");
 const Auth_1 = require("./components/auth/Auth");
-//import App from './App';
 vue_1.default.mixin({
     data: function () {
         return {

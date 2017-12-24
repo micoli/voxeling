@@ -6,6 +6,7 @@ const merge = require('webpack-merge');
 const path = require('path');
 const baseWebpackConfig = require('./webpack.base.conf');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const portfinder = require('portfinder');
 
@@ -31,7 +32,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
 		overlay: config.dev.errorOverlay
 		? { warnings: false, errors: true }
 		: false,
-		contentBase: path.join(__dirname, "/public"),
+		contentBase: [path.join(__dirname, "/"),path.join(__dirname, "/static/"),path.join(__dirname, "/public/")],
 		publicPath: config.dev.assetsPublicPath,
 		proxy: config.dev.proxyTable,
 		quiet: true, // necessary for FriendlyErrorsPlugin
@@ -40,6 +41,12 @@ const devWebpackConfig = merge(baseWebpackConfig, {
 		}
 	},
 	plugins: [
+		new CopyWebpackPlugin([ {
+			 from: 'src/static', to: 'static'
+		} ]),
+		new webpack.LoaderOptionsPlugin({
+		    debug: true
+		}),
 		new webpack.DefinePlugin({
 			'process.env': require('../config/dev.env')
 		}),
