@@ -18,7 +18,7 @@ export const register = function(server: Hapi.Server, configs: IServerConfigurat
 
 		socket.on('login', function(token: string) {
 			socket.user = null;
-			if (Jwt.verify(token, configs.jwtSecret)) {
+			if (Jwt.verify(token, configs.jwt.jwtSecret)) {
 				socket.user = Jwt.decode(token);
 			}
 			console.log('login', token);

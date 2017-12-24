@@ -30,7 +30,7 @@ export function init(configs: IServerConfigurations, database: IDatabase): Promi
 		const plugins: Array<string> = configs.plugins;
 		const pluginOptions = {
 			database: database,
-			serverConfigs: configs
+			serverConfigs: configs,
 		};
 
 		let pluginPromises:any[] = [];

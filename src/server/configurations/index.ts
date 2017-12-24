@@ -13,16 +13,20 @@ nconf.env({
 export interface IServerConfigurations {
 	port: number;
 	plugins: Array<string>;
-	jwtSecret: string;
-	jwtExpiration: string;
 	routePrefix: string;
+	jwt: IJWTConfiguration;
 	social: ISocialDatasConfiguration;
+	game: IGameConfigurations;
 }
 
 export interface IDataConfiguration {
 	connectionString: string;
 }
 
+export interface IJWTConfiguration {
+	jwtSecret: string;
+	jwtExpiration: string;
+}
 export interface ISocialDataConfiguration {
 	id : string;
 	secret : string;
@@ -30,6 +34,11 @@ export interface ISocialDataConfiguration {
 
 export interface ISocialDatasConfiguration {
 	twitter : ISocialDataConfiguration;
+}
+
+export interface IGameConfigurations {
+	port: number;
+	generator: string;
 }
 
 export function getDatabaseConfig(): IDataConfiguration {
@@ -40,10 +49,15 @@ export function getServerConfigs(): IServerConfigurations {
 	return nconf.get("server");
 }
 
+export function getGameConfigs(): IGameConfigurations {
+	return nconf.get("game");
+}
+
 console.log('- - - - - - - -');
 console.log('Env : ', process.env.NODE_ENV);
 console.log("Full config : ", nconf.get(null));
 console.log('- - - - - - - -');
 console.log('Database : ', getDatabaseConfig());
 console.log('Server : ', getServerConfigs());
+console.log('Game : ', getGameConfigs());
 console.log('- - - - - - - -');

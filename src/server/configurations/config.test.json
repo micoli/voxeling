@@ -4,8 +4,6 @@
 	},
 	"server": {
 		"port": 5000,
-		"jwtSecret": "random-secret-password",
-		"jwtExpiration": "1h",
 		"routePrefix": "",
 		"plugins": [
 			"logger",
@@ -13,11 +11,19 @@
 			"swagger",
 			"bell"
 		],
+		"jwt":{
+			"jwtSecret": "random-secret-password",
+			"jwtExpiration": "1h"
+		},
 		"social": {
 			"twitter" : {
 				"id" : "xxx",
 				"secret" : "zzzzz"
 			}
+		},
+		"gameServer": {
+			"port": 10005,
+			"generator": ""
 		}
 	}
 }

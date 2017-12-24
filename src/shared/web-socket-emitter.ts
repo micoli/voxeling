@@ -1,10 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
-var slice = Array.prototype.slice;
 var SimpleWebsocketServer = require('simple-websocket/server');
-//var SimpleWebsocketClient = require('simple-websocket');
-//var WebSocketClient = require('ws');
-
-
 var log = require('./log')('lib/web-socket-emitter', false );
 
 /*
@@ -223,8 +218,3 @@ export class Server {
 		this.emitter.on(name, callback);
 	}
 }
-
-/*module.exports = {
-	Client: Client,
-	Server: Server
-};*/

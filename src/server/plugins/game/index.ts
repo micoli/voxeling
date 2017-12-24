@@ -8,13 +8,12 @@ const gameServer = new GameServer({});
 export default (): IPlugin => {
 	return {
 		register: (server: Hapi.Server, options: IPluginOptions): Promise<void> => {
-			const serverConfig = options.serverConfigs;
 
 			return new Promise<void>((resolve) => {
 				console.log( 'started' );
 				var wseServer = new WebSocketEmitterServer( {
 					server: '127.0.0.1',
-					port: 10005
+					port: options.serverConfigs.game.port
 				} );
 
 				wseServer.on( 'error', function( error: any ) {

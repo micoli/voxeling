@@ -9,10 +9,10 @@ import '!style-loader!css-loader!bootstrap-progressbar/css/bootstrap-progressbar
 import '!style-loader!css-loader!jqvmap/dist/jqvmap.min.css';
 import '!style-loader!css-loader!bootstrap-daterangepicker/daterangepicker.css';
 
-
 import '!style-loader!css-loader!sass-loader!../static/scss/custom.scss';
 import '!style-loader!css-loader!sass-loader!../static/scss/daterangepicker.scss';
-//import '../static/build/js/custom.min.js';
+
+import '../static/js/custom';
 
 //import 'jquery/dist/jquery.min.js';
 import 'bootstrap/dist/js/bootstrap.min.js';

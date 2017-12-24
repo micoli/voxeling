@@ -22,8 +22,8 @@ export default class UserController {
 			config: {
 				rights: []
 			}
-		}, this.configs.jwtSecret, {
-			expiresIn: this.configs.jwtExpiration
+		}, this.configs.jwt.jwtSecret, {
+			expiresIn: this.configs.jwt.jwtExpiration
 		});
 	}
 
