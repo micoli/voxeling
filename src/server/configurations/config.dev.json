@@ -11,7 +11,8 @@
 			"logger",
 			"jwt-auth",
 			"swagger",
-			"bell"
+			"bell",
+			"game"
 		],
 		"social": {
 			"twitter" : {

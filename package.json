@@ -4,8 +4,9 @@
 	"author": "olivier@micoli.org",
 	"private": true,
 	"scripts": {
-		"dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
-		"start": "npm run dev",
+		"dev-client": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+		"dev-server": "gulp develop",
+		"start": "npm run dev-client",
 		"lint": "eslint --ext .js,.vue src",
 		"build": "node build/build.js"
 	},

@@ -66,7 +66,7 @@ cp config-example.js config.js
 vim config.js
 
 #run the develop www server
-yarn run dev
+npm run dev-client
 ```
 
 In terminal 2:
@@ -74,7 +74,7 @@ In terminal 2:
 ```
 cd /path/to/voxeling
 # start the game and application server
-gulp develop
+npm run dev-server
 ```
 
 Now, point your browser to http://127.0.0.1:8081.
