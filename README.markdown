@@ -70,6 +70,7 @@ In terminal 1:
 ```
 # git clone the repo into voxeling folder
 cd /path/to/voxeling
+yarn install --dev-dependencies --ignore-engines
 npm install
 
 # create folder for world chunks

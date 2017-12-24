@@ -1,0 +1,10 @@
+declare var Generator: (chunkSize: any) => void;
+declare var inherits: any;
+declare var fs: any;
+declare var noise: any;
+declare var debug: boolean;
+declare var ServerPerlinGenerator: (chunkSize: any) => void;
+declare var floor: number;
+declare var ceiling: number;
+declare var divisor: number;
+declare var seed: number;

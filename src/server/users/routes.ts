@@ -22,7 +22,7 @@ export default function(server: Hapi.Server, serverConfigs: IServerConfiguration
 			description: 'Get user info.',
 			validate: {
 				headers: UserValidator.jwtValidator,
-			},
+			} /*as Hapi.RouteValidationConfigurationObject*/,
 			plugins: {
 				'hapi-swagger': {
 					responses: {
