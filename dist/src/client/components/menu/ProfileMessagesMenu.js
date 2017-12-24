@@ -37,12 +37,6 @@ let ProfileMessagesMenu = class ProfileMessagesMenu extends vue_property_decorat
         });
     }
 };
-__decorate([
-    vue_property_decorator_1.Prop()
-], ProfileMessagesMenu.prototype, "nbMessages", void 0);
-__decorate([
-    vue_property_decorator_1.Prop()
-], ProfileMessagesMenu.prototype, "messages", void 0);
 ProfileMessagesMenu = __decorate([
     vue_property_decorator_1.Component({
         template: `

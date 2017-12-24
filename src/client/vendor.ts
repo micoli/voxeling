@@ -10,7 +10,8 @@ import '!style-loader!css-loader!jqvmap/dist/jqvmap.min.css';
 import '!style-loader!css-loader!bootstrap-daterangepicker/daterangepicker.css';
 
 
-import '!style-loader!css-loader!../../static/build/css/custom.min.css';
+import '!style-loader!css-loader!sass-loader!../static/scss/custom.scss';
+import '!style-loader!css-loader!sass-loader!../static/scss/daterangepicker.scss';
 //import '../static/build/js/custom.min.js';
 
 //import 'jquery/dist/jquery.min.js';
@@ -31,8 +32,7 @@ import 'flot-spline/js/jquery.flot.spline.min.js';
 import 'flot.curvedlines/curvedLines.js';
 import 'jqvmap/dist/jquery.vmap.js';
 import 'jqvmap/dist/maps/jquery.vmap.world.js';
-import 'moment/min/moment.min.js';
 import 'bootstrap-daterangepicker/daterangepicker.js';
-
+import 'moment/moment';
 //import 'Chart.js/dist/Chart.min.js';
 //import 'Datejs';

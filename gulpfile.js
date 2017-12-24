@@ -26,7 +26,8 @@ var tsOptions = {
 	moduleResolution : "node",
 	sourceMap : true,
 	typeRoots : [ "node_modules/@types" ],
-	noImplicitAny : true
+	noImplicitAny : true,
+	"experimentalDecorators": true
 };
 //"suppressImplicitAnyIndexErrors" : true,
 //"noImplicitAny": false
@@ -64,8 +65,8 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
 		exec: 'node --inspect ',
-		//script : outDir+'src/server/index.js',
-		script : outDir+'src/gameServer/run.js',
+		script : outDir+'src/server/index.js',
+		//script : outDir+'src/gameServer/run.js',
 		ext : 'ts json vert',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
@@ -111,7 +112,7 @@ gulp.task('clean', '', function() {
 
 gulp.task('configurations', 'copy configurations', (cb) => {
 	return gulp.src("src/server/configurations/*.json")
-		.pipe(gulp.dest('./build/src/server/configurations'));
+		.pipe(gulp.dest('./dist/src/server/configurations'));
 });
 
 gulp.task('server-production', [ 'build' ], (cb) => {
