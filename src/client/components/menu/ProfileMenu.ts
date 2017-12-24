@@ -9,7 +9,7 @@ import ProfileMessagesMenu from './ProfileMessagesMenu';
 		<li class="">
 			<a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
 				<span v-if="username">
-					<img src="images/img.jpg" alt="">{{ username }}
+					<img src="static/images/user.png" alt="">{{ username }}
 				</span>
 				<span v-if="!username">
 					<a href="#" @click.prevent.self="login">Log In</a>

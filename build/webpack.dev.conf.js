@@ -56,9 +56,14 @@ const devWebpackConfig = merge(baseWebpackConfig, {
 		// https://github.com/ampedandwired/html-webpack-plugin
 		new HtmlWebpackPlugin({
 			filename: 'index.html',
-			template: 'public/index.html',
+			template: 'src/static/index.html',
 			inject: true
 		}),
+		new webpack.ProvidePlugin({
+			$: 'jquery',
+			jQuery: 'jquery'
+		}),
+		new webpack.ContextReplacementPlugin(/moment[\\\/]locale$/, /^\.\/(en|de|cz|eu)$/)
 	]
 })
 

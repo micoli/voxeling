@@ -1,4 +1,3 @@
-
 // From: https://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9
 var log = Function.prototype.bind.call(console.log, console);
 var stub = function() {

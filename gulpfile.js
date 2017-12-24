@@ -26,7 +26,8 @@ var tsOptions = {
 	moduleResolution : "node",
 	sourceMap : true,
 	typeRoots : [ "node_modules/@types" ],
-	noImplicitAny : true
+	noImplicitAny : true,
+	"experimentalDecorators": true
 };
 //"suppressImplicitAnyIndexErrors" : true,
 //"noImplicitAny": false
@@ -64,8 +65,8 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
 		exec: 'node --inspect ',
-		//script : outDir+'src/server/index.js',
-		script : outDir+'src/gameServer/run.js',
+		script : outDir+'src/server/index.js',
+		//script : outDir+'src/gameServer/run.js',
 		ext : 'ts json vert',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
@@ -89,14 +90,17 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 		}
 	})
 	.once('start', () => {
-
-		console.log('start')
+		console.log('Server started');
+		notifier.notify('Server started');
 	})
 	.on('restart', function() {
-		console.log('Restarted!')
+		console.log('Server re-started');
+		notifier.notify('Server re-started');
 	})
 	.on('crash', function() {
-		console.log('Application has crashed!\n')
+		console.log('Application as crashed');
+		notifier.notify('Application as crashed');
+		//stream.emit('restart', 2)
 		stream.emit('restart', 2) // restart the server in 10 seconds
 	});
 
@@ -111,7 +115,7 @@ gulp.task('clean', '', function() {
 
 gulp.task('configurations', 'copy configurations', (cb) => {
 	return gulp.src("src/server/configurations/*.json")
-		.pipe(gulp.dest('./build/src/server/configurations'));
+		.pipe(gulp.dest('./dist/src/server/configurations'));
 });
 
 gulp.task('server-production', [ 'build' ], (cb) => {
@@ -119,18 +123,21 @@ gulp.task('server-production', [ 'build' ], (cb) => {
 		script : outDir+'/src/server/index.js',
 	})
 	.once('start', () => {
-		console.log('start')
+		console.log('Server started');
+		notifier.notify('Server started');
 	})
 	.on('restart', function() {
-		console.log('Restarted!')
+		console.log('Server re-started');
+		notifier.notify('Server re-started');
 	})
 	.on('crash', function() {
-		console.log('Application has crashed!\n')
+		console.log('Application as crashed');
+		notifier.notify('Application as crashed');
 		//stream.emit('restart', 2)
 	});
 });
 
-gulp.task('build', 'typescript compile and copy configurations', [ 'build-server','build-clients', 'configurations' ], () => {
+gulp.task('build', 'typescript compile and copy configurations', [ 'build-server'/*,'build-clients'*/, 'configurations' ], () => {
 	console.log('Typescript Project transpiled ...');
 });
 
@@ -168,6 +175,14 @@ function handleErrors(a) {
 	this.emit('end');
 }
 
+gulp.task('watch-server', [ /*'lint-ts',*/ 'build-server', 'configurations' ], function() {
+	gulp.watch([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);
+});
+
+gulp.task('default', [ 'develop' ]);
+
+
+/*
 function bundleClient(file){
 	var d = Date.now() ;
 	console.log(plugins.util.colors.yellow('Generating ')+plugins.util.colors.yellow(file));
@@ -240,24 +255,16 @@ gulp.task('build-client-worker', function() {
 
 gulp.task('build-clients', [ 'build-client', 'build-client-worker' ]);
 
-
-gulp.task('watch-clients', [ 'build-clients'/*'tsPipeline:watch'*/ ], function() {
+gulp.task('watch-clients', [ 'build-clients' ], function() {
 	//bundleClient('client',true);
 	//bundleClient('client-worker',true);
 	gulp.watch([
-		'src/client/**/*.ts',
-		'src/client/**/*.vert',
-		'src/shared/**/*.ts'
+		'src/client/* * / *.ts',
+		'src/client/* * / *.vert',
+		'src/shared/* * / *.ts'
 	], [ 'build-client' ]);
 });
-
-gulp.task('watch-server', [ /*'lint-ts',*/ 'build-server', 'configurations' ], function() {
-	gulp.watch([ 'src/server/**/*.ts','src/shared/**/*.ts','src/gameServer/**/*.ts' ], [ /*'lint-ts',*/ 'build-server', 'configurations' ]);
-});
-
-gulp.task('default', [ 'develop' ]);
-
-
+*/
 
 /*function buildScript() {
 //console.log(plugins.util.colors.yellow('Build script') + ' ' + plugins.util.colors.green(path + file + '.ts'));

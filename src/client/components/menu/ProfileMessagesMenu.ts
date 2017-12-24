@@ -35,10 +35,8 @@ import {SecurityService} from '../../services/Security';
 export default class ProfileMessagesMenu extends Vue {
 	username:string='';
 
-	@Prop()
 	nbMessages:number=0;
 
-	@Prop()
 	messages: any[]=[{
 		from:"John Doe",
 		fromPic:"http://pipsum.com/20x20.jpg",

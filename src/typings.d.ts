@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {SecurityService} from './services/Security';
+import {SecurityService} from './client/services/Security';
 
 interface JQuery {
 	progressbar(options?: any, callback?: Function) : any;
