@@ -1,14 +1,17 @@
 import * as nconf from "nconf";
 import * as path from "path";
 
+const configurationFilename = path.join(__dirname, `./config.${process.env.NODE_ENV || "dev"}.json`);
 nconf.env({
 	separator: '__',
 	match: /^.*__.*/
 })
 .argv()
 .file({
-	file: path.join(__dirname, `./config.${process.env.NODE_ENV || "dev"}.json`)
+	file: configurationFilename
 });
+console.log('Configuration Filename ',configurationFilename)
+console.log('nconf',nconf);
 
 export interface IServerConfigurations {
 	port: number;
@@ -50,7 +53,7 @@ export function getServerConfigs(): IServerConfigurations {
 }
 
 export function getGameConfigs(): IGameConfigurations {
-	return nconf.get("game");
+	return nconf.get("server").game;
 }
 
 console.log('- - - - - - - -');

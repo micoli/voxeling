@@ -3,11 +3,12 @@ import * as Hapi from "hapi";
 import * as Boom from "boom";
 import {GameServer} from '../../../gameServer/game-server';
 import { Server as WebSocketEmitterServer } from '../../../shared/web-socket-emitter';
-const gameServer = new GameServer({});
 
 export default (): IPlugin => {
 	return {
 		register: (server: Hapi.Server, options: IPluginOptions): Promise<void> => {
+			const gameServer = new GameServer({
+			});
 
 			return new Promise<void>((resolve) => {
 				console.log( 'started' );

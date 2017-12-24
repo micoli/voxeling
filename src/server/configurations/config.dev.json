@@ -22,7 +22,7 @@
 				"secret" : "zzzzz"
 			}
 		},
-		"gameServer": {
+		"game": {
 			"port": 10005,
 			"generator": ""
 		}
