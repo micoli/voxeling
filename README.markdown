@@ -1,17 +1,15 @@
 voxeling
 ====
 
-Inspired by [voxel-engine](https://github.com/maxogden/voxel-engine) and [voxel.js](http://voxeljs.com), this is a multiplayer sandbox (like Minecraft creative mode) implemented in WebGL with very few dependencies. Very much a work in progress.
+Originally Inspired by [voxel-engine](https://github.com/maxogden/voxel-engine) and [voxel.js](http://voxeljs.com), this is a multiplayer sandbox (like Minecraft creative mode) implemented in WebGL with very few dependencies. Very much a work in progress.
 
-Demo: http://voxeling.greaterscope.com (Google Chrome and Firefox 46+)
+Original Demo: http://voxeling.greaterscope.com (Google Chrome and Firefox 46+)
 
-Project blog: http://voxeling.tumblr.com/
+Original Project blog: http://voxeling.tumblr.com/
 
 Textures provided by:
 
-* http://bdcraft.net
 * https://github.com/deathcap/ProgrammerArt
-* https://github.com/phionabrie
 
 Player skins from:
 
@@ -32,13 +30,6 @@ Gameplay Features
 * World state is saved to files or mysql (install mysql npm module)
 
 
-What I'm working on
-====
-
-* Optimizations, always and forever
-* Point light sources and shadow mapping
-
-
 Technical Features
 ====
 
@@ -57,8 +48,6 @@ Technical Features
 * Directional lighting
 * Day and night cycle (still needs some love)
 
-See it in action in the demo (Google Chrome or Firefox): http://voxeling.greaterscope.com
-
 Or follow the installation instructions below to run it locally.
 
 
@@ -70,38 +59,25 @@ In terminal 1:
 ```
 # git clone the repo into voxeling folder
 cd /path/to/voxeling
-yarn install --dev-dependencies --ignore-engines
-npm install
-
-# create folder for world chunks
-mkdir -p chunks/your-world
+yarn install
 
 # copy the default config and customize
 cp config-example.js config.js
 vim config.js
 
-# generate web-worker JavaScript
-./scripts/worker.sh
-
-# start server
-./scripts/server.sh
+#run the develop www server
+yarn run dev
 ```
 
 In terminal 2:
 
 ```
 cd /path/to/voxeling
-# start the client
-./scripts/client.sh
+# start the game and application server
+gulp develop
 ```
 
-Now, point your browser to http://127.0.0.1:9966. Read the introduction for controls and keybindings. Enjoy!
-
-
-Contributing
-====
-
-See the CONTRIBUTING file
+Now, point your browser to http://127.0.0.1:8081.
 
 
 License
