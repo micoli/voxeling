@@ -22,7 +22,8 @@ export class GameServer extends EventEmitter {
 	spatialTriggers: any[];
 	connections: number;
 	connectionLimit: number = 10;
-	chunkStore:any;
+	chunkStore: any;
+	generator: any;
 	pendingChunks :any =  {};
 
 	constructor(opts: any) {
@@ -72,9 +73,10 @@ export class GameServer extends EventEmitter {
 				config.mysql
 			);
 		} else {*/
+			this.generator = new ServerTerracedGenerator(config.chunkSize);
 			this.chunkStore = new FileChunkStore(
-				new ServerTerracedGenerator(config.chunkSize),
-				'./tmp'//config.chunkFolder
+					this.generator,
+				'./tmp/'//config.chunkFolder
 			);
 		//}
 
@@ -125,19 +127,29 @@ export class GameServer extends EventEmitter {
 			if(chunkId in self.pendingChunks){
 				return ;
 			}
-			//console.log('game-server:missingChunk todo',chunkId);
 			self.pendingChunks[chunkId]=1;
-			var cs = self.game.chunkSize;
-			var dimensions: any[] = [cs, cs, cs];
+			self.chunkStore.get(chunkId);
+		});
 
-			var chunk: any = {
-				position : position,
-				voxels: self.getFlatChunkVoxels(position),//self.chunkStore.get(position),
+		self.chunkStore.emitter.on('got',function(chunk:any){
+			let chunkId = chunk.position.join('|');
+			//console.log('game-server:missingChunk todo',chunkId);
+			var dimensions: any[] = [self.game.chunkSize,self.game.chunkSize,self.game.chunkSize];
+
+			var _chunk: any = {
+				position : chunk.position,
+				//voxels: self.getFlatChunkVoxels(position),
+				voxels: chunk.voxels,
 				dims : dimensions,
+				length : chunk.voxels.length
 			};
-			chunk.length = chunk.voxels.length;
-			self.game.showChunk(chunk);
-			self.emit('chunkLoaded', chunk);
+
+			//_chunk.dimensions = [cs, cs, cs];
+			//self.game.showChunk(chunk);
+			//self.game.voxels.chunks[chunkId] = chunk;
+			//self.game.emit('renderChunk',chunk);
+			self.game.showChunk(_chunk);
+			self.emit('chunkLoaded', _chunk);
 		});
 
 		baseServer.on('renderChunk', function(chunk: any) {

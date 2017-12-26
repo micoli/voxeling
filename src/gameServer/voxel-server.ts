@@ -235,7 +235,7 @@ export class VoxelServer extends EventEmitter {
 		client.connection.emit( 'noMoreChunks', true )
 	}
 
-	sendChunk(client:any,chunkID:string){
+	sendChunkold(client:any,chunkID:string){
 		var self = this
 		var chunk = self.game.voxels.chunks[chunkID];
 
@@ -257,6 +257,28 @@ export class VoxelServer extends EventEmitter {
 		} );
 	}
 
+	sendChunk(client:any,chunkID:string){
+		var self = this
+		var chunk = self.game.voxels.chunks[chunkID];
+
+		chunk.dims = [32, 32, 32];
+		var encoded = self.chunkCache[chunkID]
+		if ( !encoded ) {
+			encoded = crunch.encode( self.convertChunkVoxels(chunk.voxels,32) );//chunk.voxels.data
+			self.chunkCache[chunkID] = encoded;
+		}
+		client.connection.emit( 'chunk', encoded, {
+			position: chunk.position,
+			dims: chunk.dims,
+			voxels: {
+				length: chunk.voxels.length,//chunk.voxels.data.length,
+				//shape: chunk.voxels.shape,
+				//stride: chunk.voxels.stride,
+				//offset: chunk.voxels.offset
+			}
+		} );
+	}
+
 	setBlock(client:any,pos:string,val:any){
 		var self = this
 		self.game.setBlock( pos, val )
@@ -266,6 +288,28 @@ export class VoxelServer extends EventEmitter {
 		// broadcast 'set' to all players
 		self.broadcast( null, 'set', pos, val, client.id )
 
+	}
+
+	convertChunkVoxels(chunk:any, chunksize:number) {
+		var chunkSize = 32;
+		var width = chunkSize;
+		var pad = 4;
+		var arrayType = Uint8Array;
+		var chunkSizem = width - 1;
+		var index=0;
+		var buffer = new ArrayBuffer((width + pad) * (width + pad) * (width + pad) * arrayType.BYTES_PER_ELEMENT);
+		var voxelsPadded = ndarray(new arrayType(buffer), [width + pad, width + pad, width + pad]);
+		var h = pad >> 1;
+		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
+		var b = 0;
+		for (var x = 0; x < width; ++x) {
+			for (var z = 0; z < width; ++z) {
+				for (var y = 0; y < width; ++y) {
+					voxels.set(x, y, z, chunk[index++]);
+				}
+			}
+		}
+		return voxelsPadded;
 	}
 
 }
