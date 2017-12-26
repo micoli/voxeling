@@ -23,6 +23,7 @@ export class GameServer extends EventEmitter {
 	connections: number;
 	connectionLimit: number = 10;
 	chunkStore:any;
+	pendingChunks :any =  {};
 
 	constructor(opts: any) {
 		super();
@@ -35,6 +36,14 @@ export class GameServer extends EventEmitter {
 		// for debugging
 		var defaults = {
 			generateChunks: false,
+			/*
+			generateChunks: false,
+			generate : function(){
+				//used in  return voxel.generate(low, high, self.generate, self)
+			},
+			generateVoxelChunk : function(){
+				//voxel.generate : used in chunker::generateVoxelChunk(bounds[0], bounds[1], x, y, z)
+			},*/
 			chunkDistance: 2,
 			materials: [
 				['grass', 'dirt', 'grass_dirt'],
@@ -52,22 +61,22 @@ export class GameServer extends EventEmitter {
 				'bluewool',
 			],
 			avatarInitialPosition: [2, 20, 2],
-			forwardEvents: ['spatialTrigger'],
+			forwardEvents: ['spatialTrigger','missingChunk','renderChunk'],
 		};
 		var settings = self.settings = extend({}, defaults, opts);
 
-		//if (config.mysql) {
+		/*if ( config.mysql) {
 			let mysqlPool = require('mysql').createPool(config.mysql);
 			this.chunkStore = new MysqlChunkStore(
 				new ServerTerracedGenerator(config.chunkSize),
 				config.mysql
 			);
-		/*} else {
+		} else {*/
 			this.chunkStore = new FileChunkStore(
 				new ServerTerracedGenerator(config.chunkSize),
-				config.chunkFolder
+				'./tmp'//config.chunkFolder
 			);
-		}*/
+		//}
 
 		// get database
 		// enable event forwarding for features
@@ -84,7 +93,8 @@ export class GameServer extends EventEmitter {
 		// add features
 		//modvox(self);
 		//entity(self);
-		self.bindEvents();
+		self.bindEvents.call(self);
+
 	}
 
 	public connectClient(duplexStream: any) {
@@ -110,12 +120,19 @@ export class GameServer extends EventEmitter {
 
 		// setup world CRUD handlers
 		baseServer.on('missingChunk', function (position: any, complete: any) {
+			let chunkId = position.join('|');
+			//console.log('game-server:missingChunk',chunkId);
+			if(chunkId in self.pendingChunks){
+				return ;
+			}
+			//console.log('game-server:missingChunk todo',chunkId);
+			self.pendingChunks[chunkId]=1;
 			var cs = self.game.chunkSize;
 			var dimensions: any[] = [cs, cs, cs];
 
 			var chunk: any = {
 				position : position,
-				voxels: self.chunkStore.get(position),
+				voxels: self.getFlatChunkVoxels(position),//self.chunkStore.get(position),
 				dims : dimensions,
 			};
 			chunk.length = chunk.voxels.length;
@@ -123,23 +140,22 @@ export class GameServer extends EventEmitter {
 			self.emit('chunkLoaded', chunk);
 		});
 
+		baseServer.on('renderChunk', function(chunk: any) {
+			let chunkId = chunk.position.join('|');
+			Object.keys( baseServer.clients ).map( function( clientId ) {
+				baseServer.sendChunk(baseServer.clients[clientId], chunkId);
+			});
+			if(chunkId in self.pendingChunks){
+				delete(self.pendingChunks[chunkId]);
+			}
+		});
+
+
 		baseServer.on('set', function(pos: any, val: any) {
 			var chunk = game.getChunkAtPosition(pos);
 			//storeChunk(chunk);
 		});
-		// trigger world load and emit 'ready' when done
 
-		var loadedChunks = 0;
-		var expectedNumberOfInitialChunks = Math.pow(self.game.voxels.distance * 2, 3); // (2*2)^3=64 from [-2,-2,-2] --> [1,1,1]
-		self.on('chunkLoaded', function(chunk: any) {
-			loadedChunks++;
-			// TODO: ideally would unsub if this condition is true
-			if (loadedChunks === expectedNumberOfInitialChunks) {
-				self.emit('ready');
-			}
-		});
-
-		game.voxels.requestMissingChunks(game.worldOrigin);
 
 		// log chat
 		baseServer.on('chat', function(message: any) {
@@ -160,6 +176,18 @@ export class GameServer extends EventEmitter {
 			}
 		});
 		}*/
+		var loadedChunks = 0;
+		var expectedNumberOfInitialChunks = Math.pow(self.game.voxels.distance * 2, 3); // (2*2)^3=64 from [-2,-2,-2] --> [1,1,1]
+		self.on('chunkLoaded', function(chunk: any) {
+			loadedChunks++;
+			// TODO: ideally would unsub if this condition is true
+			if (loadedChunks === expectedNumberOfInitialChunks) {
+				self.emit('ready');
+			}
+		});
+
+		game.voxels.requestMissingChunks(game.worldOrigin);
+
 	}
 
 	private setupSpatialTriggers() {

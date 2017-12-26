@@ -64,7 +64,7 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 	//gulp.watch([ 'src/gameServer/**/*.ts','src/server/**/*.ts', 'src/shared/**/*.ts' ], [ /*'lint-ts',*/ 'configurations','build-server' ]);
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
-		exec: 'node --inspect ',
+		exec: 'node --inspect=0.0.0.0:9090 ',
 		script : outDir+'src/server/index.js',
 		//script : outDir+'src/gameServer/run.js',
 		ext : 'ts json vert',

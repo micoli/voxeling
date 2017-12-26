@@ -41,7 +41,7 @@ export default (): IPlugin => {
 		},
 		info: () => {
 			return {
-				name: "bell Authentication",
+				name: "Bell Authentication",
 				version: "1.0.0"
 			};
 		}
