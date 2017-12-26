@@ -263,18 +263,20 @@ export class VoxelServer extends EventEmitter {
 
 		chunk.dims = [32, 32, 32];
 		var encoded = self.chunkCache[chunkID]
+		var chunkFmt = self.convertChunkVoxels(chunk.voxels,32);
+		//k={};chunk.voxels.map(function(v){if (k.hasOwnProperty(v)){k[v]++}else{k[v]=0}});console.log(k);
 		if ( !encoded ) {
-			encoded = crunch.encode( self.convertChunkVoxels(chunk.voxels,32) );//chunk.voxels.data
+			encoded = crunch.encode( chunkFmt.data );//chunk.voxels.data
 			self.chunkCache[chunkID] = encoded;
 		}
 		client.connection.emit( 'chunk', encoded, {
 			position: chunk.position,
 			dims: chunk.dims,
 			voxels: {
-				length: chunk.voxels.length,//chunk.voxels.data.length,
-				//shape: chunk.voxels.shape,
-				//stride: chunk.voxels.stride,
-				//offset: chunk.voxels.offset
+				length: chunkFmt.data.length,//chunk.voxels.data.length,
+				shape: chunkFmt.shape,
+				stride: chunkFmt.stride,
+				offset: chunkFmt.offset
 			}
 		} );
 	}
@@ -302,9 +304,9 @@ export class VoxelServer extends EventEmitter {
 		var h = pad >> 1;
 		var voxels = voxelsPadded.lo(h, h, h).hi(width, width, width);
 		var b = 0;
-		for (var x = 0; x < width; ++x) {
-			for (var z = 0; z < width; ++z) {
-				for (var y = 0; y < width; ++y) {
+		for (var z = 0; z < width; ++z) {
+			for (var y = 0; y < width; ++y) {
+				for (var x = 0; x < width; ++x) {
 					voxels.set(x, y, z, chunk[index++]);
 				}
 			}

@@ -9,7 +9,10 @@ import { VoxelServer } from './voxel-server';
 import {ChunkStore} from './chunk-store';
 import {MysqlChunkStore} from './chunk-stores/mysql';
 import {FileChunkStore} from './chunk-stores/file';
+import {ServerTennisGenerator} from './generators/server-tennis';
 import {ServerTerracedGenerator} from './generators/server-terraced';
+import {ServerPerlinGenerator} from './generators/server-perlin';
+
 
 // internal dependencies
 //var modvox = require('./features/modvox/server.js');
@@ -73,9 +76,9 @@ export class GameServer extends EventEmitter {
 				config.mysql
 			);
 		} else {*/
-			this.generator = new ServerTerracedGenerator(config.chunkSize);
+			this.generator = new ServerPerlinGenerator(config.chunkSize);
 			this.chunkStore = new FileChunkStore(
-					this.generator,
+				this.generator,
 				'./tmp/'//config.chunkFolder
 			);
 		//}
@@ -95,7 +98,7 @@ export class GameServer extends EventEmitter {
 		// add features
 		//modvox(self);
 		//entity(self);
-		self.bindEvents.call(self);
+		self.bindEvents();
 
 	}
 
