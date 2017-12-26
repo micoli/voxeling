@@ -109,7 +109,7 @@ export class MysqlChunkStore extends ChunkStore {
 		}
 	}
 
-	public applyChanges() {
+	private applyChanges() {
 		var self = this;
 		for (var chunkID in self.changes) {
 			var details;
@@ -152,7 +152,7 @@ export class MysqlChunkStore extends ChunkStore {
 	// Call this on a timeout
 	// Callback gets triggered on success or failure
 	// Schedule the next timeout afterwards
-	public save() {
+	private save() {
 		var i = 0;
 		for (var chunkID in this.toSave) {
 			if (i > 10) {
@@ -188,5 +188,8 @@ export class MysqlChunkStore extends ChunkStore {
 				}
 			);
 		});
+	}
+
+	public tick() {
 	}
 }

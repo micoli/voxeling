@@ -1,7 +1,7 @@
 var EventEmitter = require('events').EventEmitter;
 
 // callback should match function(error, chunk)
-export class ChunkStore {
+export abstract class ChunkStore {
 	generator: any;
 	emitter: any;
 
@@ -11,12 +11,9 @@ export class ChunkStore {
 	}
 
 	// Asyncronous
-	public get(chunkID: any) {
-	}
+	public abstract get(chunkID: any):void;
 
-	public tick() {
-		// Extend this class and do stuff
-	}
+	public abstract tick() :void;
 
 	/*
 	Base chunk store should probably not do anything
@@ -24,8 +21,7 @@ export class ChunkStore {
 	File/database store should likely update memory first,
 	and then async flush to disk to avoid race conditions.
 	So file store needs some sort of in-memory, maybe LRU, layer as well.
+	// Can't do much since this chunk store doesn't store any chunks
 	*/
-	public gotChunkChanges(chunks: any) {
-		// Can't do much since this chunk store doesn't store any chunks
-	}
+	public abstract gotChunkChanges(chunks: any) :void;
 }

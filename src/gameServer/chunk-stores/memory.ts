@@ -56,4 +56,6 @@ export class MemoryChunkStore extends ChunkStore {
 			}
 		}
 	}
+	public tick() {
+	}
 }

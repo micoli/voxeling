@@ -1,13 +1,11 @@
-import {Generator} from '../generator';
-var inherits = require('util').inherits;
+import { Generator } from '../generator';
 var debug = false;
 
 function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min;
 }
 
-
-class ServerGenerator extends Generator {
+export class ServerTerracedGenerator extends Generator {
 	constructor(chunkSize: number) {
 		super(chunkSize);
 		// 1 block rise, each ring of chunks out from center
@@ -49,6 +47,3 @@ class ServerGenerator extends Generator {
 		return 0;
 	}
 }
-
-module.exports = ServerGenerator;
-

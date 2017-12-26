@@ -1,10 +1,11 @@
 
-import {VoxelStats} from '../voxel-stats';
-import {ChunkStore} from '../chunk-store';
-import {LRU} from '../lru';
+import { VoxelStats } from '../voxel-stats';
+import { ChunkStore } from '../chunk-store';
+import { LRU } from '../lru';
 
 var fs = require('fs');
 var concur = require('../min-concurrent');
+
 var cache = new LRU(200);
 var debug = false;
 
@@ -167,5 +168,7 @@ export class FileChunkStore extends ChunkStore {
 			}
 		}
 		this.toSave = {};
+	}
+	public tick() {
 	}
 }

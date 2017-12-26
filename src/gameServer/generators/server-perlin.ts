@@ -1,9 +1,5 @@
 import {Generator} from '../generator';
-var inherits = require('util').inherits;
-var fs = require('fs');
 var noise = require('perlin').noise;
-
-
 
 var debug = false;
 

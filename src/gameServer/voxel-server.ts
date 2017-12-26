@@ -1,13 +1,12 @@
-// dependencies
 import {EventEmitter} from 'events';
-var DuplexEmitter = require('duplex-emitter')
-var extend = require('extend')
-var path = require('path')
-var uuid = require('hat')
+var DuplexEmitter = require('duplex-emitter');
+var extend = require('extend');
+var path = require('path');
+var uuid = require('hat');
 // voxel dependencies
-var voxel = require('voxel')
-var crunch = require('voxel-crunch')
-var engine = require('voxel-engine')
+var voxel = require('voxel');
+var crunch = require('voxel-crunch');
+var engine = require('voxel-engine');
 var ndarray = require('ndarray');
 
 export class VoxelServer extends EventEmitter {

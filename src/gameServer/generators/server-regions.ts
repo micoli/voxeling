@@ -1,6 +1,5 @@
-import {Generator} from '../generator';
+import { Generator } from '../generator';
 
-var fs = require('fs');
 var noise = require('perlin').noise;
 var debug = false;
 
@@ -132,4 +131,3 @@ var terrains = {
 		}
 	}
 };
-

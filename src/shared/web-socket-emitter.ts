@@ -214,7 +214,6 @@ export class Server {
 		});
 	}
 	on(name: any, callback: any) {
-		console.log('on1',name);
 		this.emitter.on(name, callback);
 	}
 }

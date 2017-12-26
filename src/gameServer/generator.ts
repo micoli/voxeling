@@ -1,13 +1,12 @@
-//var stats = require('voxeling-stats')
 var debug = false;
 
-
-export class Generator {
+export abstract class Generator {
 	chunkArraySize: number;
 	chunkSize: any;
+
 	constructor(chunkSize: any) {
 		if (!chunkSize) {
-			throw 'Voxel-generator: chunkSize is required';
+			throw Error('Voxel-generator: chunkSize is required');
 		}
 
 		this.chunkSize = chunkSize;

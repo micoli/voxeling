@@ -11,7 +11,6 @@ nconf.env({
 	file: configurationFilename
 });
 console.log('Configuration Filename ',configurationFilename)
-console.log('nconf',nconf);
 
 export interface IServerConfigurations {
 	port: number;

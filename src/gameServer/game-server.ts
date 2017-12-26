@@ -6,6 +6,11 @@ var ndarray = require('ndarray');
 import { EventEmitter } from 'events';
 import { VoxelServer } from './voxel-server';
 
+import {ChunkStore} from './chunk-store';
+import {MysqlChunkStore} from './chunk-stores/mysql';
+import {FileChunkStore} from './chunk-stores/file';
+import {ServerTerracedGenerator} from './generators/server-terraced';
+
 // internal dependencies
 //var modvox = require('./features/modvox/server.js');
 //var entity = require('./features/entity/server.js');
@@ -17,21 +22,11 @@ export class GameServer extends EventEmitter {
 	spatialTriggers: any[];
 	connections: number;
 	connectionLimit: number = 10;
+	chunkStore:any;
+
 	constructor(opts: any) {
 		super();
 		this.initialize(opts);
-	}
-
-	public connectClient(duplexStream: any) {
-		var self = this;
-		self.baseServer.connectClient(duplexStream);
-		console.log(duplexStream.id, 'join');
-	}
-
-	public removeClient(duplexStream: any) {
-		var self = this;
-		self.baseServer.removeClient(duplexStream);
-		console.log(duplexStream.id, 'left');
 	}
 
 	private initialize(opts: any) {
@@ -61,6 +56,19 @@ export class GameServer extends EventEmitter {
 		};
 		var settings = self.settings = extend({}, defaults, opts);
 
+		//if (config.mysql) {
+			let mysqlPool = require('mysql').createPool(config.mysql);
+			this.chunkStore = new MysqlChunkStore(
+				new ServerTerracedGenerator(config.chunkSize),
+				config.mysql
+			);
+		/*} else {
+			this.chunkStore = new FileChunkStore(
+				new ServerTerracedGenerator(config.chunkSize),
+				config.chunkFolder
+			);
+		}*/
+
 		// get database
 		// enable event forwarding for features
 		//settings.forwardEvents.push('modvox');
@@ -79,6 +87,18 @@ export class GameServer extends EventEmitter {
 		self.bindEvents();
 	}
 
+	public connectClient(duplexStream: any) {
+		var self = this;
+		self.baseServer.connectClient(duplexStream);
+		console.log('connectClient', duplexStream.id);
+	}
+
+	public removeClient(duplexStream: any) {
+		var self = this;
+		self.baseServer.removeClient(duplexStream);
+		console.log('removeClient',duplexStream.id);
+	}
+
 	private bindEvents() {
 		var self = this;
 		var settings = self.settings;
@@ -95,7 +115,7 @@ export class GameServer extends EventEmitter {
 
 			var chunk: any = {
 				position : position,
-				voxels: self.getFlatChunkVoxels(position),
+				voxels: self.chunkStore.get(position),
 				dims : dimensions,
 			};
 			chunk.length = chunk.voxels.length;
@@ -118,6 +138,7 @@ export class GameServer extends EventEmitter {
 				self.emit('ready');
 			}
 		});
+
 		game.voxels.requestMissingChunks(game.worldOrigin);
 
 		// log chat
@@ -134,10 +155,10 @@ export class GameServer extends EventEmitter {
 		// store chunk in db
 		/*function storeChunk(chunk: any) {
 			self.voxelDb.store(settings.worldId, chunk, function afterStore(err: any) {
-				if (err) {
-					console.error('chunk store error', err.stack);
-				}
-			});
+			if (err) {
+				console.error('chunk store error', err.stack);
+			}
+		});
 		}*/
 	}
 
