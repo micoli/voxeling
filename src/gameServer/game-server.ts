@@ -69,7 +69,7 @@ export class GameServer extends EventEmitter {
 				'logoak',
 				'leavesOak',
 			],
-			avatarInitialPosition: [2, 20, 2],
+			avatarInitialPosition: [0, 20, 0],
 			forwardEvents: [
 				'spatialTrigger',
 				'missingChunk',

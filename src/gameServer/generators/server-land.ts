@@ -1,7 +1,7 @@
 import {Generator} from '../generator';
 import { VoxelServer } from '../voxel-server';
 var noise = require('perlin').noise;
-
+import materialsMap from './server-land-materials';
 var debug = false;
 
 function getRandomInt(min: number, max: number) {
@@ -11,8 +11,8 @@ function getRandomInt(min: number, max: number) {
 export class ServerLandGenerator extends Generator {
 	baseServer:VoxelServer;
 	floor:number = 0;
-	ceiling:number = 50;
-	divisor:number = 20;
+	ceiling:number = 20;
+	divisor:number = 50;
 	seed:any = 8484747471747;
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
@@ -57,47 +57,54 @@ export class ServerLandGenerator extends Generator {
 		return 0;
 	}
 
+	fillFullChunk(chunk:any,materials:number[]){
+		//https://stackoverflow.com/questions/12672765/elegant-way-to-generate-a-random-value-regarding-percentage
+		for (var i = 0; i < 32768; i++) {
+			chunk.voxels[i]=materials[getRandomInt(0,materials.length-1)];
+		}
+	}
+
 	fillChunkVoxels (chunk: any, fn: any, width: number) {
 		var self = this;
 		var position = chunk.position;
-		var startX = position[0];
-		var startY = position[1];
-		var startZ = position[2];
+		var chunkX = position[0];
+		var chunkY = position[1];
+		var chunkZ = position[2];
 		var voxels = chunk.voxels;
-		if(startY<-10){
-			 for (var i = 0; i < 32768; i++) {
-				 voxels[i]=1;
-			 }
-			 return ;
+		if(chunkY<-10){
+			this.fillFullChunk(chunk,[materialsMap.bedrock]);
+			return ;
 		}
-		if(startY>=2){
-			for (var i = 0; i < 32768; i++) {
-   			 voxels[i]=0;
-   		 }
-   		 return ;
-   	}
+		if(chunkY>=-10 && chunkY<=0){
+			this.fillFullChunk(chunk,[materialsMap.bedrock,materialsMap.grass]);
+			return ;
+		}
+		if(chunkY>1){
+			this.fillFullChunk(chunk,[materialsMap.air]);
+			return ;
+		}
 
-		self.pointsInside(startX, startZ, width, function(x: number, z: number) {
+		self.pointsInside(chunkX, chunkZ, width, function(x: number, z: number) {
 			var n = noise.simplex2(x / self.divisor, z / self.divisor);
 			var y = ~~self.scale(n, -1, 1, self.floor, self.ceiling);
-			if (y === self.floor || startY < y && y < startY + width) {
+			if (y === self.floor || chunkY < y && y < chunkY + width) {
 				var xidx = Math.abs((width + x % width) % width);
 				var yidx = Math.abs((width + y % width) % width);
 				var zidx = Math.abs((width + z % width) % width);
 				var idx = xidx + yidx * width + zidx * width * width;
 				voxels[idx] = 1;//self.generateVoxel(x,0,z,32);;
 				// now that we've set the crust, loop down and create earth underneath
-				for (var i = y; i >= startY; i--) {
-					let idx = xidx + Math.abs((width + i % width) % width) * width + zidx * width * width;
-					voxels[idx] = [1,2,3,4,10][getRandomInt(0, 4)] ;//self.generateVoxel(x,i,z,32)
-				}
+				for (var i = y; i >= chunkY; i--) {
+				let idx = xidx + Math.abs((width + i % width) % width) * width + zidx * width * width;
+				voxels[idx] = [materialsMap.grass,materialsMap.dirt,materialsMap.stone][getRandomInt(0, 3)] ;//self.generateVoxel(x,i,z,32)
 			}
-		});
-	}
+		}
+	});
+}
 
-	pointsInside(startX: number, startY: number, width: number, func: any) {
-		for (var x = startX; x < startX + width; x++) {
-			for (var y = startY; y < startY + width; y++) {
+	pointsInside(chunkX: number, chunkY: number, width: number, func: any) {
+		for (var x = chunkX; x < chunkX + width; x++) {
+			for (var y = chunkY; y < chunkY + width; y++) {
 				func(x, y);
 			}
 		}
