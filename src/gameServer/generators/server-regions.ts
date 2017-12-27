@@ -4,14 +4,13 @@ var noise = require('perlin').noise;
 var debug = false;
 
 export class ServerRegionsGenerator extends Generator {
-	chunkFolder: string;
-	constructor(chunkSize: number, folder: string) {
+	constructor(chunkSize: number) {
 		super(chunkSize);
-		this.chunkFolder = folder;
 	}
 
 	fillChunkVoxels(chunk: any, fn: any, width: number) {
 		var position = chunk.position;
+		console.log(position.join(','));
 		var startX = position[0];
 		var startY = position[1];
 		var startZ = position[2];
@@ -19,6 +18,8 @@ export class ServerRegionsGenerator extends Generator {
 		for (var i = 0; i < 32768; i++) {
 			chunk.voxels[i] = 0;
 		}
+		terrains['sea-level'](chunk, width);
+		/*
 		// determine the region
 		if (startY < 0) {
 			terrains.ground(chunk, width);
@@ -33,6 +34,7 @@ export class ServerRegionsGenerator extends Generator {
 			terrains.high(chunk, width);
 			return;
 		}
+		*/
 	}
 }
 

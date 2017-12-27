@@ -9,6 +9,7 @@ import GameClient from './GameClient';
 	template: `
 	<div class="right_col" role="main">
 		<!-- top tiles -->
+		<!--
 		<div class="row tile_count">
 			<title-stat-count :icon="'fa-user'" :title="'Total Users'" :count="2500" :delta="4"></title-stat-count>
 			<title-stat-count :icon="'fa-clock-o'" :title="'Average Time'" :count="132.5" :delta="3"></title-stat-count>
@@ -17,6 +18,7 @@ import GameClient from './GameClient';
 			<title-stat-count :icon="'fa-clock-o'" :title="'Total Collections'" :count="98" :delta="20"></title-stat-count>
 			<title-stat-count :icon="'fa-user'" :title="'Total Connections'" :count="7654.12" :delta="-15"></title-stat-count>
 		</div>
+		-->
 		<!-- /top tiles -->
 		<div class="row">
 			<game-client></game-client>

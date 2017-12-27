@@ -18,6 +18,8 @@ import ProfileQuickInfo from './components/menu/ProfileQuickInfo';
 import ProfileMenu from './components/menu/ProfileMenu';
 import SideMenu from './components/menu/SideMenu';
 import TopMenuToggle from './components/menu/TopMenuToggle';
+import GentTitle from './components/menu/GentTitle';
+import GentFooter from './components/menu/GentFooter';
 import ProfileMessagesMenu from './components/menu/ProfileMessagesMenu';
 
 import TitleStatCount from './components/homepage/TitleStatCount';
@@ -75,6 +77,8 @@ var vm = new Vue({
 		SideMenu,
 		TopMenuToggle,
 		ClosableWidget,
+		GentTitle,
+		GentFooter,
 
 		Homepage,
 		TitleStatCount

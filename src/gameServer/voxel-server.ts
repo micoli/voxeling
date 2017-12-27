@@ -6,7 +6,8 @@ var uuid = require( 'hat' );
 // voxel dependencies
 var voxel = require( 'voxel' );
 var crunch = require( 'voxel-crunch' );
-var engine = require( 'voxel-engine' );
+//import {Engine} from '../gameClient/voxel-engine-stackgl' ;
+var engine = require('voxel-engine');
 var ndarray = require( 'ndarray' );
 
 export class VoxelServer extends EventEmitter {
@@ -47,7 +48,6 @@ export class VoxelServer extends EventEmitter {
 		var settings = self.settings = extend( {}, defaults, opts )
 		self.forwardEvents = settings.forwardEvents
 		self.game = engine( settings )
-
 
 		// forward some events to module consumer
 		self.game.voxels.on( 'missingChunk', function( chunk: any ) {

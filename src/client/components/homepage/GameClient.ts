@@ -4,7 +4,7 @@ import {VoxelClientInstance} from '../../../gameClient/voxel-client-instance';
 
 @Component({
 	template: `
-		<closable-widget title="Game" size="col-md-12 col-sm-12 col-xs-12">
+		<closable-widget title="Game" size="col-md-12 col-sm-12 col-xs-12" height-class="fixed_height_480">
 			<div class="col-md-12 col-sm-12 col-xs-12">
 				<div id="game-holder" class="demo-placeholder" ></div>
 			</div>
@@ -18,7 +18,7 @@ export default class GameClient extends Vue {
 	mounted () {
 		setTimeout(function(){
 			VoxelClientInstance.get(<HTMLCanvasElement>document.getElementById('game-holder'));
-		},3000);
+		},1000);
 	}
 
 	destroyed () {

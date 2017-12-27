@@ -15,6 +15,7 @@ export class VoxelClientInstance {
 				},
 				pluginLoaders: {
 					'voxel-client' : require('./voxel-client'),
+					'voxel-materials' : require('./voxel-materials'),
 					'voxel-artpacks': require('voxel-artpacks'),
 					'voxel-wireframe': require('voxel-wireframe'),
 					'voxel-chunkborder': require('voxel-chunkborder'),
@@ -90,6 +91,7 @@ export class VoxelClientInstance {
 
 						}
 					},
+					'voxel-materials':{},
 					'voxel-engine-stackgl': {
 						appendDocument: false,
 						exposeGlobal: true,  // for debugging
@@ -141,9 +143,9 @@ export class VoxelClientInstance {
 						verbose: false
 					},
 					'voxel-shader': {
-						//cameraFOV: 45,
+						cameraFOV: 45,
 						//cameraFOV: 70,
-						cameraFOV: 90
+						//cameraFOV: 90
 						//cameraFOV: 110,
 					},
 

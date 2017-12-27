@@ -147,7 +147,7 @@ export class FileChunkStore extends ChunkStore {
 		var op = function(filename: any, chunk: any, callbackClosure: any) {
 			return function() {
 				console.log(self.chunkFolder , filename);
-				fs.writeFile(self.chunkFolder + filename, new Buffer(chunk.voxels), callbackClosure);
+				//////// fs.writeFile(self.chunkFolder + filename, new Buffer(chunk.voxels), callbackClosure);
 			};
 		};
 		var callbackClosure = function(chunkID: any) {
@@ -169,6 +169,7 @@ export class FileChunkStore extends ChunkStore {
 		}
 		this.toSave = {};
 	}
+
 	public tick() {
 	}
 }

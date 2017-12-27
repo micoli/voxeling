@@ -9,9 +9,11 @@ import { VoxelServer } from './voxel-server';
 import {ChunkStore} from './chunk-store';
 import {MysqlChunkStore} from './chunk-stores/mysql';
 import {FileChunkStore} from './chunk-stores/file';
-import {ServerTennisGenerator} from './generators/server-tennis';
-import {ServerTerracedGenerator} from './generators/server-terraced';
-import {ServerPerlinGenerator} from './generators/server-perlin';
+import {ServerLandGenerator} from './generators/server-land';
+//import {ServerTennisGenerator} from './generators/server-tennis';
+//import {ServerPerlinGenerator} from './generators/server-perlin';
+import {ServerRegionsGenerator} from './generators/server-regions';
+//import {ServerTerracedGenerator} from './generators/server-terraced';
 
 
 // internal dependencies
@@ -40,6 +42,7 @@ export class GameServer extends EventEmitter {
 		// for debugging
 		var defaults = {
 			generateChunks: false,
+			//arrayType: Uint8Array,//.BYTES_PER_ELEMENT,// Uint16Array,  // arrayType: Uint8Array
 			/*
 			generateChunks: false,
 			generate : function(){
@@ -63,9 +66,15 @@ export class GameServer extends EventEmitter {
 				'whitewool',
 				'redwool',
 				'bluewool',
+				'logoak',
+				'leavesOak',
 			],
 			avatarInitialPosition: [2, 20, 2],
-			forwardEvents: ['spatialTrigger','missingChunk','renderChunk'],
+			forwardEvents: [
+				'spatialTrigger',
+				'missingChunk',
+				'renderChunk'
+			],
 		};
 		var settings = self.settings = extend({}, defaults, opts);
 
@@ -75,13 +84,8 @@ export class GameServer extends EventEmitter {
 				new ServerTerracedGenerator(config.chunkSize),
 				config.mysql
 			);
-		} else {*/
-			this.generator = new ServerPerlinGenerator(config.chunkSize);
-			this.chunkStore = new FileChunkStore(
-				this.generator,
-				'./tmp/'//config.chunkFolder
-			);
-		//}
+		} else {
+		}*/
 
 		// get database
 		// enable event forwarding for features
@@ -91,6 +95,11 @@ export class GameServer extends EventEmitter {
 		// create and initialize base game server
 		var baseServer = self.baseServer = new VoxelServer(settings);
 		self.game = baseServer.game;
+
+		this.chunkStore = new FileChunkStore(
+			new ServerLandGenerator(config.chunkSize,baseServer),
+			'./tmp/'//config.chunkFolder
+		);
 
 		// sane defaults
 		self.spatialTriggers = [];

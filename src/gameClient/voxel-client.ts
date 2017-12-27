@@ -48,7 +48,7 @@ export class VoxelClient extends EventEmitter {
 			self.bindEvents(self.connection);
 			setTimeout(function() {
 				self.connection.emit('created');
-			}, 1000);
+			}, 300);
 		})
 	}
 

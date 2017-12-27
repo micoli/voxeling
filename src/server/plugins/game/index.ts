@@ -36,7 +36,7 @@ export default (): IPlugin => {
 						} );
 					} );
 					resolve();
-				},300)
+				},3000)
 			});
 		},
 		info: () => {
