@@ -25,9 +25,11 @@ export class ServerLandGenerator extends Generator {
 	openSimplex:OpenSimplexNoise;
 	treeRandomMax:number;
 	treeSides:any[]=[
-		[-1,-1],[-1, 0],[-1, 1],
-		[ 0,-1],[ 0, 0],[ 0, 1],
-		[ 1,-1],[ 1, 0],[ 1, 1]
+		[[0,7,8,7,0]],
+		[[7,6,6,6,7]],
+		[[8,6,2,6,8]],
+		[[7,6,6,6,7]],
+		[[0,7,8,7,0]],
 	];
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
