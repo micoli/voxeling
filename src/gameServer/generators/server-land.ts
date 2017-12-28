@@ -24,6 +24,11 @@ export class ServerLandGenerator extends Generator {
 	randomUndercrust:any;
 	openSimplex:OpenSimplexNoise;
 	treeRandomMax:number;
+	treeSides:any[]=[
+		[-1,-1],[-1, 0],[-1, 1],
+		[ 0,-1],[ 0, 0],[ 0, 1],
+		[ 1,-1],[ 1, 0],[ 1, 1]
+	];
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
 		super(chunkSize);
@@ -32,7 +37,7 @@ export class ServerLandGenerator extends Generator {
 
 		var tmp:any;
 		tmp={};
-		tmp[materialsMap.grass] = 5;
+		tmp[materialsMap.grass] = 15;
 		tmp[materialsMap.dirt] = 3;
 		tmp[materialsMap.stone]= 1;
 		this.randomTerrain = new weightedRandomCorpusA(tmp);
@@ -90,7 +95,7 @@ export class ServerLandGenerator extends Generator {
 			y=Math.max(Math.min(y,width),0);
 
 			ndsummit.set(localZ,localX,y);
-			for (var i = 0; i <width; i++) {
+			for (var i = 0; i <width ;  i++) {
 				if (i<=y){
 					ndvoxels.set(localZ,i,localX,self.randomTerrain.pick());
 				}else{
@@ -101,13 +106,20 @@ export class ServerLandGenerator extends Generator {
 
 		for(let i=0;i<=10;i++){
 			var x:number,z:number;
-			[x,z]=[this.getRandomInt(0,width),this.getRandomInt(0,width)]
+			[x,z]=[this.getRandomInt(0,width),self.getRandomInt(0,width)]
 			var basey=ndsummit.get(x,z);
-			var treeHeight=this.getRandomInt(4,7);
-			var leavesHeight=this.getRandomInt(2,4);
-			if(basey<=width-treeHeight){
-				for(let l=1;l<=treeHeight;l++){
+			var treeHeight=self.getRandomInt(4,7);
+			var leavesHeight=self.getRandomInt(2,4);
+			if(basey<=(width-treeHeight-leavesHeight)){
+				for(let l=1;l<=(treeHeight+leavesHeight);l++){
 					ndvoxels.set(x,basey+l,z,materialsMap.plankOak);
+				}
+				for(let l=treeHeight;l<=(treeHeight+leavesHeight);l++){
+					self.treeSides.forEach(function(pos){
+						if(self.getRandomInt(0,10)<=7){
+							ndvoxels.set(x+pos[0],basey+l,z+pos[1],materialsMap.leavesOak);
+						}
+					});
 				}
 			}
 		}
