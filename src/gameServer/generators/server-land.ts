@@ -25,11 +25,11 @@ export class ServerLandGenerator extends Generator {
 	openSimplex:OpenSimplexNoise;
 	treeRandomMax:number;
 	treeSides:any[]=[
-		[[0,7,8,7,0]],
-		[[7,6,6,6,7]],
-		[[8,6,2,6,8]],
-		[[7,6,6,6,7]],
-		[[0,7,8,7,0]],
+		[0,7,8,7,0],
+		[7,6,6,6,7],
+		[8,6,2,6,8],
+		[7,6,6,6,7],
+		[0,7,8,7,0],
 	];
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
@@ -106,25 +106,8 @@ export class ServerLandGenerator extends Generator {
 			}
 		});
 
-		for(let i=0;i<=10;i++){
-			var x:number,z:number;
-			[x,z]=[this.getRandomInt(0,width),self.getRandomInt(0,width)]
-			var basey=ndsummit.get(x,z);
-			var treeHeight=self.getRandomInt(4,7);
-			var leavesHeight=self.getRandomInt(2,4);
-			if(basey<=(width-treeHeight-leavesHeight)){
-				for(let l=1;l<=(treeHeight+leavesHeight);l++){
-					ndvoxels.set(x,basey+l,z,materialsMap.plankOak);
-				}
-				for(let l=treeHeight;l<=(treeHeight+leavesHeight);l++){
-					self.treeSides.forEach(function(pos){
-						if(self.getRandomInt(0,10)<=7){
-							ndvoxels.set(x+pos[0],basey+l,z+pos[1],materialsMap.leavesOak);
-						}
-					});
-				}
-			}
-		}
+		self.plantTrees(ndvoxels, ndsummit, width);
+
 	}
 
 	getRandomInt(min:number, max:number) {
@@ -139,7 +122,29 @@ export class ServerLandGenerator extends Generator {
 		}
 	}
 
-	plantTree(ndvoxels:any, x:number, y:number, z:number){
-
+	plantTrees(ndvoxels:any, ndsummit:any, width:number){
+		var self=this;
+		var trunkOffset=(self.treeSides.length-1)/2;
+		for(let i=0;i<=3;i++){
+			var x:number,z:number;
+			[x,z]=[this.getRandomInt(0,width-trunkOffset*2)+trunkOffset,self.getRandomInt(0,width-trunkOffset*2)+trunkOffset]
+			var basey=ndsummit.get(x,z);
+			var treeHeight=self.getRandomInt(4,7);
+			var leavesHeight=self.getRandomInt(2,4);
+			if(basey<=(width-treeHeight-leavesHeight)){
+				for(let l=1;l<=(treeHeight+leavesHeight);l++){
+					ndvoxels.set(x,basey+l,z,materialsMap.plankOak);
+				}
+				for(let l=treeHeight;l<=(treeHeight+leavesHeight);l++){
+					self.treeSides.forEach(function(line,px:number){
+						line.forEach(function(cell:any,pz:number){
+							if(self.getRandomInt(0,10)<=cell){
+								ndvoxels.set(x+px-trunkOffset,basey+l,z+pz-trunkOffset,materialsMap.leavesOak);
+							}
+						})
+					});
+				}
+			}
+		}
 	}
 }
