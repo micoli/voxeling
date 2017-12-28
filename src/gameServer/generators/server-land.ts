@@ -18,11 +18,12 @@ export class ServerLandGenerator extends Generator {
 	bedrock:number = -10;
 	floor:number = 0;
 	ceiling:number = 20;
-	divisor:number = 50;
+	divisor:number = 100;
 	seed:any = 'hello';
 	randomTerrain:any;
 	randomUndercrust:any;
 	openSimplex:OpenSimplexNoise;
+	treeRandomMax:number;
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
 		super(chunkSize);
@@ -79,14 +80,16 @@ export class ServerLandGenerator extends Generator {
 			return ;
 		}
 		var ndvoxels = ndarray(voxels, [width , width , width ]);
+		var ndsummit = ndarray(new Int8Array(width * width), [width , width ]);
 
 		self.pointsInside(chunkX, chunkZ, width, function(globalX: number, globalZ: number,localX:number,localZ:number) {
 			var y=Math.floor((
 				(self.openSimplex.noise2D(globalX/self.divisor, globalZ/self.divisor) + 0.5) * 1
-				//+(self.openSimplex.noise2D(globalZ/(self.divisor/4), globalX/(self.divisor/2)) + 0.5) * 0.5
-			)*20);
-			//y=Math.sin(Math.sqrt(10*x*x + 10*z*z))*10
+				//+(self.openSimplex.noise2D(globalZ/(self.divisor/2), globalX/(self.divisor/2)) + 0.5) * 0.5
+			)*width);
+			y=Math.max(Math.min(y,width),0);
 
+			ndsummit.set(localZ,localX,y);
 			for (var i = 0; i <width; i++) {
 				if (i<=y){
 					ndvoxels.set(localZ,i,localX,self.randomTerrain.pick());
@@ -95,7 +98,23 @@ export class ServerLandGenerator extends Generator {
 				}
 			}
 		});
-		//voxels=ndvoxels.data;
+
+		for(let i=0;i<=10;i++){
+			var x:number,z:number;
+			[x,z]=[this.getRandomInt(0,width),this.getRandomInt(0,width)]
+			var basey=ndsummit.get(x,z);
+			var treeHeight=this.getRandomInt(4,7);
+			var leavesHeight=this.getRandomInt(2,4);
+			if(basey<=width-treeHeight){
+				for(let l=1;l<=treeHeight;l++){
+					ndvoxels.set(x,basey+l,z,materialsMap.plankOak);
+				}
+			}
+		}
+	}
+
+	getRandomInt(min:number, max:number) {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
 	pointsInside(chunkX: number, chunkZ: number, width: number, func: any) {
@@ -104,5 +123,9 @@ export class ServerLandGenerator extends Generator {
 				func(chunkX*width+x,chunkZ*width+z,x, z);
 			}
 		}
+	}
+
+	plantTree(ndvoxels:any, x:number, y:number, z:number){
+
 	}
 }
