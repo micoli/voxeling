@@ -1,7 +1,12 @@
-import {Generator} from '../generator';
+import { Generator } from '../generator';
 import { VoxelServer } from '../voxel-server';
-var noise = require('perlin').noise;
+//var noise = require('perlin').noise;
 import materialsMap from './server-land-materials';
+import { weightedRandomCorpusA } from '../weighted-random';
+import OpenSimplexNoise from 'open-simplex-noise';
+const seedrandom = require('seedrandom');
+const ndarray = require('ndarray');
+
 var debug = false;
 
 function getRandomInt(min: number, max: number) {
@@ -10,57 +15,43 @@ function getRandomInt(min: number, max: number) {
 
 export class ServerLandGenerator extends Generator {
 	baseServer:VoxelServer;
+	bedrock:number = -10;
 	floor:number = 0;
 	ceiling:number = 20;
 	divisor:number = 50;
-	seed:any = 8484747471747;
+	seed:any = 'hello';
+	randomTerrain:any;
+	randomUndercrust:any;
+	openSimplex:OpenSimplexNoise;
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
 		super(chunkSize);
 		this.baseServer = baseServer;
-		noise.seed(this.seed);
+		this.openSimplex = new OpenSimplexNoise(seedrandom(this.seed))
+
+		var tmp:any;
+		tmp={};
+		tmp[materialsMap.grass] = 5;
+		tmp[materialsMap.dirt] = 3;
+		tmp[materialsMap.stone]= 1;
+		this.randomTerrain = new weightedRandomCorpusA(tmp);
+
+		tmp={};
+		tmp[materialsMap.grass] = 5;
+		tmp[materialsMap.bedrock] = 1;
+		this.randomUndercrust = new weightedRandomCorpusA(tmp);
 	}
 
 	generateVoxel(x: number, y: number, z: number, chunkSize: number): number {
 		if (y === 0) {
 			return 1;
 		}
-		if (y < 0) {
-			// N = 800
-			// 2 in N chance of obsidian
-			// 5 in N chance of empty
-			// 1 in N chance of lava
-			// 2 in N chance of granite
-			// 2 in N chance of slate
-			var chance = getRandomInt(1, 800);
-			if (chance < 3) {
-				return 2; // obsidian
-			} else if (chance < 8) {
-				return 0; // empty
-			} else if (chance === 8) {
-				return 3; // lava
-			} else if (chance < 11) {
-				return 4; // granite
-			} else if (chance < 14) {
-				return 10; //slate
-			}
-			// Otherwise, dirt
-			return 1;
-		}
-		var chunkX = Math.abs(Math.floor(x / chunkSize));
-		//var chunkY = Math.abs(Math.floor(y / chunkSize))
-		var chunkZ = Math.abs(Math.floor(z / chunkSize));
-		var out = Math.max(chunkX, chunkZ);
-		if (y <= out) {
-			return 1;
-		}
 		return 0;
 	}
 
-	fillFullChunk(chunk:any,materials:number[]){
-		//https://stackoverflow.com/questions/12672765/elegant-way-to-generate-a-random-value-regarding-percentage
+	fillFullChunk(chunk:any,materials:any){
 		for (var i = 0; i < 32768; i++) {
-			chunk.voxels[i]=materials[getRandomInt(0,materials.length-1)];
+			chunk.voxels[i]=Array.isArray(materials)?materials[getRandomInt(0,materials.length-1)]:materials.pick();
 		}
 	}
 
@@ -71,46 +62,47 @@ export class ServerLandGenerator extends Generator {
 		var chunkY = position[1];
 		var chunkZ = position[2];
 		var voxels = chunk.voxels;
-		if(chunkY<-10){
+		if(chunkY<=self.bedrock-10){
+			this.fillFullChunk(chunk,[materialsMap.air]);
+			return ;
+		}
+		if(chunkY<=self.bedrock){
 			this.fillFullChunk(chunk,[materialsMap.bedrock]);
 			return ;
 		}
-		if(chunkY>=-10 && chunkY<=0){
-			this.fillFullChunk(chunk,[materialsMap.bedrock,materialsMap.grass]);
+		if(chunkY<=self.floor){
+			this.fillFullChunk(chunk,this.randomUndercrust);
 			return ;
 		}
 		if(chunkY>1){
 			this.fillFullChunk(chunk,[materialsMap.air]);
 			return ;
 		}
+		var ndvoxels = ndarray(voxels, [width , width , width ]);
 
-		self.pointsInside(chunkX, chunkZ, width, function(x: number, z: number) {
-			var n = noise.simplex2(x / self.divisor, z / self.divisor);
-			var y = ~~self.scale(n, -1, 1, self.floor, self.ceiling);
-			if (y === self.floor || chunkY < y && y < chunkY + width) {
-				var xidx = Math.abs((width + x % width) % width);
-				var yidx = Math.abs((width + y % width) % width);
-				var zidx = Math.abs((width + z % width) % width);
-				var idx = xidx + yidx * width + zidx * width * width;
-				voxels[idx] = 1;//self.generateVoxel(x,0,z,32);;
-				// now that we've set the crust, loop down and create earth underneath
-				for (var i = y; i >= chunkY; i--) {
-				let idx = xidx + Math.abs((width + i % width) % width) * width + zidx * width * width;
-				voxels[idx] = [materialsMap.grass,materialsMap.dirt,materialsMap.stone][getRandomInt(0, 3)] ;//self.generateVoxel(x,i,z,32)
-			}
-		}
-	});
-}
+		self.pointsInside(chunkX, chunkZ, width, function(globalX: number, globalZ: number,localX:number,localZ:number) {
+			var y=Math.floor((
+				(self.openSimplex.noise2D(globalX/self.divisor, globalZ/self.divisor) + 0.5) * 1
+				//+(self.openSimplex.noise2D(globalZ/(self.divisor/4), globalX/(self.divisor/2)) + 0.5) * 0.5
+			)*20);
+			//y=Math.sin(Math.sqrt(10*x*x + 10*z*z))*10
 
-	pointsInside(chunkX: number, chunkY: number, width: number, func: any) {
-		for (var x = chunkX; x < chunkX + width; x++) {
-			for (var y = chunkY; y < chunkY + width; y++) {
-				func(x, y);
+			for (var i = 0; i <width; i++) {
+				if (i<=y){
+					ndvoxels.set(localZ,i,localX,self.randomTerrain.pick());
+				}else{
+					ndvoxels.set(localZ,i,localX,0)
+				}
 			}
-		}
+		});
+		//voxels=ndvoxels.data;
 	}
 
-	scale(x: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number) {
-		return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+	pointsInside(chunkX: number, chunkZ: number, width: number, func: any) {
+		for (var x = 0; x < width ; x++) {
+			for (var z = 0; z < width ; z++) {
+				func(chunkX*width+x,chunkZ*width+z,x, z);
+			}
+		}
 	}
 }

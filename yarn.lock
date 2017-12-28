@@ -9243,6 +9243,10 @@ opaque@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/opaque/-/opaque-0.0.1.tgz#f68d5f13a3bc89f82fa901f679eb73b4e14715ce"
 
+open-simplex-noise@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/open-simplex-noise/-/open-simplex-noise-1.4.1.tgz#aca36363325c5c5f0cb11cd5787374ae45dd09d9"
+
 open@0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/open/-/open-0.0.3.tgz#fa377f4ff308212d92a9b8e6395240854646a713"
@@ -11028,6 +11032,10 @@ scss-tokenizer@^0.2.3:
 secure-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/secure-keys/-/secure-keys-1.0.0.tgz#f0c82d98a3b139a8776a8808050b824431087fca"
+
+seedrandom@^2.4.3:
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/seedrandom/-/seedrandom-2.4.3.tgz#2438504dad33917314bff18ac4d794f16d6aaecc"
 
 select-hose@^2.0.0:
   version "2.0.0"
