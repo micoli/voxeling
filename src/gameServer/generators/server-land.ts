@@ -2,16 +2,13 @@ import { Generator } from '../generator';
 import { VoxelServer } from '../voxel-server';
 //var noise = require('perlin').noise;
 import materialsMap from './server-land-materials';
-import { weightedRandomCorpusA } from '../weighted-random';
+import { weightedRandomCorpusA,getRandomInt } from '../weighted-random';
+import { TreeGenerator } from './tree-generator';
 import OpenSimplexNoise from 'open-simplex-noise';
 const seedrandom = require('seedrandom');
 const ndarray = require('ndarray');
 
 var debug = false;
-
-function getRandomInt(min: number, max: number) {
-	return Math.floor(Math.random() * (max - min)) + min;
-}
 
 export class ServerLandGenerator extends Generator {
 	baseServer:VoxelServer;
@@ -23,14 +20,7 @@ export class ServerLandGenerator extends Generator {
 	randomTerrain:any;
 	randomUndercrust:any;
 	openSimplex:OpenSimplexNoise;
-	treeRandomMax:number;
-	treeSides:any[]=[
-		[0,7,8,7,0],
-		[7,6,6,6,7],
-		[8,6,2,6,8],
-		[7,6,6,6,7],
-		[0,7,8,7,0],
-	];
+	treeRandomMax:number=3;
 
 	constructor(chunkSize: number,baseServer:VoxelServer) {
 		super(chunkSize);
@@ -110,10 +100,6 @@ export class ServerLandGenerator extends Generator {
 
 	}
 
-	getRandomInt(min:number, max:number) {
-		return Math.floor(Math.random() * (max - min + 1)) + min;
-	}
-
 	pointsInside(chunkX: number, chunkZ: number, width: number, func: any) {
 		for (var x = 0; x < width ; x++) {
 			for (var z = 0; z < width ; z++) {
@@ -124,27 +110,10 @@ export class ServerLandGenerator extends Generator {
 
 	plantTrees(ndvoxels:any, ndsummit:any, width:number){
 		var self=this;
-		var trunkOffset=(self.treeSides.length-1)/2;
-		for(let i=0;i<=3;i++){
+		for(let i=0;i<=self.treeRandomMax;i++){
 			var x:number,z:number;
-			[x,z]=[this.getRandomInt(0,width-trunkOffset*2)+trunkOffset,self.getRandomInt(0,width-trunkOffset*2)+trunkOffset]
-			var basey=ndsummit.get(x,z);
-			var treeHeight=self.getRandomInt(4,7);
-			var leavesHeight=self.getRandomInt(2,4);
-			if(basey<=(width-treeHeight-leavesHeight)){
-				for(let l=1;l<=(treeHeight+leavesHeight);l++){
-					ndvoxels.set(x,basey+l,z,materialsMap.plankOak);
-				}
-				for(let l=treeHeight;l<=(treeHeight+leavesHeight);l++){
-					self.treeSides.forEach(function(line,px:number){
-						line.forEach(function(cell:any,pz:number){
-							if(self.getRandomInt(0,10)<=cell){
-								ndvoxels.set(x+px-trunkOffset,basey+l,z+pz-trunkOffset,materialsMap.leavesOak);
-							}
-						})
-					});
-				}
-			}
+			[x,z]=[getRandomInt(0,width-3*2)+3,getRandomInt(0,width-3*2)+3]
+			TreeGenerator.generate(ndvoxels,width,x,ndsummit.get(x,z),z)
 		}
 	}
 }
