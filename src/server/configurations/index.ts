@@ -10,7 +10,6 @@ nconf.env({
 .file({
 	file: configurationFilename
 });
-console.log('Configuration Filename ',configurationFilename)
 
 export interface IServerConfigurations {
 	port: number;
@@ -57,8 +56,9 @@ export function getGameConfigs(): IGameConfigurations {
 }
 
 console.log('- - - - - - - -');
+console.log('Configuration ',configurationFilename)
 console.log('Env : ', process.env.NODE_ENV);
-console.log("Full config : ", nconf.get(null));
+//console.log('Full config : '', nconf.get(null));
 console.log('- - - - - - - -');
 console.log('Database : ', getDatabaseConfig());
 console.log('Server : ', getServerConfigs());

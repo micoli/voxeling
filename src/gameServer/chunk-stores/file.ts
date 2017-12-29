@@ -146,7 +146,7 @@ export class FileChunkStore extends ChunkStore {
 		// is there an abstraction (npm module) to help with this?
 		var op = function(filename: any, chunk: any, callbackClosure: any) {
 			return function() {
-				console.log(self.chunkFolder , filename);
+				//console.log(self.chunkFolder , filename);
 				//////// fs.writeFile(self.chunkFolder + filename, new Buffer(chunk.voxels), callbackClosure);
 			};
 		};

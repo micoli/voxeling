@@ -3,7 +3,9 @@ import { VoxelServer } from '../voxel-server';
 //var noise = require('perlin').noise;
 import materialsMap from './server-land-materials';
 import { weightedRandomCorpusA,getRandomInt } from '../weighted-random';
-import { TreeGenerator } from './tree-generator';
+import { BasicTreeGenerator } from './tree-generators/basic-tree';
+import { SmallTreeGenerator } from './tree-generators/small-tree';
+import { PineTreeGenerator } from './tree-generators/pine-tree';
 import OpenSimplexNoise from 'open-simplex-noise';
 const seedrandom = require('seedrandom');
 const ndarray = require('ndarray');
@@ -113,7 +115,7 @@ export class ServerLandGenerator extends Generator {
 		for(let i=0;i<=self.treeRandomMax;i++){
 			var x:number,z:number;
 			[x,z]=[getRandomInt(0,width-3*2)+3,getRandomInt(0,width-3*2)+3]
-			TreeGenerator.generate(ndvoxels,width,x,ndsummit.get(x,z),z)
+			PineTreeGenerator.generate(ndvoxels,width,x,ndsummit.get(x,z),z)
 		}
 	}
 }
