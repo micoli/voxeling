@@ -302,8 +302,6 @@
 		"url-loader": "^0.5.8",
 		"vinyl-buffer": "^1.0.0",
 		"vinyl-source-stream": "^1.1.0",
-		"voxel-carry": "^1.0.0",
-		"voxel-keys": "^0.5.0",
 		"watchify": "^3.9.0",
 		"webpack": "^3.10.0",
 		"webpack-bundle-analyzer": "^2.9.0",

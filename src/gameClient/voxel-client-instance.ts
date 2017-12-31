@@ -4,9 +4,9 @@ import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
 
 export class VoxelClientInstance {
 
-	public static get(_canvas: HTMLCanvasElement) {
-		_canvas.width = _canvas.clientWidth;
-		_canvas.height = _canvas.clientHeight;
+	public static get(_canvas: HTMLDivElement) {
+		//_canvas.width = _canvas.clientWidth;
+		//_canvas.height = _canvas.clientHeight;
 		try{
 			(<any>window).voxelGame = new Engine({
 				exposeGlobal : true,
@@ -33,13 +33,13 @@ export class VoxelClientInstance {
 					'voxel-workbench': require('voxel-workbench'),
 					'voxel-furnace': require('voxel-furnace'),
 					'voxel-chest': require('voxel-chest'),
-					'voxel-inventory-hotbar': require('voxel-inventory-hotbar'),
+					'voxel-inventory-hotbar': require('./voxel-inventory-hotbar'),
 					'voxel-inventory-crafting': require('voxel-inventory-crafting'),
 					'voxel-voila': require('voxel-voila'),
-					'voxel-health': require('voxel-health'),
-					'voxel-health-bar': require('voxel-health-bar'),
+					//'voxel-health': require('voxel-health'),
+					//'voxel-health-bar': require('voxel-health-bar'),
 					//'voxel-health-fall': require('voxel-health-fall'); // TODO: after https://github.com/deathcap/voxel-health-fall/issues/1
-					'voxel-food': require('voxel-food'),
+					//'voxel-food': require('voxel-food'),
 					'voxel-scriptblock': require('voxel-scriptblock'),
 					'voxel-sfx': require('voxel-sfx'),
 					'voxel-flight': require('voxel-flight'),
@@ -181,52 +181,64 @@ export class VoxelClientInstance {
 					'voxel-glass': {},
 					'voxel-decorative': {},
 					'voxel-inventory-creative': {},
-					//'voxel-clientmc': {url: 'ws://localhost:1234', onDemand: true}, // TODO
-
 					'voxel-console': {},
 					'voxel-commands': {},
 					'voxel-drop': {},
 					'voxel-zen': {},
 
 					'voxel-player': {image: 'player.png', homePosition: [2,14,4], homeRotation: [0,0,0]}, // three.js TODO: stackgl avatar
-					'voxel-health': {},
-					'voxel-health-bar': {},
+					//'voxel-health': {},
+					//'voxel-health-bar': {},
 					//'voxel-health-fall': {}, // requires voxel-player TODO: enable and test
-					'voxel-food': {},
+					//'voxel-food': {},
 					'voxel-scriptblock': {},
 					'voxel-sfx': {},
 					'voxel-flight': { flySpeed: 0.8, onDemand: true },
 					'voxel-gamemode': {},
 					'voxel-sprint': {},
-					'voxel-inventory-hotbar': { inventorySize: 10, wheelEnable: true },
+					'voxel-inventory-hotbar': {
+						inventorySize: 10,
+						wheelEnable: false,
+						container:(function(){
+							return $('.inventory_place_holder',_canvas.closest('.x_panel')).first()[0];
+						})()
+					},
 					'voxel-inventory-crafting': {},
 					'voxel-reach': { reachDistance: 8 },
 					'voxel-decals': {},
 					// left-click hold to mine
 					'voxel-mine': {
-					instaMine: false,
-					progressTexturesPrefix: 'destroy_stage_',
-					progressTexturesCount: 9
-				},
-				// right-click to place block (etc.)
-				'voxel-use': {},
-				// handles 'break' event from voxel-mine (left-click hold breaks blocks), collects block and adds to inventory
-				'voxel-harvest': {},
-				'voxel-voila': {},
-				'voxel-fullscreen': {},
-				'voxel-keys': {},
-				// the GUI window (built-in toggle with 'H')
-				//'voxel-debug': {}, // heavily three.js dependent TODO: more debugging options for stackgl-based engine besides camera?
-				'camera-debug': {}, // TODO: port from game-shell-fps-camera
-				'voxel-plugins-ui': {},
-				'kb-bindings-ui': {},
-				//'voxel-land': { populateTrees: true },
-				//'voxel-flatland': { block: 'bedrock', onDemand: false},
-			}
-		});
+						instaMine: false,
+						progressTexturesPrefix: 'destroy_stage_',
+						progressTexturesCount: 9
+					},
+					// right-click to place block (etc.)
+					'voxel-use': {},
+					// handles 'break' event from voxel-mine (left-click hold breaks blocks), collects block and adds to inventory
+					'voxel-harvest': {},
+					'voxel-voila': {},
+					'voxel-fullscreen': {},
+					'voxel-keys': {},
+					// the GUI window (built-in toggle with 'H')
+					'voxel-debug': {
+					}, // heavily three.js dependent TODO: more debugging options for stackgl-based engine besides camera?
+					'camera-debug': {
+					}, // TODO: port from game-shell-fps-camera
+					'voxel-plugins-ui': {
+						gui: (function(){
+							var gui = new (require('dat-gui')).GUI({ autoPlace: false });
+							$('.toolbox_place_holder',_canvas.closest('.x_panel')).first()[0].appendChild(gui.domElement);
+							return gui;
+						})()
+					},
+					'kb-bindings-ui': {},
+					//'voxel-land': { populateTrees: true },
+					//'voxel-flatland': { block: 'bedrock', onDemand: false},
+				}
+			});
 		}catch(e){
 			console.log(e);
-			eval('debugger');
+			debugger;
 		}
 	}
 }

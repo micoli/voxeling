@@ -24,7 +24,7 @@ export class ServerLandGenerator extends Generator {
 	openSimplex:OpenSimplexNoise;
 	treeRandomMax:number=3;
 
-	constructor(chunkSize: number,baseServer:VoxelServer) {
+	constructor(chunkSize: number,baseServer:any) {
 		super(chunkSize);
 		this.baseServer = baseServer;
 		this.openSimplex = new OpenSimplexNoise(seedrandom(this.seed))
@@ -99,7 +99,6 @@ export class ServerLandGenerator extends Generator {
 		});
 
 		self.plantTrees(ndvoxels, ndsummit, width);
-
 	}
 
 	pointsInside(chunkX: number, chunkZ: number, width: number, func: any) {
