@@ -7,7 +7,7 @@ var fs = require('fs');
 var concur = require('../min-concurrent');
 
 var cache = new LRU(200);
-var debug = false;
+var debug = true;
 
 if (debug) {
 	cache.on('evict', function(data: any) {
@@ -57,7 +57,19 @@ export class FileChunkStore extends ChunkStore {
 			this.emitter.emit('got', chunk);
 			return;
 		}
-
+		//nothing saved!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//nothing saved!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//nothing saved!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//nothing saved!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		if(!chunk){
+			chunk = self.generator.get(chunkID);
+			if (chunk) {
+				cache.set(chunkID, chunk);
+				self.toSave[chunkID] = chunk;
+				self.emitter.emit('got', chunk);
+			}
+			return;
+		}
 		// Queue these up so we don't exhaust our file handle limit
 		// wrap the call and callback to make sure we keep triggering calls until we've emptied our queue
 
@@ -69,7 +81,7 @@ export class FileChunkStore extends ChunkStore {
 		readCallback = function(err: any, data: any) {
 			if (err) {
 				if (debug) {
-					console.log('FileChunkStore:get chunk not found');
+					console.log('FileChunkStore:get chunk not found ',chunkID);
 				}
 				// File not found, generate it
 				chunk = self.generator.get(chunkID);

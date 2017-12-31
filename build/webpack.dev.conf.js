@@ -38,6 +38,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
 		quiet: true, // necessary for FriendlyErrorsPlugin
 		watchOptions: {
 			poll: config.dev.poll,
+			ignored:['**/server-land.ts']
 		}
 	},
 	plugins: [

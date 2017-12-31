@@ -809,18 +809,18 @@ export class Engine extends EventEmitter {
 		//console.log('showChunk',chunkIndex,'density=',JSON.stringify(chunkDensity(chunk)))
 
 		var voxelArray = isndarray(chunk) ? chunk : ndarray(chunk.voxels, chunk.dims);
-		try {
-			var mesh = this.mesherPlugin.createVoxelMesh(
-				this.shell.gl,
-				voxelArray,
-				this.stitcher.voxelSideTextureIDs,
-				this.stitcher.voxelSideTextureSizes,
-				chunk.position,
-				this.chunkPad
-			);
-		} catch (e) {
-			console.log(e);
-		}
+		//try {
+		var mesh = this.mesherPlugin.createVoxelMesh(
+			this.shell.gl,
+			voxelArray,
+			this.stitcher.voxelSideTextureIDs,
+			this.stitcher.voxelSideTextureSizes,
+			chunk.position,
+			this.chunkPad
+		);
+		//} catch (e) {
+		//	console.log(e);
+		//}
 
 		if (!mesh) {
 			// no voxels

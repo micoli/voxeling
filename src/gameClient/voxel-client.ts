@@ -9,14 +9,13 @@ import { Engine } from './voxel-engine-stackgl';
 import { avatarView } from './avatar-view/avatar-view';
 
 import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
-let debug=1;
+var debug = false;
 import {ServerLandGenerator} from '../gameServer/generators/server-land';
 
 module.exports = (engine: any, opts: any) => new VoxelClient(engine, opts);
 module.exports.pluginInfo = {
 	loadAfter: ['voxel-console']
 };
-
 
 export class VoxelClient extends EventEmitter {
 	opts: any;
@@ -34,7 +33,7 @@ export class VoxelClient extends EventEmitter {
 	currentState:any={};
 	isReady : boolean = false;
 
-	testGenerator : ServerLandGenerator;
+	testGenerator : any;//ServerLandGenerator;
 
 	constructor(engine: Engine, opts: any) {
 		super();
@@ -95,7 +94,9 @@ export class VoxelClient extends EventEmitter {
 				encoded.length = lastIndex + 1;
 			}
 			var chunk = ndarray(crunch.decode(encoded),meta.voxels.shape);
-
+			if(debug){
+				console.log('receiver chunk ',meta.position.join(','))
+			}
 			chunk.position = meta.position;
 			chunk.dims = meta.dims;
 			self.engine.showChunk(chunk);
@@ -195,7 +196,12 @@ export class VoxelClient extends EventEmitter {
 				let chunk = self.testGenerator.makeChunkStruct(pos.join('|'));
 				self.testGenerator.fillFullChunk(chunk,[0]);
 				self.testGenerator.fillChunkVoxels(chunk,null,32);
-				self.engine.showChunk(chunk);
+				try{
+					self.engine.showChunk(chunk);
+				}catch(e){
+					//console.log(e)
+				}
+				console.log('missingChunk ask', pos);
 				return;
 			}
 			console.log('missingChunk ask', pos, connection.readyState === connection.CLOSED);

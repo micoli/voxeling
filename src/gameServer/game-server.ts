@@ -12,7 +12,7 @@ import {FileChunkStore} from './chunk-stores/file';
 import {ServerLandGenerator} from './generators/server-land';
 //import {ServerTennisGenerator} from './generators/server-tennis';
 //import {ServerPerlinGenerator} from './generators/server-perlin';
-import {ServerRegionsGenerator} from './generators/server-regions';
+//import {ServerRegionsGenerator} from './generators/server-regions';
 //import {ServerTerracedGenerator} from './generators/server-terraced';
 
 
@@ -20,6 +20,7 @@ import {ServerRegionsGenerator} from './generators/server-regions';
 //var modvox = require('./features/modvox/server.js');
 //var entity = require('./features/entity/server.js');
 
+var debug=false;
 export class GameServer extends EventEmitter {
 	baseServer: any;
 	game: any;
@@ -98,6 +99,7 @@ export class GameServer extends EventEmitter {
 
 		this.chunkStore = new FileChunkStore(
 			new ServerLandGenerator(config.chunkSize,baseServer),
+			//new ServerRegionsGenerator(config.chunkSize),
 			'./tmp/'//config.chunkFolder
 		);
 
@@ -135,9 +137,11 @@ export class GameServer extends EventEmitter {
 		// setup world CRUD handlers
 		baseServer.on('missingChunk', function (position: any, complete: any) {
 			let chunkId = position.join('|');
-			//console.log('game-server:missingChunk',chunkId);
+			if (debug) {
+				console.log('game-server:missingChunk',chunkId);
+			}
 			if(chunkId in self.pendingChunks){
-				return ;
+				//return ;
 			}
 			self.pendingChunks[chunkId]=1;
 			self.chunkStore.get(chunkId);
@@ -156,16 +160,15 @@ export class GameServer extends EventEmitter {
 				length : chunk.voxels.length
 			};
 
-			//_chunk.dimensions = [cs, cs, cs];
-			//self.game.showChunk(chunk);
-			//self.game.voxels.chunks[chunkId] = chunk;
-			//self.game.emit('renderChunk',chunk);
 			self.game.showChunk(_chunk);
 			self.emit('chunkLoaded', _chunk);
 		});
 
 		baseServer.on('renderChunk', function(chunk: any) {
 			let chunkId = chunk.position.join('|');
+			if (debug) {
+				console.log('renderChunk',chunkId);
+			}
 			Object.keys( baseServer.clients ).map( function( clientId ) {
 				baseServer.sendChunk(baseServer.clients[clientId], chunkId);
 			});

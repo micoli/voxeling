@@ -70,6 +70,7 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 		ext : 'ts json vert',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
+		//ignore: ["src/**/server-land.ts"],
 		env : {
 			'NODE_ENV' : 'dev'
 		},

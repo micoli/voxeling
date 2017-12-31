@@ -88,7 +88,6 @@ export class VoxelClientInstance {
 								console.log('websocket error');
 							});
 							connection.connect(config.server);
-
 						}
 					},
 					'voxel-materials':{},
@@ -151,7 +150,7 @@ export class VoxelClientInstance {
 
 					'voxel-mesher': {},
 					'game-shell-fps-camera': {
-						position: [0, -100, 0]
+						position: [0, -96, 0]
 					},
 
 					'voxel-artpacks': {},
