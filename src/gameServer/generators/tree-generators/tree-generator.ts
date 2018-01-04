@@ -17,12 +17,12 @@ export class TreeGenerator {
 		return this.trunkMaterial;
 	}
 
-	public static generate(ndvoxels:any, width:number, x:number, basey:number, z:number){
+	public static generate(ndvoxels:any, x:number, basey:number, z:number){
 		let self = this;
 		self.init();
 		var trunkOffset = (self.treeShape.length-1)/2;
 		var leavesHeight = self.treeShape.length;
-		if(basey <= (width-self.treeHeight-leavesHeight)){
+		if(basey <= (ndvoxels.shape[1]-self.treeHeight-leavesHeight)){
 			for(let h=1;h<=(self.treeHeight+leavesHeight);h++){
 				ndvoxels.set(x,basey+h,z,self.getTrunkMaterial());
 			}

@@ -4,10 +4,10 @@ import {VoxelClientInstance} from '../../../gameClient/voxel-client-instance';
 
 @Component({
 	template: `
-		<closable-widget title="Game" size="col-md-12 col-sm-12 col-xs-12" height-class="fixed_height_480">
+		<closable-widget title="Game" size="col-md-12 col-sm-12 col-xs-12" height-class="fixed_height_640">
 			<div class="col-md-12 col-sm-12 col-xs-12 content-holder">
 				<div class="toolbox_place_holder" style="position:absolute;right:0;z-index:11;"></div>
-				<div id="game-holder" class="demo-placeholder" style="height:400px;width:1110px;z-index:10;"></div><!--1110-->
+				<div id="game-holder" class="demo-placeholder" style="height:560px;width:1110px;z-index:10;"></div><!--1110-->
 				<div class="inventory_place_holder" style="position:absolute;bottom:0;z-index:11;"></div>
 			</div>
 		</closable-widget>

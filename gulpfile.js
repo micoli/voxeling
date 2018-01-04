@@ -65,8 +65,8 @@ gulp.task('develop', 'server developement tool', [  /*'build-clients',*/ 'config
 	//gulp.watch([ 'src/client/**/*.ts', 'src/shared/**/*.ts' ], [ 'build-clients' ]);
 	var stream = plugins.nodemon({
 		exec: 'node --inspect=0.0.0.0:9090 ',
-		script : outDir+'src/server/index.js',
-		//script : outDir+'src/gameServer/run.js',
+		//script : outDir+'src/server/index.js',
+		script : outDir+'src/gameServer/run.js',
 		ext : 'ts json vert',
 		ignore : [ 'ignored.js' ],
 		watch : [ 'src/server/','src/shared/','src/gameServer/' ],
@@ -111,7 +111,7 @@ gulp.task('clean', '', function() {
 	return gulp.src(outDir, {
 		read : false
 	})
-		.pipe(plugins.rimraf());
+	.pipe(plugins.rimraf());
 });
 
 gulp.task('configurations', 'copy configurations', (cb) => {

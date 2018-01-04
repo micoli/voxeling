@@ -269,7 +269,7 @@ export class VoxelServer extends EventEmitter {
 			encoded = crunch.encode( chunkFmt.data );//chunk.voxels.data
 			self.chunkCache[chunkID] = encoded;
 		}
-		console.log('sendChunk',chunk.position.join(','))
+		//console.log('sendChunk',chunk.position.join(','))
 		client.connection.emit( 'chunk', encoded, {
 			position: chunk.position,
 			dims: chunk.dims,

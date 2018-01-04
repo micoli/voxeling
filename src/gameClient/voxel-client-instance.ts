@@ -93,7 +93,7 @@ export class VoxelClientInstance {
 					'voxel-materials':{},
 					'voxel-engine-stackgl': {
 						appendDocument: false,
-						exposeGlobal: true,  // for debugging
+						exposeGlobal: true,
 						container : _canvas,
 						lightsDisabled: true,
 						arrayTypeSize: Uint8Array.BYTES_PER_ELEMENT,// Uint16Array,  // arrayType: Uint8Array
@@ -192,7 +192,7 @@ export class VoxelClientInstance {
 					//'voxel-food': {},
 					'voxel-scriptblock': {},
 					'voxel-sfx': {},
-					'voxel-flight': { flySpeed: 0.8, onDemand: true },
+					'voxel-flight': { flySpeed: 0.8, onDemand: false },
 					'voxel-gamemode': {},
 					'voxel-sprint': {},
 					'voxel-inventory-hotbar': {

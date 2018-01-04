@@ -21,6 +21,29 @@ export abstract class Generator {
 		return 0;
 	}
 
+	getRelativePos(absolutePos:number[],offset:number[]=[0,0,0]){ //[x,y,z]
+		this.chunkSize=32;
+		var res:any={};
+		res.pos = absolutePos;
+		res.chunkX = Math.floor(absolutePos[0]/this.chunkSize)-offset[0];
+		res.chunkY = Math.floor(absolutePos[1]/this.chunkSize)-offset[1];
+		res.chunkZ = Math.floor(absolutePos[2]/this.chunkSize)-offset[2];
+		res.offsetX =Math.floor(absolutePos[0]%this.chunkSize);
+		res.offsetY =Math.floor(absolutePos[1]%this.chunkSize);
+		res.offsetZ =Math.floor(absolutePos[2]%this.chunkSize);
+		if(res.offsetX<0){
+			res.offsetX=this.chunkSize+res.offsetX;
+		}
+		if(res.offsetY<0){
+			res.offsetY=this.chunkSize+res.offsetY;
+		}
+		if(res.offsetZ<0){
+			res.offsetZ=this.chunkSize+res.offsetZ;
+		}
+		res.chunkID=[res.chunkX,res.chunkY,res.chunkZ].join('|');
+		return res;
+	}
+
 	get(chunkID: any) {
 		if (debug) {
 			console.log('Generator:generateChunk ' + chunkID);
@@ -50,15 +73,38 @@ export abstract class Generator {
 		}
 	}
 
-
 	makeChunkStruct(chunkID: any) {
-			var position = chunkID.split('|').map(function(value: any) {
-				return Number(value);
-			});
-			return {
-				position: position,
-				chunkID: chunkID,
-				voxels: new Uint8Array(this.chunkArraySize)
-			};
+		var position = chunkID.split('|').map(function(value: any) {
+			return Number(value);
+		});
+		return {
+			position: position,
+			chunkID: chunkID,
+			voxels: new Uint8Array(this.chunkArraySize)
+		};
+	}
+
+	dumpVoxels(ndvoxels:any,width:number,height:number,y:number){
+		let row:string='';
+		let er:any='';
+		for (let zz=0;zz<height;zz++){
+			row+=zz%10+" ";
 		}
+		console.log(row+'Z')
+		console.log(er.padStart(65,"- ")+'  X');
+		for (let xx=0;xx<height;xx++){
+			row="";
+			for (let zz=0;zz<height;zz++){
+				let c=ndvoxels.get(xx,y,zz)
+				if(c){
+					row+=(c==13)?'. ':'x ';
+				}else{
+					row+='  ';
+				}
+			}
+			console.log(row+" | "+xx)
+		}
+		console.log(er.padStart(65,"- "));
+	}
+
 }
