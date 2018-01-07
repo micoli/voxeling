@@ -14,38 +14,12 @@ var tic = require('tic')();
 var ndarray = require('ndarray');
 var isndarray = require('isndarray');
 var obsolete = require('obsolete');
-var three = require('three');
 var voxelPlugins = require('voxel-plugins');
 var extend = require('extend');
 // cleanup key name - based on https://github.com/mikolalysenko/game-shell/blob/master/shell.js
-var filtered_vkey = function(k:any) {
-	if (k.charAt(0) === '<' && k.charAt(k.length - 1) === '>') {
-		k = k.substring(1, k.length - 1);
-	}
-	k = k.replace(/\s/g, "-");
-	return k;
-};
 
 var _position = new Array(3);
 var _cameraVector = vector.create();
-var chunkDensity = function(chunk: any) {
-	var counts: any = {};
-	var length = chunk.data.length;
-	for (var i = 0; i < length; i += 1) {
-		let val = chunk.data[i];
-		if (!(val in counts)) {
-			counts[val] = 0;
-		}
-
-		counts[val] += 1;
-	}
-
-	var densities: any = {};
-	for (let val in counts) {
-		densities[val] = counts[val] / length;
-	}
-	return densities;
-};
 
 var BUILTIN_PLUGIN_OPTS:any = {
 	'voxel-registry': {},
@@ -106,6 +80,7 @@ export class Engine extends EventEmitter {
 	gravity: number[] = [0, -0.0000036, 0];
 	friction: number = 0.3;
 	epilson: number = 1e-8;
+	plugins:any;
 	terminalVelocity: number[] = [0.9, 0.1, 0.9];
 	defaultButtons: any = {
 		'W': 'forward',
@@ -124,7 +99,6 @@ export class Engine extends EventEmitter {
 		'<tab>': 'sprint'
 	};
 	settings : any={};
-	THREE:any = three;
 	constructor(opts: any) {
 		super();
 		var self = this;
@@ -152,7 +126,6 @@ export class Engine extends EventEmitter {
 		this.setConfigurablePositions(opts);
 		this.configureChunkLoading(opts);
 		this.setDimensions(opts);
-		//obsolete(this, 'THREE');
 		this.vector = vector;
 		obsolete(this, 'glMatrix', 'use your own gl-matrix, gl-vec3, or gl-vec4');
 		this.arrayType = opts.arrayType || this.getArrayType(opts.arrayTypeSize) || Uint8Array;
@@ -226,7 +199,7 @@ export class Engine extends EventEmitter {
 				'voxel-registry': require('voxel-registry'),
 			});
 		}
-		var plugins = voxelPlugins(this, {
+		this.plugins = voxelPlugins(this, {
 			masterPluginName: 'voxel-engine-stackgl',
 			loaders: pluginLoaders,
 			require: opts.require // optional (opts.pluginLoaders favored instead)
@@ -255,7 +228,7 @@ export class Engine extends EventEmitter {
 
 		if (this.isClient) {
 			if (opts.exposeGlobal) {
-				(<any>window).game = (<any>window).g = this;
+				(<any>window).game = this;
 			}
 		}
 
@@ -286,14 +259,14 @@ export class Engine extends EventEmitter {
 		}
 
 		for (let name in pluginOpts) {
-			plugins.add(name, pluginOpts[name]);
+			this.plugins.add(name, pluginOpts[name]);
 		}
 		console.log('plugins.loadAll()', this.isClient);
-		plugins.loadAll();
+		this.plugins.loadAll();
 
 		if (this.isClient) {
 			// textures loaded, now can render chunks
-			this.stitcher = plugins.get('voxel-stitch');
+			this.stitcher = this.plugins.get('voxel-stitch');
 			this.stitcher.on('updatedSides', function() {
 				if (self.generateChunks) {self.handleChunkGeneration();}
 				self.showAllChunks();
@@ -303,9 +276,9 @@ export class Engine extends EventEmitter {
 					self.asyncChunkGeneration = 'asyncChunkGeneration' in opts ? opts.asyncChunkGeneration : true;
 				}, 2000);
 			});
-			this.mesherPlugin = plugins.get('voxel-mesher');
+			this.mesherPlugin = this.plugins.get('voxel-mesher');
 
-			this.cameraPlugin = plugins.get('game-shell-fps-camera'); // TODO: support other plugins implementing same API
+			this.cameraPlugin = this.plugins.get('game-shell-fps-camera'); // TODO: support other plugins implementing same API
 		}
 		this.emit('engine-init', this);
 	}
@@ -318,12 +291,12 @@ export class Engine extends EventEmitter {
 		};
 		return arrayTypeSize[arrayTypeSize]
 	}
+
 	toString() {
 		return 'voxel-engine-stackgl';
 	}
 
 	// # External API
-
 	voxelPosition(gamePosition: any) {
 		var _ = Math.floor;
 		var p = gamePosition;
@@ -588,6 +561,7 @@ export class Engine extends EventEmitter {
 			this.width = typeof window === "undefined" ? 1 : window.innerWidth;
 		}
 	}
+
 	webGlCapable(){
 		try {
 			return !!(<any>window).WebGLRenderingContext && !!document.createElement( 'canvas' ).getContext( 'experimental-webgl' );
@@ -595,6 +569,7 @@ export class Engine extends EventEmitter {
 			return false;
 		}
 	}
+
 	notCapable() {
 		var self = this;
 		if (!this.webGlCapable()) {
@@ -676,7 +651,6 @@ export class Engine extends EventEmitter {
 	}
 
 	// # Chunk related methods
-
 	configureChunkLoading(opts: any) {
 		var self = this;
 		if (!opts.generateChunks) {
@@ -806,7 +780,7 @@ export class Engine extends EventEmitter {
 
 		var chunkIndex = chunk.position.join('|');
 		var bounds = this.voxels.getBounds.apply(this.voxels, chunk.position);
-		//console.log('showChunk',chunkIndex,'density=',JSON.stringify(chunkDensity(chunk)))
+		//console.log('showChunk',chunkIndex,'density=',JSON.stringify(this.chunkDensity(chunk)))
 
 		var voxelArray = isndarray(chunk) ? chunk : ndarray(chunk.voxels, chunk.dims);
 		//try {
@@ -960,7 +934,7 @@ export class Engine extends EventEmitter {
 			var name = keybindings[key];
 
 			// translate name for game-shell
-			key = filtered_vkey(key);
+			key = this.filtered_vkey(key);
 
 			this.shell.bind(name, key);
 		}
@@ -970,6 +944,15 @@ export class Engine extends EventEmitter {
 		this.proxyButtons(); // sets this.buttons TODO: refresh when shell.bindings changes (bind/unbind)
 		this.hookupControls(this.buttons, opts);
 	}
+
+	private filtered_vkey(k:any) {
+		if (k.charAt(0) === '<' && k.charAt(k.length - 1) === '>') {
+			k = k.substring(1, k.length - 1);
+		}
+		k = k.replace(/\s/g, "-");
+		return k;
+	};
+
 
 	hookupControls(buttons: any, opts: any) {
 		opts = opts || {};
@@ -990,7 +973,26 @@ export class Engine extends EventEmitter {
 	}
 
 	// teardown methods
-	destroy() {
+	private destroy() {
 		clearInterval(this.timer);
+	}
+
+	private chunkDensity(chunk: any) {
+		var counts: any = {};
+		var length = chunk.data.length;
+		for (var i = 0; i < length; i += 1) {
+			let val = chunk.data[i];
+			if (!(val in counts)) {
+				counts[val] = 0;
+			}
+
+			counts[val] += 1;
+		}
+
+		var densities: any = {};
+		for (let val in counts) {
+			densities[val] = counts[val] / length;
+		}
+		return densities;
 	}
 }

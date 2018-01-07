@@ -1,7 +1,7 @@
 'use strict';
 
 import {EventEmitter} from 'events';
-const InventoryWindow = require('inventory-window');
+const InventoryWindow = require('./inventory-window');
 const ever = require('ever');
 
 module.exports = (game:any, opts:any) => {

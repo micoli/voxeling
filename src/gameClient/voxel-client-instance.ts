@@ -15,6 +15,7 @@ export class VoxelClientInstance {
 				},
 				pluginLoaders: {
 					'voxel-client' : require('./voxel-client'),
+					'voxel-sandbox' : require('./voxel-sandbox'),
 					'voxel-materials' : require('./voxel-materials'),
 					'voxel-artpacks': require('voxel-artpacks'),
 					'voxel-wireframe': require('voxel-wireframe'),
@@ -29,7 +30,7 @@ export class VoxelClientInstance {
 					'voxel-quarry': require('voxel-quarry'),
 					'voxel-measure': require('voxel-measure'),
 					//'voxel-webview': require('voxel-webview'),
-					'voxel-vr': require('voxel-vr'),
+					//'voxel-vr': require('voxel-vr'),
 					'voxel-workbench': require('voxel-workbench'),
 					'voxel-furnace': require('voxel-furnace'),
 					'voxel-chest': require('voxel-chest'),
@@ -90,12 +91,14 @@ export class VoxelClientInstance {
 							connection.connect(config.server);
 						}
 					},
+					'voxel-sandbox' : {
+					},
 					'voxel-materials':{},
 					'voxel-engine-stackgl': {
 						appendDocument: false,
 						exposeGlobal: true,
 						container : _canvas,
-						lightsDisabled: true,
+						lightsDisabled: false,
 						arrayTypeSize: Uint8Array.BYTES_PER_ELEMENT,// Uint16Array,  // arrayType: Uint8Array
 						useAtlas: true,
 						generateChunks: false,
@@ -192,7 +195,7 @@ export class VoxelClientInstance {
 					//'voxel-food': {},
 					'voxel-scriptblock': {},
 					'voxel-sfx': {},
-					'voxel-flight': { flySpeed: 0.8, onDemand: false },
+					'voxel-flight': { flySpeed: 1.8, onDemand: false},
 					'voxel-gamemode': {},
 					'voxel-sprint': {},
 					'voxel-inventory-hotbar': {

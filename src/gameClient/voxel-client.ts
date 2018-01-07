@@ -1,16 +1,12 @@
 // dependencies;
-import {EventEmitter} from 'events';
-var duplexEmitter = require('duplex-emitter');
-var extend = require('extend');
 var crunch = require('voxel-crunch');
 var ndarray = require('ndarray');
-var glm = require('gl-matrix');
+import { EventEmitter } from 'events';
 import { Engine } from './voxel-engine-stackgl';
-import { avatarView } from './avatar-view/avatar-view';
+import { AvatarView } from './avatar-view/avatar-view';
+import { Client as WebSocketEmitterClient } from '../shared/web-socket-emitter';
 
-import {Client as WebSocketEmitterClient} from '../shared/web-socket-emitter';
 var debug = false;
-import {ServerLandGenerator} from '../gameServer/generators/server-land';
 
 module.exports = (engine: any, opts: any) => new VoxelClient(engine, opts);
 module.exports.pluginInfo = {
@@ -23,7 +19,6 @@ export class VoxelClient extends EventEmitter {
 	engine: Engine;
 	texturePath: any;
 	playerTexture: any;
-	lerpPercent: any;
 	remoteClients: any;
 	serverStream: any;
 	connection: any;
@@ -33,8 +28,6 @@ export class VoxelClient extends EventEmitter {
 	currentState:any={};
 	isReady : boolean = false;
 
-	testGenerator : any;//ServerLandGenerator;
-
 	constructor(engine: Engine, opts: any) {
 		super();
 		var self = this;
@@ -42,37 +35,29 @@ export class VoxelClient extends EventEmitter {
 		self.engine = engine;
 		self.texturePath = opts.texturePath || '/textures/';
 		self.playerTexture = opts.playerTexture || 'player.png';
-		self.lerpPercent = 0.1;
 		self.remoteClients = {};
 		self.connection = new EventEmitter();
+
 		opts.getConnection(function(connection:any){
 			//todo deal with proper connection a startup for other plugins
-			//self.connection = new EventEmitter();
 			console.log('Connection initialised');
 			self.connection = connection;
-			self.bindEvents(self.connection);
+			self.bindEvents();
 			setTimeout(function() {
 				self.connection.emit('created');
 			}, 300);
 		})
-		if(debug){
-			self.testGenerator = new ServerLandGenerator(32,self.engine);
-		}
 	}
 
-	private scale(x: any, fromLow: any, fromHigh: any, toLow: any, toHigh: any) {
-		return (x - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
-	}
-
-	bindEvents(connection: any) {
+	bindEvents() {
 		var self = this;
 
-		connection.on('id', function(id: any) {
+		self.connection.on('id', function(id: any) {
 			console.log('receiving id', id );
 			self.playerID = id;
 		});
 
-		connection.on('settings', function(settings: any) {
+		self.connection.on('settings', function(settings: any) {
 			console.log('receiving settings', settings);
 			// set client-specific settings;
 			settings.isClient = true;
@@ -82,11 +67,11 @@ export class VoxelClient extends EventEmitter {
 			// tell server we're ready;
 			self.initGame(settings);
 
-			connection.emit('created');
+			self.connection.emit('created');
 		});
 
 		// load in chunks from the server;
-		connection.on('chunk', function(encoded: any, meta: any) {
+		self.connection.on('chunk', function(encoded: any, meta: any) {
 			// ensure `encoded` survived transmission as an array;
 			// JSON stringifies Uint8Arrays as objects;
 			if (encoded.length === undefined) {
@@ -103,7 +88,7 @@ export class VoxelClient extends EventEmitter {
 		});
 
 		// after all chunks loaded;
-		connection.on('noMoreChunks', function() {
+		self.connection.on('noMoreChunks', function() {
 			console.log('noMoreChunks');
 			var engine = self.engine;
 
@@ -120,14 +105,14 @@ export class VoxelClient extends EventEmitter {
 		});
 
 		// fires when server sends us voxel edits;
-		connection.on('set', function(pos: any, val: any) {
+		self.connection.on('set', function(pos: any, val: any) {
 			self.serverSettingBlock = true;
 			self.engine.setBlock(pos, val);
 			self.serverSettingBlock = false;
 		});
 
 		// handle server updates;
-		connection.on('update', function(updates: any) {
+		self.connection.on('update', function(updates: any) {
 			if(!self.isReady){
 				return;
 			}
@@ -135,18 +120,15 @@ export class VoxelClient extends EventEmitter {
 				var update = updates.positions[playerID];
 
 				if (playerID === self.playerID) {
-					// local player;
 					self.onServerUpdate(update);
-					//self.updatePlayerPosition('uu',update);
 				} else {
-				// other players;
-				self.updatePlayerPosition(playerID, update);
-			}
+					self.updatePlayerPosition(playerID, update);
+				}
 			});
 		});
 
 		// handle removing clients that leave;
-		connection.on('leave', function (id: any) {
+		self.connection.on('leave', function (id: any) {
 			if (!self.remoteClients[id]) {
 				return;
 			}
@@ -155,22 +137,12 @@ export class VoxelClient extends EventEmitter {
 
 	}
 
-	enable() {
-		console.log('client enable');
-	}
-
-	disable() {
-		console.log('client disable');
-	}
-
 	initGame(settings: any) {
 		var self = this;
 		var connection = self.connection;
-		console.log('initGame');
+		console.log('InitGame');
 
-		// retrieve name from local storage;
 		var name = localStorage.getItem('name');
-		// if no name, choose a random name;
 		if (!name) {
 			name = 'player name';
 			localStorage.setItem('name', name);
@@ -192,21 +164,9 @@ export class VoxelClient extends EventEmitter {
 		});
 
 		self.engine.voxels.on('missingChunk', function(pos: any) {
-			if (debug){
-				let chunk = self.testGenerator.makeChunkStruct(pos.join('|'));
-				self.testGenerator.fillFullChunk(chunk,[0]);
-				self.testGenerator.fillChunkVoxels(chunk,null,32);
-				try{
-					self.engine.showChunk(chunk);
-				}catch(e){
-					//console.log(e)
-				}
-				console.log('missingChunk ask', pos);
-				return;
-			}
 			console.log('missingChunk ask', pos, connection.readyState === connection.CLOSED);
 			if (connection.readyState === connection.CLOSED) {
-				//	return;
+				return;
 			}
 			connection.emit('missingChunk', pos);
 		});
@@ -228,7 +188,7 @@ export class VoxelClient extends EventEmitter {
 		return self.engine;
 	}
 
-	sendState() {
+	private sendState() {
 		var state = this.getNormalizedState(this.engine.controls.target());
 		let newState = JSON.stringify(state);
 		if(this.currentState !== newState){
@@ -251,27 +211,21 @@ export class VoxelClient extends EventEmitter {
 		};
 	}
 
-	onServerUpdate(update: any) {
+	private onServerUpdate(update: any) {
 		var self = this;
 		//var state = this.getNormalizedState(self.engine.controls.target());
 	}
 
-	lerpMe(position: any) {
-		var self = this;
-		var to = new glm.vec3();
-		to.copy(position);
-		var from = this.engine.controls.target().yaw.position;
-		from.copy(from.lerp(to, this.lerpPercent));
-	}
-
-	updatePlayerPosition(id: any, update: any) {
+	private updatePlayerPosition(id: any, update: any) {
 		var self = this;
 		if (!self.remoteClients[id]) {
-			self.remoteClients[id] = new avatarView(self.engine);
+			self.remoteClients[id] = new AvatarView(self.engine);
 			self.remoteClients[id].walk();
 		}
 		self.remoteClients[id].update(update);
-		//playerMesh.children[0].rotation.y = update.r.y + (Math.PI / 2);
-		//playerSkin.head.rotation.z = this.scale(update.r.x, -1.5, 1.5, -0.75, 0.75);
+	}
+	enable(){
+	}
+	disable(){
 	}
 }
